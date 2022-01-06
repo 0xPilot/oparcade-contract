@@ -59,35 +59,15 @@ module.exports = {
     local: {
       url: 'http://localhost:8545',
     },
-    kovan: {
-      accounts,
-      url: nodeUrl("kovan"),
+    polygon: {
+      url: nodeUrl("polygon-mainnet"),
       gasPrice: 40000000000,
       timeout: 50000
     },
-    goerli: {
-      accounts,
-      url: nodeUrl("goerli"),
+    mumbai: {
+      url: nodeUrl("polygon-mumbai"),
       gasPrice: 40000000000,
       timeout: 50000
-    },
-    rinkeby: {
-      accounts,
-      url: nodeUrl("rinkeby"),
-      gasPrice: 40000000000,
-      timeout: 50000
-    },
-    ropsten: {
-      accounts,
-      url: nodeUrl("ropsten"),
-      gasPrice: 40000000000,
-      timeout: 50000
-    },
-    mainnet: {
-      accounts,
-      url: nodeUrl("mainnet"),
-      gasPrice: 80000000000,
-      timeout: 10000000
     },
     coverage: {
       url: "http://127.0.0.1:8555",

@@ -2,7 +2,34 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
+import "./interfaces/IAddressRegistry.sol";
+import "./interfaces/ITokenRegistry.sol";
 
 contract Oparcade is Initializable {
-  function initialize() public initializer {}
+  using SafeERC20Upgradeable for IERC20Upgradeable;
+
+  IAddressRegistry public addressRegistry;
+  ITokenRegistry public tokenRegistry;
+  mapping(address => uint256) private userBalance;
+
+  function initialize(address _addressRegistry) public initializer {
+    addressRegistry = IAddressRegistry(_addressRegistry);
+    tokenRegistry = ITokenRegistry(addressRegistry.tokenRegistry());
+  }
+
+  function deposit(address _token) external {
+    // get token amount to deposit
+    uint256 depositTokenAmount = tokenRegistry.depositTokenAmount(_token);
+
+    // check if token address is valid
+    require(depositTokenAmount > 0, "Invalid token address");
+
+    // transfer tokens
+    userBalance[msg.sender] += depositTokenAmount;
+    IERC20Upgradeable(_token).safeTransferFrom(msg.sender, address(this), depositTokenAmount);
+  }
+
+  function claim(bytes calldata _signature) external {}
 }

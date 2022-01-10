@@ -5,4 +5,6 @@ interface IAddressRegistry {
   function oparcade() external view returns (address);
 
   function tokenRegistry() external view returns (address);
+
+  function maintainer() external view returns (address);
 }

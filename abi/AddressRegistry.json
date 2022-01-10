@@ -27,6 +27,19 @@
   },
   {
     "inputs": [],
+    "name": "maintainer",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "oparcade",
     "outputs": [
       {
@@ -80,6 +93,19 @@
       }
     ],
     "name": "transferOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_maintainer",
+        "type": "address"
+      }
+    ],
+    "name": "updateMaintainer",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

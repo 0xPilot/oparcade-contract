@@ -6,6 +6,7 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 contract AddressRegistry is OwnableUpgradeable {
   address public oparcade;
   address public tokenRegistry;
+  address public maintainer;
 
   function initialize() public initializer {
     __Ownable_init();
@@ -17,5 +18,9 @@ contract AddressRegistry is OwnableUpgradeable {
 
   function updateTokenRegistry(address _tokenRegistry) external onlyOwner {
     tokenRegistry = _tokenRegistry;
+  }
+
+  function updateMaintainer(address _maintainer) external onlyOwner {
+    maintainer = _maintainer;
   }
 }

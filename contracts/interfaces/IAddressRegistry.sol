@@ -1,10 +1,30 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
+/**
+ * @title AddressRegistry Contract Interface
+ * @notice Define the interface used to get addresses in Oparcade
+ * @author David Lee
+ */
 interface IAddressRegistry {
+  /**
+   * @notice Provide the Oparcade contract address
+   * @dev Can be zero in case of the Oparcade contract is not registered
+   * @return address Oparcade contract address
+   */
   function oparcade() external view returns (address);
 
+  /**
+   * @notice Provide the TokenRegistry contract address
+   * @dev Can be zero in case of the TokenRegistry contract is not registered
+   * @return address TokenRegistry contract address
+   */
   function tokenRegistry() external view returns (address);
 
+  /**
+   * @notice Provide the maintainer address
+   * @dev Can be zero in case of the maintainer address is not registered
+   * @return address Maintainer contract address
+   */
   function maintainer() external view returns (address);
 }

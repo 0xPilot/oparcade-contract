@@ -8,13 +8,25 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeab
 import "./interfaces/IAddressRegistry.sol";
 import "./interfaces/ITokenRegistry.sol";
 
+/**
+ * @title Oparcade
+ * @notice This manages the token deposit and claim from the users
+ * @author David Lee
+ */
 contract Oparcade is ReentrancyGuardUpgradeable {
   using ECDSAUpgradeable for bytes32;
   using SafeERC20Upgradeable for IERC20Upgradeable;
 
+  /// @dev AddressRegistry
   IAddressRegistry public addressRegistry;
+
+  /// @dev TokenRegistry
   ITokenRegistry public tokenRegistry;
+
+  /// @dev User -> Deposit amount
   mapping(address => uint256) private userBalance;
+
+  /// @dev Signature -> Bool
   mapping(bytes => bool) public signatures;
 
   function initialize(address _addressRegistry) public initializer {
@@ -24,18 +36,31 @@ contract Oparcade is ReentrancyGuardUpgradeable {
     tokenRegistry = ITokenRegistry(addressRegistry.tokenRegistry());
   }
 
+  /**
+   * @notice Deposit ERC20 tokens from user
+   * @dev Only tokens registered in TokenRegistry with an amount greater than zero is valid for the deposit
+   * @param _token Token address to deposit
+   */
   function deposit(address _token) external {
     // get token amount to deposit
     uint256 depositTokenAmount = tokenRegistry.depositTokenAmount(_token);
 
     // check if token address is valid
-    require(depositTokenAmount > 0, "Invalid token address");
+    require(depositTokenAmount > 0, "Token is invalid");
 
     // transfer tokens
     userBalance[msg.sender] += depositTokenAmount;
     IERC20Upgradeable(_token).safeTransferFrom(msg.sender, address(this), depositTokenAmount);
   }
 
+  /**
+   * @notice Allow for the users to claim ERC20 tokens
+   * @dev Only winners with the valid signature are able to claim
+   * @param _winner Winner address
+   * @param _token Token address to claim
+   * @param _amount Token amount to claim
+   * @param _signature Signature
+   */
   function claim(
     address _winner,
     address _token,

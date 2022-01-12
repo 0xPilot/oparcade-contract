@@ -17,6 +17,9 @@ contract Oparcade is ReentrancyGuardUpgradeable {
   using ECDSAUpgradeable for bytes32;
   using SafeERC20Upgradeable for IERC20Upgradeable;
 
+  event Deposit(address indexed user, address indexed token, uint256 amount);
+  event Claim(address indexed winner, address indexed token, uint256 amount);
+
   /// @dev AddressRegistry
   IAddressRegistry public addressRegistry;
 
@@ -26,8 +29,8 @@ contract Oparcade is ReentrancyGuardUpgradeable {
   /// @dev User -> Deposit amount
   mapping(address => uint256) private userBalance;
 
-  /// @dev Signature -> Bool
-  mapping(bytes => bool) public signatures;
+  /// @dev User -> Nonce -> Bool
+  mapping(address => mapping(uint256 => bool)) public nonces;
 
   function initialize(address _addressRegistry) public initializer {
     __ReentrancyGuard_init();
@@ -51,6 +54,8 @@ contract Oparcade is ReentrancyGuardUpgradeable {
     // transfer tokens
     userBalance[msg.sender] += depositTokenAmount;
     IERC20Upgradeable(_token).safeTransferFrom(msg.sender, address(this), depositTokenAmount);
+
+    emit Deposit(msg.sender, _token, depositTokenAmount);
   }
 
   /**
@@ -59,27 +64,31 @@ contract Oparcade is ReentrancyGuardUpgradeable {
    * @param _winner Winner address
    * @param _token Token address to claim
    * @param _amount Token amount to claim
+   * @param _nonce Nonce
    * @param _signature Signature
    */
   function claim(
     address _winner,
     address _token,
     uint256 _amount,
+    uint256 _nonce,
     bytes calldata _signature
   ) external nonReentrant {
-    // check if signature is already used
-    require(!signatures[_signature], "Already used signature");
-    signatures[_signature] = true;
+    // check if nonce is already used
+    require(!nonces[_winner][_nonce], "Already used nonce");
+    nonces[_winner][_nonce] = true;
 
     // check if msg.sender is the _winner
     require(msg.sender == _winner, "Only winner can claim");
 
     // check signer
     address maintainer = addressRegistry.maintainer();
-    bytes32 data = keccak256(abi.encodePacked(msg.sender, _token, _amount));
+    bytes32 data = keccak256(abi.encodePacked(msg.sender, _token, _amount, _nonce));
     require(data.toEthSignedMessageHash().recover(_signature) == maintainer, "Wrong signer");
 
     // transfer tokens to the winner
     IERC20Upgradeable(_token).safeTransfer(msg.sender, _amount);
+
+    emit Claim(msg.sender, _token, _amount);
   }
 }

@@ -6,7 +6,7 @@ pragma solidity ^0.8.0;
  * @notice Define the interface used to get the token information
  * @author David Lee
  */
-interface ITokenRegistry {
+interface IGameRegistry {
   /**
    * @notice Provide the deposit amount of the token given
    * @param _token Token address

@@ -1,42 +1,27 @@
-# Advanced Sample Hardhat Project
+## Oparcade Smart Contract
 
-This project demonstrates an advanced Hardhat use case, integrating other tools commonly used alongside Hardhat in the ecosystem.
+### Developer instructions
 
-The project comes with a sample contract, a test for that contract, a sample script that deploys that contract, and an example of a task implementation, which simply lists the available accounts. It also comes with a variety of other tools, preconfigured to work with the project code.
+#### Install dependencies
+`yarn install`
 
-Try running some of the following tasks:
-
-```shell
-npx hardhat accounts
-npx hardhat compile
-npx hardhat clean
-npx hardhat test
-npx hardhat node
-npx hardhat help
-REPORT_GAS=true npx hardhat test
-npx hardhat coverage
-npx hardhat run scripts/deploy.js
-node scripts/deploy.js
-npx eslint '**/*.js'
-npx eslint '**/*.js' --fix
-npx prettier '**/*.{json,sol,md}' --check
-npx prettier '**/*.{json,sol,md}' --write
-npx solhint 'contracts/**/*.sol'
-npx solhint 'contracts/**/*.sol' --fix
+#### Create .env file and make sure it's having following information:
+```
+INFURA_KEY = INFURA_KEY
+MNEMONIC = YOUR_MNEMONIC
+API_KEY = YOUR_ETHERSCAN_API_KEY
 ```
 
-# Etherscan verification
+#### Compile code
+- `npx hardhat clean` (Clears the cache and deletes all artifacts)
+- `npx hardhat compile` (Compiles the entire project, building all artifacts)
 
-To try out Etherscan verification, you first need to deploy a contract to an Ethereum network that's supported by Etherscan, such as Ropsten.
+#### Run tests
+- `npx hardhat test test/{desired_test_script}`
 
-In this project, copy the .env.example file to a file named .env, and then edit it to fill in the details. Enter your Etherscan API key, your Ropsten node URL (eg from Alchemy), and the private key of the account which will send the deployment transaction. With a valid .env file in place, first deploy your contract:
+#### Deploy code 
+- `npx hardhat node` (Starts a JSON-RPC server on top of Hardhat Network)
+- `npx hardhat run --network {network} scripts/{desired_deployment_script}`
 
-```shell
-hardhat run --network ropsten scripts/deploy.js
-```
-
-Then, copy the deployment address and paste it in to replace `DEPLOYED_CONTRACT_ADDRESS` in this command:
-
-```shell
-npx hardhat verify --network ropsten DEPLOYED_CONTRACT_ADDRESS "Hello, Hardhat!"
-```
+#### Etherscan verification
+`npx hardhat verify --network {network} {deployed_contract_address} {constructor_parameters}`

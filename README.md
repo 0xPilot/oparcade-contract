@@ -24,4 +24,4 @@ API_KEY = YOUR_ETHERSCAN_API_KEY
 - `npx hardhat run --network {network} scripts/{desired_deployment_script}`
 
 #### Etherscan verification
-`npx hardhat verify --network {network} {deployed_contract_address} {constructor_parameters}`
+- `npx hardhat verify --network {network} {deployed_contract_address} {constructor_parameters}`

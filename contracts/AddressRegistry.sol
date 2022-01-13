@@ -9,8 +9,17 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
  * @author David Lee
  */
 contract AddressRegistry is OwnableUpgradeable {
+  event UpdateOparcade(address indexed oparcade);
+  event UpdateGameRegistry(address indexed gameRegistry);
+  event UpdateMaintainer(address indexed maintainer);
+
+  /// @dev Oparcade contract address, can be zero if not set
   address public oparcade;
-  address public tokenRegistry;
+
+  /// @dev GameRegistry contract address, can be zero if not set
+  address public gameRegistry;
+
+  /// @dev Maintainer address, can be zero if not set
   address public maintainer;
 
   function initialize() public initializer {
@@ -24,15 +33,19 @@ contract AddressRegistry is OwnableUpgradeable {
    */
   function updateOparcade(address _oparcade) external onlyOwner {
     oparcade = _oparcade;
+
+    emit UpdateOparcade(_oparcade);
   }
 
   /**
-   * @notice Update TokenRegistry contract address
-   * @dev onlyOwner
-   * @param _tokenRegistry TokenRegistry contract address
+   * @notice Update GameRegistry contract address
+   * @dev Only owner
+   * @param _gameRegistry TokenRegistry contract address
    */
-  function updateTokenRegistry(address _tokenRegistry) external onlyOwner {
-    tokenRegistry = _tokenRegistry;
+  function updateGameRegistry(address _gameRegistry) external onlyOwner {
+    gameRegistry = _gameRegistry;
+
+    emit UpdateGameRegistry(_gameRegistry);
   }
 
   /**
@@ -42,5 +55,7 @@ contract AddressRegistry is OwnableUpgradeable {
    */
   function updateMaintainer(address _maintainer) external onlyOwner {
     maintainer = _maintainer;
+
+    emit UpdateMaintainer(_maintainer);
   }
 }

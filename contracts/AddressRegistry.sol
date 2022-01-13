@@ -19,7 +19,7 @@ contract AddressRegistry is OwnableUpgradeable {
 
   /**
    * @notice Update Oparcade contract address
-   * @dev onlyOwner
+   * @dev Only owner
    * @param _oparcade Oparcade contract address
    */
   function updateOparcade(address _oparcade) external onlyOwner {
@@ -37,7 +37,7 @@ contract AddressRegistry is OwnableUpgradeable {
 
   /**
    * @notice Update maintainer address
-   * @dev onlyOwner
+   * @dev Only owner
    * @param _maintainer Maintainer address
    */
   function updateMaintainer(address _maintainer) external onlyOwner {

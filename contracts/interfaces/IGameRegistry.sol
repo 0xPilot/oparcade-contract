@@ -9,8 +9,9 @@ pragma solidity ^0.8.0;
 interface IGameRegistry {
   /**
    * @notice Provide the deposit amount of the token given
+   * @param _gid Game ID
    * @param _token Token address
    * @return uint256 Deposit amount
    */
-  function depositTokenAmount(address _token) external view returns (uint256);
+  function depositAmount(uint256 _gid, address _token) external view returns (uint256);
 }

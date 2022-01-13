@@ -10,7 +10,7 @@ import "./interfaces/IGameRegistry.sol";
 
 /**
  * @title Oparcade
- * @notice This manages the token deposit and claim from the users
+ * @notice This manages the token deposit and claim from/to the users
  * @author David Lee
  */
 contract Oparcade is ReentrancyGuardUpgradeable {
@@ -23,8 +23,8 @@ contract Oparcade is ReentrancyGuardUpgradeable {
   /// @dev AddressRegistry
   IAddressRegistry public addressRegistry;
 
-  /// @dev TokenRegistry
-  ITokenRegistry public tokenRegistry;
+  /// @dev GameRegisetry
+  IGameRegistry public gameRegistry;
 
   /// @dev Signature -> Bool
   mapping(bytes => bool) public signatures;
@@ -33,7 +33,7 @@ contract Oparcade is ReentrancyGuardUpgradeable {
     __ReentrancyGuard_init();
 
     addressRegistry = IAddressRegistry(_addressRegistry);
-    tokenRegistry = ITokenRegistry(addressRegistry.tokenRegistry());
+    gameRegistry = IGameRegistry(addressRegistry.tokenRegistry());
   }
 
   /**
@@ -44,15 +44,15 @@ contract Oparcade is ReentrancyGuardUpgradeable {
    */
   function deposit(uint256 _gid, address _token) external {
     // get token amount to deposit
-    uint256 depositTokenAmount = tokenRegistry.depositTokenAmount(_token);
+    uint256 depositAmount = gameRegistry.depositAmount(_gid, _token);
 
     // check if token address is valid
-    require(depositTokenAmount > 0, "Token is invalid");
+    require(depositAmount > 0, "Token is invalid");
 
     // transfer tokens
-    IERC20Upgradeable(_token).safeTransferFrom(msg.sender, address(this), depositTokenAmount);
+    IERC20Upgradeable(_token).safeTransferFrom(msg.sender, address(this), depositAmount);
 
-    emit Deposit(_gid, msg.sender, _token, depositTokenAmount);
+    emit Deposit(_gid, msg.sender, _token, depositAmount);
   }
 
   /**

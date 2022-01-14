@@ -9,10 +9,10 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
  * @author David Lee
  */
 contract GameRegistry is OwnableUpgradeable {
-  event AddGame(uint256 indexed gid, string gameName);
-  event RemoveGame(uint256 indexed gid, string gameName);
-  event UpdateDepositAmount(uint256 indexed gid, address indexed token, uint256 amount);
-  event UpdateClaimableAmount(uint256 indexed gid, address indexed token, bool isClaimable);
+  event GameAdded(address indexed by, uint256 indexed gid, string gameName);
+  event GameRemoved(address indexed by, uint256 indexed gid, string gameName);
+  event DepositAmountUpdated(address indexed by, uint256 indexed gid, address indexed token, uint256 oldAmount, uint256 newAmount);
+  event ClaimableAmountUpdated(address indexed by, uint256 indexed gid, address indexed token, bool oldStatus, bool newStatus);
 
   /// @dev Game name array
   string[] public games;
@@ -43,7 +43,7 @@ contract GameRegistry is OwnableUpgradeable {
     games.push(_gameName);
     gid = games.length - 1;
 
-    emit AddGame(gid, _gameName);
+    emit GameAdded(msg.sender, gid, _gameName);
   }
 
   /**
@@ -54,7 +54,7 @@ contract GameRegistry is OwnableUpgradeable {
     // remove game
     isDeprecatedGame[_gid] = true;
 
-    emit RemoveGame(_gid, games[_gid]);
+    emit GameRemoved(msg.sender, _gid, games[_gid]);
   }
 
   /**
@@ -70,9 +70,10 @@ contract GameRegistry is OwnableUpgradeable {
     address _token,
     uint256 _amount
   ) external onlyOwner onlyValidGID(_gid) {
+    uint256 oldAmount = depositAmount[_gid][_token];
     depositAmount[_gid][_token] = _amount;
 
-    emit UpdateDepositAmount(_gid, _token, _amount);
+    emit DepositAmountUpdated(msg.sender, _gid, _token, oldAmount, _amount);
   }
 
   /**
@@ -87,9 +88,10 @@ contract GameRegistry is OwnableUpgradeable {
     address _token,
     bool _isClaimable
   ) external onlyOwner onlyValidGID(_gid) {
+    bool oldStatus = claimable[_gid][_token];
     claimable[_gid][_token] = _isClaimable;
 
-    emit UpdateClaimableAmount(_gid, _token, _isClaimable);
+    emit ClaimableAmountUpdated(msg.sender, _gid, _token, oldStatus, _isClaimable);
   }
 
   /**

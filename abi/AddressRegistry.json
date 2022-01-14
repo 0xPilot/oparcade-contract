@@ -19,6 +19,58 @@
     "type": "event"
   },
   {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "gameRegistry",
+        "type": "address"
+      }
+    ],
+    "name": "GameRegistryUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "maintainer",
+        "type": "address"
+      }
+    ],
+    "name": "MaintainerUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "oparcade",
+        "type": "address"
+      }
+    ],
+    "name": "OparcadeUpdated",
+    "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "gameRegistry",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "initialize",
     "outputs": [],
@@ -72,19 +124,6 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "tokenRegistry",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
         "internalType": "address",
@@ -93,6 +132,19 @@
       }
     ],
     "name": "transferOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_gameRegistry",
+        "type": "address"
+      }
+    ],
+    "name": "GameRegistryUpdated",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -118,20 +170,7 @@
         "type": "address"
       }
     ],
-    "name": "updateOparcade",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_tokenRegistry",
-        "type": "address"
-      }
-    ],
-    "name": "updateTokenRegistry",
+    "name": "OparcadeUpdated",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

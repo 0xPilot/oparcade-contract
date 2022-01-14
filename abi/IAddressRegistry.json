@@ -1,6 +1,19 @@
 [
   {
     "inputs": [],
+    "name": "gameRegistry",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "maintainer",
     "outputs": [
       {
@@ -15,19 +28,6 @@
   {
     "inputs": [],
     "name": "oparcade",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "tokenRegistry",
     "outputs": [
       {
         "internalType": "address",

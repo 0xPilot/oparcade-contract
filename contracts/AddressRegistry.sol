@@ -9,9 +9,9 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
  * @author David Lee
  */
 contract AddressRegistry is OwnableUpgradeable {
-  event UpdateOparcade(address indexed oparcade);
-  event UpdateGameRegistry(address indexed gameRegistry);
-  event UpdateMaintainer(address indexed maintainer);
+  event OrarcadeUpdated(address indexed by, address indexed oldOparcade, address indexed newOparcade);
+  event GameRegistryUpdated(address indexed by, address indexed oldGameRegistry, address indexed newGameRegistry);
+  event MaintainerUpdated(address indexed by, address indexed oldMaintainer, address indexed newMaintainer);
 
   /// @dev Oparcade contract address, can be zero if not set
   address public oparcade;
@@ -32,9 +32,10 @@ contract AddressRegistry is OwnableUpgradeable {
    * @param _oparcade Oparcade contract address
    */
   function updateOparcade(address _oparcade) external onlyOwner {
+    address oldOparcade = oparcade;
     oparcade = _oparcade;
 
-    emit UpdateOparcade(_oparcade);
+    emit OrarcadeUpdated(msg.sender, oldOparcade, _oparcade);
   }
 
   /**
@@ -43,9 +44,10 @@ contract AddressRegistry is OwnableUpgradeable {
    * @param _gameRegistry TokenRegistry contract address
    */
   function updateGameRegistry(address _gameRegistry) external onlyOwner {
+    address oldGameRegistry = gameRegistry;
     gameRegistry = _gameRegistry;
 
-    emit UpdateGameRegistry(_gameRegistry);
+    emit GameRegistryUpdated(msg.sender, oldGameRegistry, _gameRegistry);
   }
 
   /**
@@ -54,8 +56,9 @@ contract AddressRegistry is OwnableUpgradeable {
    * @param _maintainer Maintainer address
    */
   function updateMaintainer(address _maintainer) external onlyOwner {
+    address oldMaintainer = maintainer;
     maintainer = _maintainer;
 
-    emit UpdateMaintainer(_maintainer);
+    emit MaintainerUpdated(msg.sender, oldMaintainer, _maintainer);
   }
 }

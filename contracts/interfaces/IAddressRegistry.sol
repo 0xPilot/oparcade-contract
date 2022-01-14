@@ -15,11 +15,11 @@ interface IAddressRegistry {
   function oparcade() external view returns (address);
 
   /**
-   * @notice Provide the TokenRegistry contract address
-   * @dev Can be zero in case of the TokenRegistry contract is not registered
-   * @return address TokenRegistry contract address
+   * @notice Provide the GameRegistry contract address
+   * @dev Can be zero in case of the GameRegistry contract is not registered
+   * @return address GameRegistry contract address
    */
-  function tokenRegistry() external view returns (address);
+  function gameRegistry() external view returns (address);
 
   /**
    * @notice Provide the maintainer address

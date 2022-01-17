@@ -11,8 +11,20 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 contract GameRegistry is OwnableUpgradeable {
   event GameAdded(address indexed by, uint256 indexed gid, string gameName);
   event GameRemoved(address indexed by, uint256 indexed gid, string gameName);
-  event DepositAmountUpdated(address indexed by, uint256 indexed gid, address indexed token, uint256 oldAmount, uint256 newAmount);
-  event ClaimableAmountUpdated(address indexed by, uint256 indexed gid, address indexed token, bool oldStatus, bool newStatus);
+  event DepositAmountUpdated(
+    address indexed by,
+    uint256 indexed gid,
+    address indexed token,
+    uint256 oldAmount,
+    uint256 newAmount
+  );
+  event ClaimableAmountUpdated(
+    address indexed by,
+    uint256 indexed gid,
+    address indexed token,
+    bool oldStatus,
+    bool newStatus
+  );
 
   /// @dev Game name array
   string[] public games;

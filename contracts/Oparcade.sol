@@ -21,6 +21,13 @@ contract Oparcade is OwnableUpgradeable, ReentrancyGuardUpgradeable, PausableUpg
 
   event Deposit(address indexed by, uint256 indexed gid, address indexed token, uint256 amount);
   event Claim(address indexed by, uint256 indexed gid, address indexed token, uint256 amount);
+  event PlatformFeeUpdated(
+    address indexed by,
+    address indexed oldFeeRecipient,
+    uint256 oldPlatformFee,
+    address indexed newFeeRecipient,
+    uint256 newPlatformFee
+  );
 
   /// @dev AddressRegistry
   IAddressRegistry public addressRegistry;
@@ -31,13 +38,33 @@ contract Oparcade is OwnableUpgradeable, ReentrancyGuardUpgradeable, PausableUpg
   /// @dev Signature -> Bool
   mapping(bytes => bool) public signatures;
 
-  function initialize(address _addressRegistry) public initializer {
+  /// @dev Platform fee
+  uint256 public platformFee;
+
+  /// @dev Platform fee recipient
+  address public feeRecipient;
+
+  function initialize(
+    address _addressRegistry,
+    address _feeRecipient,
+    uint256 _platformFee
+  ) public initializer {
     __Ownable_init();
     __ReentrancyGuard_init();
     __Pausable_init();
 
+    require(_addressRegistry != address(0), "Invalid AddressRegistry");
+    require(_feeRecipient != address(0) || _platformFee == 0, "fee recipient not set");
+
+    // initialize AddressRegistery
     addressRegistry = IAddressRegistry(_addressRegistry);
+
+    // initialize GameRegistery
     gameRegistry = IGameRegistry(addressRegistry.gameRegistry());
+
+    // initialize fee and recipient
+    feeRecipient = _feeRecipient;
+    platformFee = _platformFee;
   }
 
   /**
@@ -70,8 +97,8 @@ contract Oparcade is OwnableUpgradeable, ReentrancyGuardUpgradeable, PausableUpg
    * @param _signature Signature
    */
   function claim(
-    uint256 _gid,
     address _winner,
+    uint256 _gid,
     address _token,
     uint256 _amount,
     uint256 _nonce,
@@ -89,16 +116,39 @@ contract Oparcade is OwnableUpgradeable, ReentrancyGuardUpgradeable, PausableUpg
     bytes32 data = keccak256(abi.encodePacked(_gid, msg.sender, _token, _amount, _nonce));
     require(data.toEthSignedMessageHash().recover(_signature) == maintainer, "Wrong signer");
 
-    // transfer tokens to the winner
-    IERC20Upgradeable(_token).safeTransfer(msg.sender, _amount);
+    // calculate payment amount
+    uint256 feeAmount = _amount * (platformFee / 1000);
+    uint256 winnerAmount = _amount - feeAmount;
+
+    // transfer payment
+    IERC20Upgradeable(_token).safeTransfer(feeRecipient, feeAmount);
+    IERC20Upgradeable(_token).safeTransfer(msg.sender, winnerAmount);
 
     emit Claim(msg.sender, _gid, _token, _amount);
   }
 
   /**
+   * @notice Update platform fee
+   *
+   * @dev Only owner
+   * @dev Allow zero recipient address only of fee is also zero
+   *
+   * @param _platformFee platform fee
+   */
+  function updatePlatformFee(address _feeRecipient, uint256 _platformFee) external onlyOwner {
+    require(_feeRecipient != address(0) || _platformFee == 0, "fee recipient not set");
+    address oldFeeRecipient = feeRecipient;
+    uint256 oldPlatformFee = platformFee;
+    feeRecipient = _feeRecipient;
+    platformFee = _platformFee;
+
+    emit PlatformFeeUpdated(msg.sender, oldFeeRecipient, oldPlatformFee, _feeRecipient, _platformFee);
+  }
+
+  /**
    * @notice Pause Oparcade
    *
-   * @dev Only onwer
+   * @dev Only owner
    */
   function pause() external onlyOwner {
     _pause();
@@ -107,7 +157,7 @@ contract Oparcade is OwnableUpgradeable, ReentrancyGuardUpgradeable, PausableUpg
   /**
    * @notice Resume Oparcade
    *
-   * @dev Only onwer
+   * @dev Only owner
    */
   function unpause() external onlyOwner {
     _unpause();

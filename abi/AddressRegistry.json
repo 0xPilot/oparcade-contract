@@ -5,26 +5,19 @@
       {
         "indexed": true,
         "internalType": "address",
-        "name": "previousOwner",
+        "name": "by",
         "type": "address"
       },
       {
         "indexed": true,
         "internalType": "address",
-        "name": "newOwner",
+        "name": "oldGameRegistry",
         "type": "address"
-      }
-    ],
-    "name": "OwnershipTransferred",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
+      },
       {
         "indexed": true,
         "internalType": "address",
-        "name": "gameRegistry",
+        "name": "newGameRegistry",
         "type": "address"
       }
     ],
@@ -37,7 +30,19 @@
       {
         "indexed": true,
         "internalType": "address",
-        "name": "maintainer",
+        "name": "by",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "oldMaintainer",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "newMaintainer",
         "type": "address"
       }
     ],
@@ -50,11 +55,42 @@
       {
         "indexed": true,
         "internalType": "address",
-        "name": "oparcade",
+        "name": "by",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "oldOparcade",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "newOparcade",
         "type": "address"
       }
     ],
-    "name": "OparcadeUpdated",
+    "name": "OrarcadeUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "previousOwner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "OwnershipTransferred",
     "type": "event"
   },
   {
@@ -144,7 +180,7 @@
         "type": "address"
       }
     ],
-    "name": "GameRegistryUpdated",
+    "name": "updateGameRegistry",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -170,7 +206,7 @@
         "type": "address"
       }
     ],
-    "name": "OparcadeUpdated",
+    "name": "updateOparcade",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

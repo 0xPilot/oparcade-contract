@@ -5,8 +5,14 @@
       {
         "indexed": true,
         "internalType": "address",
-        "name": "winner",
+        "name": "by",
         "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "gid",
+        "type": "uint256"
       },
       {
         "indexed": true,
@@ -29,15 +35,15 @@
     "inputs": [
       {
         "indexed": true,
-        "internalType": "uint256",
-        "name": "gid",
-        "type": "uint256"
+        "internalType": "address",
+        "name": "by",
+        "type": "address"
       },
       {
         "indexed": true,
-        "internalType": "address",
-        "name": "user",
-        "type": "address"
+        "internalType": "uint256",
+        "name": "gid",
+        "type": "uint256"
       },
       {
         "indexed": true,
@@ -91,6 +97,43 @@
     "anonymous": false,
     "inputs": [
       {
+        "indexed": true,
+        "internalType": "address",
+        "name": "by",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "oldFeeRecipient",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "oldPlatformFee",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "newFeeRecipient",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "newPlatformFee",
+        "type": "uint256"
+      }
+    ],
+    "name": "PlatformFeeUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
         "indexed": false,
         "internalType": "address",
         "name": "account",
@@ -116,14 +159,14 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "_gid",
-        "type": "uint256"
-      },
-      {
         "internalType": "address",
         "name": "_winner",
         "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_gid",
+        "type": "uint256"
       },
       {
         "internalType": "address",
@@ -171,6 +214,19 @@
   },
   {
     "inputs": [],
+    "name": "feeRecipient",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "gameRegistry",
     "outputs": [
       {
@@ -188,6 +244,16 @@
         "internalType": "address",
         "name": "_addressRegistry",
         "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_feeRecipient",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_platformFee",
+        "type": "uint256"
       }
     ],
     "name": "initialize",
@@ -223,6 +289,19 @@
         "internalType": "bool",
         "name": "",
         "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "platformFee",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -270,6 +349,24 @@
   {
     "inputs": [],
     "name": "unpause",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_feeRecipient",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_platformFee",
+        "type": "uint256"
+      }
+    ],
+    "name": "updatePlatformFee",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

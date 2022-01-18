@@ -4,8 +4,6 @@ const { ethers, upgrades } = require("hardhat");
 describe("AddressRegistry", () => {
   let addressRegistry;
 
-  const MINT_AMOUNT = 100;
-
   before(async () => {
     [deployer, oparcade, gameRegistry, maintainer] = await ethers.getSigners();
 

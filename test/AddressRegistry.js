@@ -21,11 +21,11 @@ describe("AddressRegistry", () => {
 
   it("Should be able to update GameRegistry...", async () => {
     await addressRegistry.updateGameRegistry(gameRegistry.address);
-    expect(await addressRegistry.oparcade()).to.equal(gameRegistry.address);
+    expect(await addressRegistry.gameRegistry()).to.equal(gameRegistry.address);
   });
 
   it("Should be able to update Maintainer...", async () => {
     await addressRegistry.updateMaintainer(maintainer.address);
-    expect(await addressRegistry.oparcade()).to.equal(maintainer.address);
+    expect(await addressRegistry.maintainer()).to.equal(maintainer.address);
   });
 });

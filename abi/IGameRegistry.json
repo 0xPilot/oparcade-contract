@@ -36,7 +36,7 @@
         "type": "address"
       }
     ],
-    "name": "depositAmount",
+    "name": "depositTokenAmount",
     "outputs": [
       {
         "internalType": "uint256",

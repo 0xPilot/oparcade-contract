@@ -32,10 +32,9 @@ contract AddressRegistry is OwnableUpgradeable {
    * @param _oparcade Oparcade contract address
    */
   function updateOparcade(address _oparcade) external onlyOwner {
-    address oldOparcade = oparcade;
-    oparcade = _oparcade;
+    emit OrarcadeUpdated(msg.sender, oparcade, _oparcade);
 
-    emit OrarcadeUpdated(msg.sender, oldOparcade, _oparcade);
+    oparcade = _oparcade;
   }
 
   /**
@@ -44,10 +43,9 @@ contract AddressRegistry is OwnableUpgradeable {
    * @param _gameRegistry TokenRegistry contract address
    */
   function updateGameRegistry(address _gameRegistry) external onlyOwner {
-    address oldGameRegistry = gameRegistry;
-    gameRegistry = _gameRegistry;
+    emit GameRegistryUpdated(msg.sender, gameRegistry, _gameRegistry);
 
-    emit GameRegistryUpdated(msg.sender, oldGameRegistry, _gameRegistry);
+    gameRegistry = _gameRegistry;
   }
 
   /**
@@ -56,9 +54,8 @@ contract AddressRegistry is OwnableUpgradeable {
    * @param _maintainer Maintainer address
    */
   function updateMaintainer(address _maintainer) external onlyOwner {
-    address oldMaintainer = maintainer;
-    maintainer = _maintainer;
+    emit MaintainerUpdated(msg.sender, maintainer, _maintainer);
 
-    emit MaintainerUpdated(msg.sender, oldMaintainer, _maintainer);
+    maintainer = _maintainer;
   }
 }

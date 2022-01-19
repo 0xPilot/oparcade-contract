@@ -30,7 +30,7 @@ contract GameRegistry is OwnableUpgradeable {
   string[] public games;
 
   /// @dev Game ID -> Token address -> Deposit amount
-  mapping(uint256 => mapping(address => uint256)) public depositAmount;
+  mapping(uint256 => mapping(address => uint256)) public depositTokenAmount;
 
   /// @dev Game ID -> Token address -> Bool
   mapping(uint256 => mapping(address => bool)) public claimable;
@@ -77,33 +77,31 @@ contract GameRegistry is OwnableUpgradeable {
    * @param _token Token address to allow/disallow the deposit
    * @param _amount Token amount
    */
-  function updateDepositAmount(
+  function updateDepositTokenAmount(
     uint256 _gid,
     address _token,
     uint256 _amount
   ) external onlyOwner onlyValidGID(_gid) {
-    uint256 oldAmount = depositAmount[_gid][_token];
-    depositAmount[_gid][_token] = _amount;
+    emit DepositAmountUpdated(msg.sender, _gid, _token, depositTokenAmount[_gid][_token], _amount);
 
-    emit DepositAmountUpdated(msg.sender, _gid, _token, oldAmount, _amount);
+    depositTokenAmount[_gid][_token] = _amount;
   }
 
   /**
-   * @notice Update claimable token amount
+   * @notice Update claimable token address
    * @dev Only owner
    * @param _gid Game ID
    * @param _token Token address to allow/disallow the deposit
    * @param _isClaimable true: claimable false: not claimable
    */
-  function updateClaimableAmount(
+  function updateClaimableTokenAddress(
     uint256 _gid,
     address _token,
     bool _isClaimable
   ) external onlyOwner onlyValidGID(_gid) {
-    bool oldStatus = claimable[_gid][_token];
-    claimable[_gid][_token] = _isClaimable;
+    emit ClaimableAmountUpdated(msg.sender, _gid, _token, claimable[_gid][_token], _isClaimable);
 
-    emit ClaimableAmountUpdated(msg.sender, _gid, _token, oldStatus, _isClaimable);
+    claimable[_gid][_token] = _isClaimable;
   }
 
   /**

@@ -75,15 +75,15 @@ contract Oparcade is OwnableUpgradeable, ReentrancyGuardUpgradeable, PausableUpg
    */
   function deposit(uint256 _gid, address _token) external whenNotPaused {
     // get token amount to deposit
-    uint256 depositAmount = gameRegistry.depositAmount(_gid, _token);
+    uint256 depositTokenAmount = gameRegistry.depositTokenAmount(_gid, _token);
 
     // check if the token address is valid
-    require(depositAmount > 0, "Invalid deposit token");
+    require(depositTokenAmount > 0, "Invalid deposit token");
 
     // transfer tokens
-    IERC20Upgradeable(_token).safeTransferFrom(msg.sender, address(this), depositAmount);
+    IERC20Upgradeable(_token).safeTransferFrom(msg.sender, address(this), depositTokenAmount);
 
-    emit Deposit(msg.sender, _gid, _token, depositAmount);
+    emit Deposit(msg.sender, _gid, _token, depositTokenAmount);
   }
 
   /**
@@ -137,12 +137,11 @@ contract Oparcade is OwnableUpgradeable, ReentrancyGuardUpgradeable, PausableUpg
    */
   function updatePlatformFee(address _feeRecipient, uint256 _platformFee) external onlyOwner {
     require(_feeRecipient != address(0) || _platformFee == 0, "fee recipient not set");
-    address oldFeeRecipient = feeRecipient;
-    uint256 oldPlatformFee = platformFee;
+
+    emit PlatformFeeUpdated(msg.sender, feeRecipient, platformFee, _feeRecipient, _platformFee);
+
     feeRecipient = _feeRecipient;
     platformFee = _platformFee;
-
-    emit PlatformFeeUpdated(msg.sender, oldFeeRecipient, oldPlatformFee, _feeRecipient, _platformFee);
   }
 
   /**

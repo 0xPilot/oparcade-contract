@@ -13,7 +13,7 @@ interface IGameRegistry {
    * @param _token Token address
    * @return uint256 Deposit amount
    */
-  function depositAmount(uint256 _gid, address _token) external view returns (uint256);
+  function depositTokenAmount(uint256 _gid, address _token) external view returns (uint256);
 
   /**
    * @notice Provide the claimability of the token given

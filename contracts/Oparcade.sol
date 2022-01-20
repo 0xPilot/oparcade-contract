@@ -32,9 +32,6 @@ contract Oparcade is OwnableUpgradeable, ReentrancyGuardUpgradeable, PausableUpg
   /// @dev AddressRegistry
   IAddressRegistry public addressRegistry;
 
-  /// @dev GameRegisetry
-  IGameRegistry public gameRegistry;
-
   /// @dev Signature -> Bool
   mapping(bytes => bool) public signatures;
 
@@ -59,9 +56,6 @@ contract Oparcade is OwnableUpgradeable, ReentrancyGuardUpgradeable, PausableUpg
     // initialize AddressRegistery
     addressRegistry = IAddressRegistry(_addressRegistry);
 
-    // initialize GameRegistery
-    gameRegistry = IGameRegistry(addressRegistry.gameRegistry());
-
     // initialize fee and recipient
     feeRecipient = _feeRecipient;
     platformFee = _platformFee;
@@ -75,7 +69,7 @@ contract Oparcade is OwnableUpgradeable, ReentrancyGuardUpgradeable, PausableUpg
    */
   function deposit(uint256 _gid, address _token) external whenNotPaused {
     // get token amount to deposit
-    uint256 depositTokenAmount = gameRegistry.depositTokenAmount(_gid, _token);
+    uint256 depositTokenAmount = IGameRegistry(addressRegistry.gameRegistry()).depositTokenAmount(_gid, _token);
 
     // check if the token address is valid
     require(depositTokenAmount > 0, "Invalid deposit token");
@@ -97,15 +91,15 @@ contract Oparcade is OwnableUpgradeable, ReentrancyGuardUpgradeable, PausableUpg
    * @param _signature Signature
    */
   function claim(
-    address _winner,
     uint256 _gid,
+    address _winner,
     address _token,
     uint256 _amount,
     uint256 _nonce,
     bytes calldata _signature
   ) external nonReentrant whenNotPaused {
     // check if nonce is already used
-    require(!signatures[_signature], "Already used nonce");
+    require(!signatures[_signature], "Already used signature");
     signatures[_signature] = true;
 
     // check if msg.sender is the _winner
@@ -117,7 +111,7 @@ contract Oparcade is OwnableUpgradeable, ReentrancyGuardUpgradeable, PausableUpg
     require(data.toEthSignedMessageHash().recover(_signature) == maintainer, "Wrong signer");
 
     // calculate payment amount
-    uint256 feeAmount = _amount * (platformFee / 1000);
+    uint256 feeAmount = (_amount * platformFee) / 1000;
     uint256 winnerAmount = _amount - feeAmount;
 
     // transfer payment

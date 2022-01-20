@@ -159,14 +159,14 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "_winner",
-        "type": "address"
-      },
-      {
         "internalType": "uint256",
         "name": "_gid",
         "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_winner",
+        "type": "address"
       },
       {
         "internalType": "address",
@@ -226,19 +226,6 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "gameRegistry",
-    "outputs": [
-      {
-        "internalType": "contract IGameRegistry",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
         "internalType": "address",
@@ -251,9 +238,9 @@
         "type": "address"
       },
       {
-        "internalType": "uint256",
+        "internalType": "uint16",
         "name": "_platformFee",
-        "type": "uint256"
+        "type": "uint16"
       }
     ],
     "name": "initialize",
@@ -299,9 +286,9 @@
     "name": "platformFee",
     "outputs": [
       {
-        "internalType": "uint256",
+        "internalType": "uint16",
         "name": "",
-        "type": "uint256"
+        "type": "uint16"
       }
     ],
     "stateMutability": "view",
@@ -361,9 +348,9 @@
         "type": "address"
       },
       {
-        "internalType": "uint256",
+        "internalType": "uint16",
         "name": "_platformFee",
-        "type": "uint256"
+        "type": "uint16"
       }
     ],
     "name": "updatePlatformFee",

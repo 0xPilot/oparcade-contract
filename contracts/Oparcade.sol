@@ -39,7 +39,7 @@ contract Oparcade is OwnableUpgradeable, ReentrancyGuardUpgradeable, PausableUpg
   mapping(bytes => bool) public signatures;
 
   /// @dev Platform fee
-  uint256 public platformFee;
+  uint16 public platformFee;
 
   /// @dev Platform fee recipient
   address public feeRecipient;
@@ -47,7 +47,7 @@ contract Oparcade is OwnableUpgradeable, ReentrancyGuardUpgradeable, PausableUpg
   function initialize(
     address _addressRegistry,
     address _feeRecipient,
-    uint256 _platformFee
+    uint16 _platformFee
   ) public initializer {
     __Ownable_init();
     __ReentrancyGuard_init();
@@ -135,7 +135,7 @@ contract Oparcade is OwnableUpgradeable, ReentrancyGuardUpgradeable, PausableUpg
    *
    * @param _platformFee platform fee
    */
-  function updatePlatformFee(address _feeRecipient, uint256 _platformFee) external onlyOwner {
+  function updatePlatformFee(address _feeRecipient, uint16 _platformFee) external onlyOwner {
     require(_feeRecipient != address(0) || _platformFee == 0, "fee recipient not set");
 
     emit PlatformFeeUpdated(msg.sender, feeRecipient, platformFee, _feeRecipient, _platformFee);

@@ -17,13 +17,25 @@ describe("AddressRegistry", () => {
     expect(await addressRegistry.oparcade()).to.equal(oparcade.address);
   });
 
+  it("Should revert if new Oparcade address is address (0)...", async () => {
+    await expect(addressRegistry.updateOparcade(ethers.constants.AddressZero)).to.be.revertedWith("!Oparcade");
+  });
+
   it("Should be able to update GameRegistry...", async () => {
     await addressRegistry.updateGameRegistry(gameRegistry.address);
     expect(await addressRegistry.gameRegistry()).to.equal(gameRegistry.address);
   });
 
+  it("Should revert if new GameRegistry address is address (0)...", async () => {
+    await expect(addressRegistry.updateGameRegistry(ethers.constants.AddressZero)).to.be.revertedWith("!GameRegistry");
+  });
+
   it("Should be able to update Maintainer...", async () => {
     await addressRegistry.updateMaintainer(maintainer.address);
     expect(await addressRegistry.maintainer()).to.equal(maintainer.address);
+  });
+
+  it("Should revert if new Maintainer address is address (0)...", async () => {
+    await expect(addressRegistry.updateMaintainer(ethers.constants.AddressZero)).to.be.revertedWith("!Maintainer");
   });
 });

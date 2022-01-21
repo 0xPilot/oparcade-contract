@@ -32,6 +32,8 @@ contract AddressRegistry is OwnableUpgradeable {
    * @param _oparcade Oparcade contract address
    */
   function updateOparcade(address _oparcade) external onlyOwner {
+    require(_oparcade != address(0), "!Oparcade");
+
     emit OrarcadeUpdated(msg.sender, oparcade, _oparcade);
 
     oparcade = _oparcade;
@@ -43,6 +45,8 @@ contract AddressRegistry is OwnableUpgradeable {
    * @param _gameRegistry TokenRegistry contract address
    */
   function updateGameRegistry(address _gameRegistry) external onlyOwner {
+    require(_gameRegistry != address(0), "!GameRegistry");
+
     emit GameRegistryUpdated(msg.sender, gameRegistry, _gameRegistry);
 
     gameRegistry = _gameRegistry;
@@ -54,6 +58,8 @@ contract AddressRegistry is OwnableUpgradeable {
    * @param _maintainer Maintainer address
    */
   function updateMaintainer(address _maintainer) external onlyOwner {
+    require(_maintainer != address(0), "!Maintainer");
+
     emit MaintainerUpdated(msg.sender, maintainer, _maintainer);
 
     maintainer = _maintainer;

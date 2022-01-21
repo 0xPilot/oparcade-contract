@@ -51,7 +51,8 @@ contract Oparcade is OwnableUpgradeable, ReentrancyGuardUpgradeable, PausableUpg
     __Pausable_init();
 
     require(_addressRegistry != address(0), "Invalid AddressRegistry");
-    require(_feeRecipient != address(0) || _platformFee == 0, "fee recipient not set");
+    require(_feeRecipient != address(0) || _platformFee == 0, "Fee recipient not set");
+    require(_platformFee <= 1000, "Platform fee exceeded");
 
     // initialize AddressRegistery
     addressRegistry = IAddressRegistry(_addressRegistry);
@@ -110,6 +111,9 @@ contract Oparcade is OwnableUpgradeable, ReentrancyGuardUpgradeable, PausableUpg
     bytes32 data = keccak256(abi.encodePacked(_gid, msg.sender, _token, _amount, _nonce));
     require(data.toEthSignedMessageHash().recover(_signature) == maintainer, "Wrong signer");
 
+    // check if token is allowed to claim
+    require(IGameRegistry(addressRegistry.gameRegistry()).claimable(_gid, _token), "Disallowed claim token");
+
     // calculate payment amount
     uint256 feeAmount = (_amount * platformFee) / 1000;
     uint256 winnerAmount = _amount - feeAmount;
@@ -130,7 +134,8 @@ contract Oparcade is OwnableUpgradeable, ReentrancyGuardUpgradeable, PausableUpg
    * @param _platformFee platform fee
    */
   function updatePlatformFee(address _feeRecipient, uint16 _platformFee) external onlyOwner {
-    require(_feeRecipient != address(0) || _platformFee == 0, "fee recipient not set");
+    require(_feeRecipient != address(0) || _platformFee == 0, "Fee recipient not set");
+    require(_platformFee <= 1000, "Platform fee exceeded");
 
     emit PlatformFeeUpdated(msg.sender, feeRecipient, platformFee, _feeRecipient, _platformFee);
 

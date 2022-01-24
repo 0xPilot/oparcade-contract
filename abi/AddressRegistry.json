@@ -94,19 +94,6 @@
     "type": "event"
   },
   {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "c__0x49cf3f32",
-        "type": "bytes32"
-      }
-    ],
-    "name": "c_0x49cf3f32",
-    "outputs": [],
-    "stateMutability": "pure",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "gameRegistry",
     "outputs": [

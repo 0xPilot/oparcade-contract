@@ -14,3 +14,6 @@ bin
 #Coverage
 coverage
 coverage.json
+
+# openzeppelin dev files
+.openzeppelin/unknown-*.json

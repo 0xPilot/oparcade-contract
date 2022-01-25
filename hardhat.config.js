@@ -1,5 +1,3 @@
-const fs = require("fs");
-const path = require("path");
 require("@nomiclabs/hardhat-waffle");
 require("@nomiclabs/hardhat-etherscan");
 require("@nomiclabs/hardhat-ethers");
@@ -21,17 +19,17 @@ task("accounts", "Prints the list of accounts", async () => {
 });
 
 // REQUIRED TO ENSURE METADATA IS SAVED IN DEPLOYMENTS (because solidity-coverage disable it otherwise)
-const { TASK_COMPILE_GET_COMPILER_INPUT } = require("hardhat/builtin-tasks/task-names");
+const { TASK_COMPILE_GET_COMPILER_INPUT, TASK_COMPILE_SOLIDITY_COMPILE } = require("hardhat/builtin-tasks/task-names");
 task(TASK_COMPILE_GET_COMPILER_INPUT).setAction(async (_, bre, runSuper) => {
   const input = await runSuper();
   input.settings.metadata.useLiteralContent = bre.network.name !== "coverage";
   return input;
 });
 
-const infuraKey = process.env.INFURA_KEY || "";
+const alchemyKey = process.env.ALCHEMY_KEY || "";
 
 function nodeUrl(network) {
-  return `https://${network}.infura.io/v3/${infuraKey}`;
+  return `https://${network}.g.alchemy.com/v2/${alchemyKey}`;
 }
 
 let privateKey = process.env.PK || "";
@@ -60,15 +58,17 @@ module.exports = {
     local: {
       url: 'http://localhost:8545',
     },
-    polygon: {
+    mainnet: {
       url: nodeUrl("polygon-mainnet"),
       gasPrice: 40000000000,
-      timeout: 50000
+      timeout: 50000,
+      accounts: accounts
     },
     mumbai: {
       url: nodeUrl("polygon-mumbai"),
       gasPrice: 40000000000,
-      timeout: 50000
+      timeout: 50000,
+      accounts: accounts
     },
     coverage: {
       url: "http://127.0.0.1:8555",

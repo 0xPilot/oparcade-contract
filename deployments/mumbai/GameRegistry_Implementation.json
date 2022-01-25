@@ -1,0 +1,631 @@
+{
+  "address": "0x4207FF0356E46E68CbA01A6d2Ca60B5650904de3",
+  "abi": [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "by",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "gid",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "token",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "bool",
+          "name": "oldStatus",
+          "type": "bool"
+        },
+        {
+          "indexed": false,
+          "internalType": "bool",
+          "name": "newStatus",
+          "type": "bool"
+        }
+      ],
+      "name": "ClaimableAmountUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "by",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "gid",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "token",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "oldAmount",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "newAmount",
+          "type": "uint256"
+        }
+      ],
+      "name": "DepositAmountUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "by",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "gid",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "gameName",
+          "type": "string"
+        }
+      ],
+      "name": "GameAdded",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "by",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "gid",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "gameName",
+          "type": "string"
+        }
+      ],
+      "name": "GameRemoved",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "previousOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "_gameName",
+          "type": "string"
+        }
+      ],
+      "name": "addGame",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "gid",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "claimable",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "depositTokenAmount",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "gameLength",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "games",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "initialize",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "isDeprecatedGame",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_gid",
+          "type": "uint256"
+        }
+      ],
+      "name": "removeGame",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "renounceOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_gid",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "_token",
+          "type": "address"
+        },
+        {
+          "internalType": "bool",
+          "name": "_isClaimable",
+          "type": "bool"
+        }
+      ],
+      "name": "updateClaimableTokenAddress",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_gid",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "_token",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "updateDepositTokenAmount",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0x28f1f906418c72fd3ae2eb83e63cd55a076ad478db0af1653b64ea53812a6209",
+  "receipt": {
+    "to": null,
+    "from": "0x8f96BFc80BC3B7D881767253EDb7A76429B7EC6B",
+    "contractAddress": "0x4207FF0356E46E68CbA01A6d2Ca60B5650904de3",
+    "transactionIndex": 0,
+    "gasUsed": "929204",
+    "logsBloom": "0x00000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000800000000000000000000100000000004000000000000000000000000000000000000000000000000080000000000000000000000000000400000000000000000000000000000080000000000000000000200000000000000000000000000000000000000000000000000000000000004000000000000000000001000000000000000000000000000000100040000000000000000000000000000000000000000000000000020000000000000000100000",
+    "blockHash": "0x4afb971fdab350df4a5a3c7fc3606969281c2dfcb95be9e306afe3841ea5af35",
+    "transactionHash": "0x28f1f906418c72fd3ae2eb83e63cd55a076ad478db0af1653b64ea53812a6209",
+    "logs": [
+      {
+        "transactionIndex": 0,
+        "blockNumber": 24254677,
+        "transactionHash": "0x28f1f906418c72fd3ae2eb83e63cd55a076ad478db0af1653b64ea53812a6209",
+        "address": "0x0000000000000000000000000000000000001010",
+        "topics": [
+          "0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63",
+          "0x0000000000000000000000000000000000000000000000000000000000001010",
+          "0x0000000000000000000000008f96bfc80bc3b7d881767253edb7a76429b7ec6b",
+          "0x000000000000000000000000be188d6641e8b680743a4815dfa0f6208038960f"
+        ],
+        "data": "0x00000000000000000000000000000000000000000000000000840c3e9d4fd2600000000000000000000000000000000000000000000000001707504d269f60000000000000000000000000000000000000000000000005676ca9dfc46a2230340000000000000000000000000000000000000000000000001683440e894f8da00000000000000000000000000000000000000000000005676d2dec0307720294",
+        "logIndex": 0,
+        "blockHash": "0x4afb971fdab350df4a5a3c7fc3606969281c2dfcb95be9e306afe3841ea5af35"
+      }
+    ],
+    "blockNumber": 24254677,
+    "cumulativeGasUsed": "929204",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [],
+  "numDeployments": 1,
+  "solcInputHash": "8e7920041f2d701acbb999bb466e5efa",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.11+commit.d7f03943\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"by\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"gid\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"oldStatus\",\"type\":\"bool\"},{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"newStatus\",\"type\":\"bool\"}],\"name\":\"ClaimableAmountUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"by\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"gid\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"oldAmount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"newAmount\",\"type\":\"uint256\"}],\"name\":\"DepositAmountUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"by\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"gid\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"gameName\",\"type\":\"string\"}],\"name\":\"GameAdded\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"by\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"gid\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"gameName\",\"type\":\"string\"}],\"name\":\"GameRemoved\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"_gameName\",\"type\":\"string\"}],\"name\":\"addGame\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"gid\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"claimable\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"depositTokenAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"gameLength\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"games\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"initialize\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"isDeprecatedGame\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_gid\",\"type\":\"uint256\"}],\"name\":\"removeGame\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_gid\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"bool\",\"name\":\"_isClaimable\",\"type\":\"bool\"}],\"name\":\"updateClaimableTokenAddress\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_gid\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"updateDepositTokenAmount\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"author\":\"David Lee\",\"kind\":\"dev\",\"methods\":{\"addGame(string)\":{\"params\":{\"_gameName\":\"Game name to add\"}},\"owner()\":{\"details\":\"Returns the address of the current owner.\"},\"removeGame(uint256)\":{\"details\":\"Game is not removed from the games array, just set it deprecated\"},\"renounceOwnership()\":{\"details\":\"Leaves the contract without owner. It will not be possible to call `onlyOwner` functions anymore. Can only be called by the current owner. NOTE: Renouncing ownership will leave the contract without an owner, thereby removing any functionality that is only available to the owner.\"},\"transferOwnership(address)\":{\"details\":\"Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner.\"},\"updateClaimableTokenAddress(uint256,address,bool)\":{\"details\":\"Only owner\",\"params\":{\"_gid\":\"Game ID\",\"_isClaimable\":\"true: claimable false: not claimable\",\"_token\":\"Token address to allow/disallow the deposit\"}},\"updateDepositTokenAmount(uint256,address,uint256)\":{\"details\":\"Only ownerOnly tokens with an amount greater than zero is valid for the deposit\",\"params\":{\"_amount\":\"Token amount\",\"_gid\":\"Game ID\",\"_token\":\"Token address to allow/disallow the deposit\"}}},\"stateVariables\":{\"claimable\":{\"details\":\"Game ID -> Token address -> Bool\"},\"depositTokenAmount\":{\"details\":\"Game ID -> Token address -> Deposit amount\"},\"games\":{\"details\":\"Game name array\"},\"isDeprecatedGame\":{\"details\":\"Game ID -> Bool\"}},\"title\":\"GameRegistry\",\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"addGame(string)\":{\"notice\":\"Add new game\"},\"gameLength()\":{\"notice\":\"Returns the number of games added in games array\"},\"removeGame(uint256)\":{\"notice\":\"Remove game\"},\"updateClaimableTokenAddress(uint256,address,bool)\":{\"notice\":\"Update claimable token address\"},\"updateDepositTokenAmount(uint256,address,uint256)\":{\"notice\":\"Update deposit token amount\"}},\"notice\":\"This stores all games in the Oparcade\",\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/GameRegistry.sol\":\"GameRegistry\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":800},\"remappings\":[]},\"sources\":{\"@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n\\npragma solidity ^0.8.0;\\n\\nimport \\\"../utils/ContextUpgradeable.sol\\\";\\nimport \\\"../proxy/utils/Initializable.sol\\\";\\n\\n/**\\n * @dev Contract module which provides a basic access control mechanism, where\\n * there is an account (an owner) that can be granted exclusive access to\\n * specific functions.\\n *\\n * By default, the owner account will be the one that deploys the contract. This\\n * can later be changed with {transferOwnership}.\\n *\\n * This module is used through inheritance. It will make available the modifier\\n * `onlyOwner`, which can be applied to your functions to restrict their use to\\n * the owner.\\n */\\nabstract contract OwnableUpgradeable is Initializable, ContextUpgradeable {\\n    address private _owner;\\n\\n    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);\\n\\n    /**\\n     * @dev Initializes the contract setting the deployer as the initial owner.\\n     */\\n    function __Ownable_init() internal initializer {\\n        __Context_init_unchained();\\n        __Ownable_init_unchained();\\n    }\\n\\n    function __Ownable_init_unchained() internal initializer {\\n        _setOwner(_msgSender());\\n    }\\n\\n    /**\\n     * @dev Returns the address of the current owner.\\n     */\\n    function owner() public view virtual returns (address) {\\n        return _owner;\\n    }\\n\\n    /**\\n     * @dev Throws if called by any account other than the owner.\\n     */\\n    modifier onlyOwner() {\\n        require(owner() == _msgSender(), \\\"Ownable: caller is not the owner\\\");\\n        _;\\n    }\\n\\n    /**\\n     * @dev Leaves the contract without owner. It will not be possible to call\\n     * `onlyOwner` functions anymore. Can only be called by the current owner.\\n     *\\n     * NOTE: Renouncing ownership will leave the contract without an owner,\\n     * thereby removing any functionality that is only available to the owner.\\n     */\\n    function renounceOwnership() public virtual onlyOwner {\\n        _setOwner(address(0));\\n    }\\n\\n    /**\\n     * @dev Transfers ownership of the contract to a new account (`newOwner`).\\n     * Can only be called by the current owner.\\n     */\\n    function transferOwnership(address newOwner) public virtual onlyOwner {\\n        require(newOwner != address(0), \\\"Ownable: new owner is the zero address\\\");\\n        _setOwner(newOwner);\\n    }\\n\\n    function _setOwner(address newOwner) private {\\n        address oldOwner = _owner;\\n        _owner = newOwner;\\n        emit OwnershipTransferred(oldOwner, newOwner);\\n    }\\n    uint256[49] private __gap;\\n}\\n\",\"keccak256\":\"0x35b09b69aca3bc2633da8f47382a81ecf367efe57167a2114f60f9ec81988afa\",\"license\":\"MIT\"},\"@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n\\npragma solidity ^0.8.0;\\n\\n/**\\n * @dev This is a base contract to aid in writing upgradeable contracts, or any kind of contract that will be deployed\\n * behind a proxy. Since a proxied contract can't have a constructor, it's common to move constructor logic to an\\n * external initializer function, usually called `initialize`. It then becomes necessary to protect this initializer\\n * function so it can only be called once. The {initializer} modifier provided by this contract will have this effect.\\n *\\n * TIP: To avoid leaving the proxy in an uninitialized state, the initializer function should be called as early as\\n * possible by providing the encoded function call as the `_data` argument to {ERC1967Proxy-constructor}.\\n *\\n * CAUTION: When used with inheritance, manual care must be taken to not invoke a parent initializer twice, or to ensure\\n * that all initializers are idempotent. This is not verified automatically as constructors are by Solidity.\\n */\\nabstract contract Initializable {\\n    /**\\n     * @dev Indicates that the contract has been initialized.\\n     */\\n    bool private _initialized;\\n\\n    /**\\n     * @dev Indicates that the contract is in the process of being initialized.\\n     */\\n    bool private _initializing;\\n\\n    /**\\n     * @dev Modifier to protect an initializer function from being invoked twice.\\n     */\\n    modifier initializer() {\\n        require(_initializing || !_initialized, \\\"Initializable: contract is already initialized\\\");\\n\\n        bool isTopLevelCall = !_initializing;\\n        if (isTopLevelCall) {\\n            _initializing = true;\\n            _initialized = true;\\n        }\\n\\n        _;\\n\\n        if (isTopLevelCall) {\\n            _initializing = false;\\n        }\\n    }\\n}\\n\",\"keccak256\":\"0x8b2abd85d0ece7e866e100e9d47ca9cbec93c87cf71a8d267b2b93eb81f7d5e9\",\"license\":\"MIT\"},\"@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n\\npragma solidity ^0.8.0;\\nimport \\\"../proxy/utils/Initializable.sol\\\";\\n\\n/*\\n * @dev Provides information about the current execution context, including the\\n * sender of the transaction and its data. While these are generally available\\n * via msg.sender and msg.data, they should not be accessed in such a direct\\n * manner, since when dealing with meta-transactions the account sending and\\n * paying for execution may not be the actual sender (as far as an application\\n * is concerned).\\n *\\n * This contract is only required for intermediate, library-like contracts.\\n */\\nabstract contract ContextUpgradeable is Initializable {\\n    function __Context_init() internal initializer {\\n        __Context_init_unchained();\\n    }\\n\\n    function __Context_init_unchained() internal initializer {\\n    }\\n    function _msgSender() internal view virtual returns (address) {\\n        return msg.sender;\\n    }\\n\\n    function _msgData() internal view virtual returns (bytes calldata) {\\n        return msg.data;\\n    }\\n    uint256[50] private __gap;\\n}\\n\",\"keccak256\":\"0x828a6fb02c79a63dc5867427f355c0a9c65b4359fecadae73883154da550f6f8\",\"license\":\"MIT\"},\"contracts/GameRegistry.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.0;\\n\\nimport \\\"@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol\\\";\\n\\n/**\\n * @title GameRegistry\\n * @notice This stores all games in the Oparcade\\n * @author David Lee\\n */\\ncontract GameRegistry is OwnableUpgradeable {\\n  event GameAdded(address indexed by, uint256 indexed gid, string gameName);\\n  event GameRemoved(address indexed by, uint256 indexed gid, string gameName);\\n  event DepositAmountUpdated(\\n    address indexed by,\\n    uint256 indexed gid,\\n    address indexed token,\\n    uint256 oldAmount,\\n    uint256 newAmount\\n  );\\n  event ClaimableAmountUpdated(\\n    address indexed by,\\n    uint256 indexed gid,\\n    address indexed token,\\n    bool oldStatus,\\n    bool newStatus\\n  );\\n\\n  /// @dev Game name array\\n  string[] public games;\\n\\n  /// @dev Game ID -> Token address -> Deposit amount\\n  mapping(uint256 => mapping(address => uint256)) public depositTokenAmount;\\n\\n  /// @dev Game ID -> Token address -> Bool\\n  mapping(uint256 => mapping(address => bool)) public claimable;\\n\\n  /// @dev Game ID -> Bool\\n  mapping(uint256 => bool) public isDeprecatedGame;\\n\\n  modifier onlyValidGID(uint256 _gid) {\\n    require(_gid < games.length, \\\"Invalid game index\\\");\\n    _;\\n  }\\n\\n  function initialize() public initializer {\\n    __Ownable_init();\\n  }\\n\\n  /**\\n   * @notice Add new game\\n   * @param _gameName Game name to add\\n   */\\n  function addGame(string memory _gameName) external onlyOwner returns (uint256 gid) {\\n    games.push(_gameName);\\n    gid = games.length - 1;\\n\\n    emit GameAdded(msg.sender, gid, _gameName);\\n  }\\n\\n  /**\\n   * @notice Remove game\\n   * @dev Game is not removed from the games array, just set it deprecated\\n   */\\n  function removeGame(uint256 _gid) external onlyOwner onlyValidGID(_gid) {\\n    // remove game\\n    isDeprecatedGame[_gid] = true;\\n\\n    emit GameRemoved(msg.sender, _gid, games[_gid]);\\n  }\\n\\n  /**\\n   * @notice Update deposit token amount\\n   * @dev Only owner\\n   * @dev Only tokens with an amount greater than zero is valid for the deposit\\n   * @param _gid Game ID\\n   * @param _token Token address to allow/disallow the deposit\\n   * @param _amount Token amount\\n   */\\n  function updateDepositTokenAmount(\\n    uint256 _gid,\\n    address _token,\\n    uint256 _amount\\n  ) external onlyOwner onlyValidGID(_gid) {\\n    emit DepositAmountUpdated(msg.sender, _gid, _token, depositTokenAmount[_gid][_token], _amount);\\n\\n    depositTokenAmount[_gid][_token] = _amount;\\n  }\\n\\n  /**\\n   * @notice Update claimable token address\\n   * @dev Only owner\\n   * @param _gid Game ID\\n   * @param _token Token address to allow/disallow the deposit\\n   * @param _isClaimable true: claimable false: not claimable\\n   */\\n  function updateClaimableTokenAddress(\\n    uint256 _gid,\\n    address _token,\\n    bool _isClaimable\\n  ) external onlyOwner onlyValidGID(_gid) {\\n    emit ClaimableAmountUpdated(msg.sender, _gid, _token, claimable[_gid][_token], _isClaimable);\\n\\n    claimable[_gid][_token] = _isClaimable;\\n  }\\n\\n  /**\\n   * @notice Returns the number of games added in games array\\n   */\\n  function gameLength() external view returns (uint256) {\\n    return games.length;\\n  }\\n}\\n\",\"keccak256\":\"0x6fa7b6347611ce8b3ed76db14db292c9f218d300a1ca7600e96e69678da4e74d\",\"license\":\"MIT\"}},\"version\":1}",
+  "bytecode": "0x608060405234801561001057600080fd5b50610fdb806100206000396000f3fe608060405234801561001057600080fd5b50600436106100df5760003560e01c8063960c4bae1161008c578063cb8f76f311610066578063cb8f76f3146101d4578063e89826ac1461020d578063f2fde38b14610220578063fbde5b641461023357600080fd5b8063960c4bae146101805780639941683614610193578063a0c7f71c146101a657600080fd5b806373d31240116100bd57806373d312401461014a5780638129fc1c1461015d5780638da5cb5b1461016557600080fd5b8063117a5b90146100e4578063196f55e31461010d578063715018a614610140575b600080fd5b6100f76100f2366004610c6e565b61023b565b6040516101049190610c87565b60405180910390f35b61013061011b366004610c6e565b60686020526000908152604090205460ff1681565b6040519015158152602001610104565b6101486102e7565b005b610148610158366004610c6e565b610352565b61014861046b565b6033546040516001600160a01b039091168152602001610104565b61014861018e366004610cf8565b610526565b6101486101a1366004610d2d565b61064f565b6101306101b4366004610d72565b606760209081526000928352604080842090915290825290205460ff1681565b6101ff6101e2366004610d72565b606660209081526000928352604080842090915290825290205481565b604051908152602001610104565b6101ff61021b366004610db4565b610791565b61014861022e366004610e65565b61088a565b6065546101ff565b6065818154811061024b57600080fd5b90600052602060002001600091509050805461026690610e87565b80601f016020809104026020016040519081016040528092919081815260200182805461029290610e87565b80156102df5780601f106102b4576101008083540402835291602001916102df565b820191906000526020600020905b8154815290600101906020018083116102c257829003601f168201915b505050505081565b6033546001600160a01b031633146103465760405162461bcd60e51b815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e657260448201526064015b60405180910390fd5b6103506000610965565b565b6033546001600160a01b031633146103ac5760405162461bcd60e51b815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e6572604482015260640161033d565b606554819081106103f45760405162461bcd60e51b8152602060048201526012602482015271092dcecc2d8d2c840cec2daca40d2dcc8caf60731b604482015260640161033d565b6000828152606860205260409020805460ff1916600117905560658054839133917f837966baaecc6e58b3d134a7ce20bc3c197091a5939d0a8235cae1654f72225e91908490811061044857610448610ec2565b9060005260206000200160405161045f9190610ed8565b60405180910390a35050565b600054610100900460ff1680610484575060005460ff16155b6104e75760405162461bcd60e51b815260206004820152602e60248201527f496e697469616c697a61626c653a20636f6e747261637420697320616c72656160448201526d191e481a5b9a5d1a585b1a5e995960921b606482015260840161033d565b600054610100900460ff16158015610509576000805461ffff19166101011790555b6105116109cf565b8015610523576000805461ff00191690555b50565b6033546001600160a01b031633146105805760405162461bcd60e51b815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e6572604482015260640161033d565b606554839081106105c85760405162461bcd60e51b8152602060048201526012602482015271092dcecc2d8d2c840cec2daca40d2dcc8caf60731b604482015260640161033d565b60008481526066602090815260408083206001600160a01b03871680855290835292819020548151908152918201859052869133917f87269c5f456218e53116bd1ba1e0839ba5f2e67f9c6dd458ee7fbed5c437f304910160405180910390a45060009283526066602090815260408085206001600160a01b039094168552929052912055565b6033546001600160a01b031633146106a95760405162461bcd60e51b815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e6572604482015260640161033d565b606554839081106106f15760405162461bcd60e51b8152602060048201526012602482015271092dcecc2d8d2c840cec2daca40d2dcc8caf60731b604482015260640161033d565b60008481526067602090815260408083206001600160a01b0387168085529083529281902054815160ff9091161515815285151592810192909252869133917fb1a0e14ec9d5b81c6bb7cf5dbae5f5460cd385f3ae12f99016848ee3653001df910160405180910390a45060009283526067602090815260408085206001600160a01b039490941685529290529120805460ff1916911515919091179055565b6033546000906001600160a01b031633146107ee5760405162461bcd60e51b815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e6572604482015260640161033d565b606580546001810182556000919091528251610831917f8ff97419363ffd7000167f130ef7168fbea05faf9251824ca5043f113cc6a7c701906020850190610bd5565b5060655461084190600190610f80565b905080336001600160a01b03167f14bce4fa028cd268a3afa62e2735acc93c01d7753f45e6814e87336bf28f24b88460405161087d9190610c87565b60405180910390a3919050565b6033546001600160a01b031633146108e45760405162461bcd60e51b815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e6572604482015260640161033d565b6001600160a01b0381166109605760405162461bcd60e51b815260206004820152602660248201527f4f776e61626c653a206e6577206f776e657220697320746865207a65726f206160448201527f6464726573730000000000000000000000000000000000000000000000000000606482015260840161033d565b610523815b603380546001600160a01b038381167fffffffffffffffffffffffff0000000000000000000000000000000000000000831681179093556040519116919082907f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e090600090a35050565b600054610100900460ff16806109e8575060005460ff16155b610a4b5760405162461bcd60e51b815260206004820152602e60248201527f496e697469616c697a61626c653a20636f6e747261637420697320616c72656160448201526d191e481a5b9a5d1a585b1a5e995960921b606482015260840161033d565b600054610100900460ff16158015610a6d576000805461ffff19166101011790555b610a75610a7d565b610511610b2e565b600054610100900460ff1680610a96575060005460ff16155b610af95760405162461bcd60e51b815260206004820152602e60248201527f496e697469616c697a61626c653a20636f6e747261637420697320616c72656160448201526d191e481a5b9a5d1a585b1a5e995960921b606482015260840161033d565b600054610100900460ff16158015610511576000805461ffff19166101011790558015610523576000805461ff001916905550565b600054610100900460ff1680610b47575060005460ff16155b610baa5760405162461bcd60e51b815260206004820152602e60248201527f496e697469616c697a61626c653a20636f6e747261637420697320616c72656160448201526d191e481a5b9a5d1a585b1a5e995960921b606482015260840161033d565b600054610100900460ff16158015610bcc576000805461ffff19166101011790555b61051133610965565b828054610be190610e87565b90600052602060002090601f016020900481019282610c035760008555610c49565b82601f10610c1c57805160ff1916838001178555610c49565b82800160010185558215610c49579182015b82811115610c49578251825591602001919060010190610c2e565b50610c55929150610c59565b5090565b5b80821115610c555760008155600101610c5a565b600060208284031215610c8057600080fd5b5035919050565b600060208083528351808285015260005b81811015610cb457858101830151858201604001528201610c98565b81811115610cc6576000604083870101525b50601f01601f1916929092016040019392505050565b80356001600160a01b0381168114610cf357600080fd5b919050565b600080600060608486031215610d0d57600080fd5b83359250610d1d60208501610cdc565b9150604084013590509250925092565b600080600060608486031215610d4257600080fd5b83359250610d5260208501610cdc565b915060408401358015158114610d6757600080fd5b809150509250925092565b60008060408385031215610d8557600080fd5b82359150610d9560208401610cdc565b90509250929050565b634e487b7160e01b600052604160045260246000fd5b600060208284031215610dc657600080fd5b813567ffffffffffffffff80821115610dde57600080fd5b818401915084601f830112610df257600080fd5b813581811115610e0457610e04610d9e565b604051601f8201601f19908116603f01168101908382118183101715610e2c57610e2c610d9e565b81604052828152876020848701011115610e4557600080fd5b826020860160208301376000928101602001929092525095945050505050565b600060208284031215610e7757600080fd5b610e8082610cdc565b9392505050565b600181811c90821680610e9b57607f821691505b60208210811415610ebc57634e487b7160e01b600052602260045260246000fd5b50919050565b634e487b7160e01b600052603260045260246000fd5b600060208083526000845481600182811c915080831680610efa57607f831692505b858310811415610f1857634e487b7160e01b85526022600452602485fd5b878601838152602001818015610f355760018114610f4657610f71565b60ff19861682528782019650610f71565b60008b81526020902060005b86811015610f6b57815484820152908501908901610f52565b83019750505b50949998505050505050505050565b600082821015610fa057634e487b7160e01b600052601160045260246000fd5b50039056fea26469706673582212207127ce9593e3348211c139e00b28a8fba511df84aecb388d095997a605a98a1964736f6c634300080b0033",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100df5760003560e01c8063960c4bae1161008c578063cb8f76f311610066578063cb8f76f3146101d4578063e89826ac1461020d578063f2fde38b14610220578063fbde5b641461023357600080fd5b8063960c4bae146101805780639941683614610193578063a0c7f71c146101a657600080fd5b806373d31240116100bd57806373d312401461014a5780638129fc1c1461015d5780638da5cb5b1461016557600080fd5b8063117a5b90146100e4578063196f55e31461010d578063715018a614610140575b600080fd5b6100f76100f2366004610c6e565b61023b565b6040516101049190610c87565b60405180910390f35b61013061011b366004610c6e565b60686020526000908152604090205460ff1681565b6040519015158152602001610104565b6101486102e7565b005b610148610158366004610c6e565b610352565b61014861046b565b6033546040516001600160a01b039091168152602001610104565b61014861018e366004610cf8565b610526565b6101486101a1366004610d2d565b61064f565b6101306101b4366004610d72565b606760209081526000928352604080842090915290825290205460ff1681565b6101ff6101e2366004610d72565b606660209081526000928352604080842090915290825290205481565b604051908152602001610104565b6101ff61021b366004610db4565b610791565b61014861022e366004610e65565b61088a565b6065546101ff565b6065818154811061024b57600080fd5b90600052602060002001600091509050805461026690610e87565b80601f016020809104026020016040519081016040528092919081815260200182805461029290610e87565b80156102df5780601f106102b4576101008083540402835291602001916102df565b820191906000526020600020905b8154815290600101906020018083116102c257829003601f168201915b505050505081565b6033546001600160a01b031633146103465760405162461bcd60e51b815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e657260448201526064015b60405180910390fd5b6103506000610965565b565b6033546001600160a01b031633146103ac5760405162461bcd60e51b815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e6572604482015260640161033d565b606554819081106103f45760405162461bcd60e51b8152602060048201526012602482015271092dcecc2d8d2c840cec2daca40d2dcc8caf60731b604482015260640161033d565b6000828152606860205260409020805460ff1916600117905560658054839133917f837966baaecc6e58b3d134a7ce20bc3c197091a5939d0a8235cae1654f72225e91908490811061044857610448610ec2565b9060005260206000200160405161045f9190610ed8565b60405180910390a35050565b600054610100900460ff1680610484575060005460ff16155b6104e75760405162461bcd60e51b815260206004820152602e60248201527f496e697469616c697a61626c653a20636f6e747261637420697320616c72656160448201526d191e481a5b9a5d1a585b1a5e995960921b606482015260840161033d565b600054610100900460ff16158015610509576000805461ffff19166101011790555b6105116109cf565b8015610523576000805461ff00191690555b50565b6033546001600160a01b031633146105805760405162461bcd60e51b815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e6572604482015260640161033d565b606554839081106105c85760405162461bcd60e51b8152602060048201526012602482015271092dcecc2d8d2c840cec2daca40d2dcc8caf60731b604482015260640161033d565b60008481526066602090815260408083206001600160a01b03871680855290835292819020548151908152918201859052869133917f87269c5f456218e53116bd1ba1e0839ba5f2e67f9c6dd458ee7fbed5c437f304910160405180910390a45060009283526066602090815260408085206001600160a01b039094168552929052912055565b6033546001600160a01b031633146106a95760405162461bcd60e51b815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e6572604482015260640161033d565b606554839081106106f15760405162461bcd60e51b8152602060048201526012602482015271092dcecc2d8d2c840cec2daca40d2dcc8caf60731b604482015260640161033d565b60008481526067602090815260408083206001600160a01b0387168085529083529281902054815160ff9091161515815285151592810192909252869133917fb1a0e14ec9d5b81c6bb7cf5dbae5f5460cd385f3ae12f99016848ee3653001df910160405180910390a45060009283526067602090815260408085206001600160a01b039490941685529290529120805460ff1916911515919091179055565b6033546000906001600160a01b031633146107ee5760405162461bcd60e51b815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e6572604482015260640161033d565b606580546001810182556000919091528251610831917f8ff97419363ffd7000167f130ef7168fbea05faf9251824ca5043f113cc6a7c701906020850190610bd5565b5060655461084190600190610f80565b905080336001600160a01b03167f14bce4fa028cd268a3afa62e2735acc93c01d7753f45e6814e87336bf28f24b88460405161087d9190610c87565b60405180910390a3919050565b6033546001600160a01b031633146108e45760405162461bcd60e51b815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e6572604482015260640161033d565b6001600160a01b0381166109605760405162461bcd60e51b815260206004820152602660248201527f4f776e61626c653a206e6577206f776e657220697320746865207a65726f206160448201527f6464726573730000000000000000000000000000000000000000000000000000606482015260840161033d565b610523815b603380546001600160a01b038381167fffffffffffffffffffffffff0000000000000000000000000000000000000000831681179093556040519116919082907f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e090600090a35050565b600054610100900460ff16806109e8575060005460ff16155b610a4b5760405162461bcd60e51b815260206004820152602e60248201527f496e697469616c697a61626c653a20636f6e747261637420697320616c72656160448201526d191e481a5b9a5d1a585b1a5e995960921b606482015260840161033d565b600054610100900460ff16158015610a6d576000805461ffff19166101011790555b610a75610a7d565b610511610b2e565b600054610100900460ff1680610a96575060005460ff16155b610af95760405162461bcd60e51b815260206004820152602e60248201527f496e697469616c697a61626c653a20636f6e747261637420697320616c72656160448201526d191e481a5b9a5d1a585b1a5e995960921b606482015260840161033d565b600054610100900460ff16158015610511576000805461ffff19166101011790558015610523576000805461ff001916905550565b600054610100900460ff1680610b47575060005460ff16155b610baa5760405162461bcd60e51b815260206004820152602e60248201527f496e697469616c697a61626c653a20636f6e747261637420697320616c72656160448201526d191e481a5b9a5d1a585b1a5e995960921b606482015260840161033d565b600054610100900460ff16158015610bcc576000805461ffff19166101011790555b61051133610965565b828054610be190610e87565b90600052602060002090601f016020900481019282610c035760008555610c49565b82601f10610c1c57805160ff1916838001178555610c49565b82800160010185558215610c49579182015b82811115610c49578251825591602001919060010190610c2e565b50610c55929150610c59565b5090565b5b80821115610c555760008155600101610c5a565b600060208284031215610c8057600080fd5b5035919050565b600060208083528351808285015260005b81811015610cb457858101830151858201604001528201610c98565b81811115610cc6576000604083870101525b50601f01601f1916929092016040019392505050565b80356001600160a01b0381168114610cf357600080fd5b919050565b600080600060608486031215610d0d57600080fd5b83359250610d1d60208501610cdc565b9150604084013590509250925092565b600080600060608486031215610d4257600080fd5b83359250610d5260208501610cdc565b915060408401358015158114610d6757600080fd5b809150509250925092565b60008060408385031215610d8557600080fd5b82359150610d9560208401610cdc565b90509250929050565b634e487b7160e01b600052604160045260246000fd5b600060208284031215610dc657600080fd5b813567ffffffffffffffff80821115610dde57600080fd5b818401915084601f830112610df257600080fd5b813581811115610e0457610e04610d9e565b604051601f8201601f19908116603f01168101908382118183101715610e2c57610e2c610d9e565b81604052828152876020848701011115610e4557600080fd5b826020860160208301376000928101602001929092525095945050505050565b600060208284031215610e7757600080fd5b610e8082610cdc565b9392505050565b600181811c90821680610e9b57607f821691505b60208210811415610ebc57634e487b7160e01b600052602260045260246000fd5b50919050565b634e487b7160e01b600052603260045260246000fd5b600060208083526000845481600182811c915080831680610efa57607f831692505b858310811415610f1857634e487b7160e01b85526022600452602485fd5b878601838152602001818015610f355760018114610f4657610f71565b60ff19861682528782019650610f71565b60008b81526020902060005b86811015610f6b57815484820152908501908901610f52565b83019750505b50949998505050505050505050565b600082821015610fa057634e487b7160e01b600052601160045260246000fd5b50039056fea26469706673582212207127ce9593e3348211c139e00b28a8fba511df84aecb388d095997a605a98a1964736f6c634300080b0033",
+  "devdoc": {
+    "author": "David Lee",
+    "kind": "dev",
+    "methods": {
+      "addGame(string)": {
+        "params": {
+          "_gameName": "Game name to add"
+        }
+      },
+      "owner()": {
+        "details": "Returns the address of the current owner."
+      },
+      "removeGame(uint256)": {
+        "details": "Game is not removed from the games array, just set it deprecated"
+      },
+      "renounceOwnership()": {
+        "details": "Leaves the contract without owner. It will not be possible to call `onlyOwner` functions anymore. Can only be called by the current owner. NOTE: Renouncing ownership will leave the contract without an owner, thereby removing any functionality that is only available to the owner."
+      },
+      "transferOwnership(address)": {
+        "details": "Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner."
+      },
+      "updateClaimableTokenAddress(uint256,address,bool)": {
+        "details": "Only owner",
+        "params": {
+          "_gid": "Game ID",
+          "_isClaimable": "true: claimable false: not claimable",
+          "_token": "Token address to allow/disallow the deposit"
+        }
+      },
+      "updateDepositTokenAmount(uint256,address,uint256)": {
+        "details": "Only ownerOnly tokens with an amount greater than zero is valid for the deposit",
+        "params": {
+          "_amount": "Token amount",
+          "_gid": "Game ID",
+          "_token": "Token address to allow/disallow the deposit"
+        }
+      }
+    },
+    "stateVariables": {
+      "claimable": {
+        "details": "Game ID -> Token address -> Bool"
+      },
+      "depositTokenAmount": {
+        "details": "Game ID -> Token address -> Deposit amount"
+      },
+      "games": {
+        "details": "Game name array"
+      },
+      "isDeprecatedGame": {
+        "details": "Game ID -> Bool"
+      }
+    },
+    "title": "GameRegistry",
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {
+      "addGame(string)": {
+        "notice": "Add new game"
+      },
+      "gameLength()": {
+        "notice": "Returns the number of games added in games array"
+      },
+      "removeGame(uint256)": {
+        "notice": "Remove game"
+      },
+      "updateClaimableTokenAddress(uint256,address,bool)": {
+        "notice": "Update claimable token address"
+      },
+      "updateDepositTokenAmount(uint256,address,uint256)": {
+        "notice": "Update deposit token amount"
+      }
+    },
+    "notice": "This stores all games in the Oparcade",
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [
+      {
+        "astId": 130,
+        "contract": "contracts/GameRegistry.sol:GameRegistry",
+        "label": "_initialized",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_bool"
+      },
+      {
+        "astId": 133,
+        "contract": "contracts/GameRegistry.sol:GameRegistry",
+        "label": "_initializing",
+        "offset": 1,
+        "slot": "0",
+        "type": "t_bool"
+      },
+      {
+        "astId": 929,
+        "contract": "contracts/GameRegistry.sol:GameRegistry",
+        "label": "__gap",
+        "offset": 0,
+        "slot": "1",
+        "type": "t_array(t_uint256)50_storage"
+      },
+      {
+        "astId": 10,
+        "contract": "contracts/GameRegistry.sol:GameRegistry",
+        "label": "_owner",
+        "offset": 0,
+        "slot": "51",
+        "type": "t_address"
+      },
+      {
+        "astId": 123,
+        "contract": "contracts/GameRegistry.sol:GameRegistry",
+        "label": "__gap",
+        "offset": 0,
+        "slot": "52",
+        "type": "t_array(t_uint256)49_storage"
+      },
+      {
+        "astId": 1302,
+        "contract": "contracts/GameRegistry.sol:GameRegistry",
+        "label": "games",
+        "offset": 0,
+        "slot": "101",
+        "type": "t_array(t_string_storage)dyn_storage"
+      },
+      {
+        "astId": 1309,
+        "contract": "contracts/GameRegistry.sol:GameRegistry",
+        "label": "depositTokenAmount",
+        "offset": 0,
+        "slot": "102",
+        "type": "t_mapping(t_uint256,t_mapping(t_address,t_uint256))"
+      },
+      {
+        "astId": 1316,
+        "contract": "contracts/GameRegistry.sol:GameRegistry",
+        "label": "claimable",
+        "offset": 0,
+        "slot": "103",
+        "type": "t_mapping(t_uint256,t_mapping(t_address,t_bool))"
+      },
+      {
+        "astId": 1321,
+        "contract": "contracts/GameRegistry.sol:GameRegistry",
+        "label": "isDeprecatedGame",
+        "offset": 0,
+        "slot": "104",
+        "type": "t_mapping(t_uint256,t_bool)"
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      },
+      "t_array(t_string_storage)dyn_storage": {
+        "base": "t_string_storage",
+        "encoding": "dynamic_array",
+        "label": "string[]",
+        "numberOfBytes": "32"
+      },
+      "t_array(t_uint256)49_storage": {
+        "base": "t_uint256",
+        "encoding": "inplace",
+        "label": "uint256[49]",
+        "numberOfBytes": "1568"
+      },
+      "t_array(t_uint256)50_storage": {
+        "base": "t_uint256",
+        "encoding": "inplace",
+        "label": "uint256[50]",
+        "numberOfBytes": "1600"
+      },
+      "t_bool": {
+        "encoding": "inplace",
+        "label": "bool",
+        "numberOfBytes": "1"
+      },
+      "t_mapping(t_address,t_bool)": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => bool)",
+        "numberOfBytes": "32",
+        "value": "t_bool"
+      },
+      "t_mapping(t_address,t_uint256)": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => uint256)",
+        "numberOfBytes": "32",
+        "value": "t_uint256"
+      },
+      "t_mapping(t_uint256,t_bool)": {
+        "encoding": "mapping",
+        "key": "t_uint256",
+        "label": "mapping(uint256 => bool)",
+        "numberOfBytes": "32",
+        "value": "t_bool"
+      },
+      "t_mapping(t_uint256,t_mapping(t_address,t_bool))": {
+        "encoding": "mapping",
+        "key": "t_uint256",
+        "label": "mapping(uint256 => mapping(address => bool))",
+        "numberOfBytes": "32",
+        "value": "t_mapping(t_address,t_bool)"
+      },
+      "t_mapping(t_uint256,t_mapping(t_address,t_uint256))": {
+        "encoding": "mapping",
+        "key": "t_uint256",
+        "label": "mapping(uint256 => mapping(address => uint256))",
+        "numberOfBytes": "32",
+        "value": "t_mapping(t_address,t_uint256)"
+      },
+      "t_string_storage": {
+        "encoding": "bytes",
+        "label": "string",
+        "numberOfBytes": "32"
+      },
+      "t_uint256": {
+        "encoding": "inplace",
+        "label": "uint256",
+        "numberOfBytes": "32"
+      }
+    }
+  }
+}

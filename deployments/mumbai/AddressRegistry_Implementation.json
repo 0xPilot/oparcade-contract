@@ -1,0 +1,414 @@
+{
+  "address": "0x813eb302Ca3EcF6410658D6Ef5b4A0D164e7Bf49",
+  "abi": [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "by",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "oldGameRegistry",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newGameRegistry",
+          "type": "address"
+        }
+      ],
+      "name": "GameRegistryUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "by",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "oldMaintainer",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newMaintainer",
+          "type": "address"
+        }
+      ],
+      "name": "MaintainerUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "by",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "oldOparcade",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newOparcade",
+          "type": "address"
+        }
+      ],
+      "name": "OrarcadeUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "previousOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "gameRegistry",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "initialize",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "maintainer",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "oparcade",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "renounceOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_gameRegistry",
+          "type": "address"
+        }
+      ],
+      "name": "updateGameRegistry",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_maintainer",
+          "type": "address"
+        }
+      ],
+      "name": "updateMaintainer",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_oparcade",
+          "type": "address"
+        }
+      ],
+      "name": "updateOparcade",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0xd862c04e2bbf70b42f652cbf1ade227128d2454dccd535adebb33ef1f1914fee",
+  "receipt": {
+    "to": null,
+    "from": "0x8f96BFc80BC3B7D881767253EDb7A76429B7EC6B",
+    "contractAddress": "0x813eb302Ca3EcF6410658D6Ef5b4A0D164e7Bf49",
+    "transactionIndex": 0,
+    "gasUsed": "573954",
+    "logsBloom": "0x00000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000800000000000000000000100000000004000000000000000000000000000000000000000000000000080000000000000000000000000000400000000000000000000000000000080000000000000000000200000000000000000000000000000000000000000000000000000000000004000000000000000000001000000000000000000000000000000100040000000000000000000000000000000000000000000000000020000000000000000100000",
+    "blockHash": "0x33b7441c1a3854b28a9b977ad1e90b3f5d460f67a39f624856e325c48f9feed3",
+    "transactionHash": "0xd862c04e2bbf70b42f652cbf1ade227128d2454dccd535adebb33ef1f1914fee",
+    "logs": [
+      {
+        "transactionIndex": 0,
+        "blockNumber": 24254667,
+        "transactionHash": "0xd862c04e2bbf70b42f652cbf1ade227128d2454dccd535adebb33ef1f1914fee",
+        "address": "0x0000000000000000000000000000000000001010",
+        "topics": [
+          "0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63",
+          "0x0000000000000000000000000000000000000000000000000000000000001010",
+          "0x0000000000000000000000008f96bfc80bc3b7d881767253edb7a76429b7ec6b",
+          "0x000000000000000000000000be188d6641e8b680743a4815dfa0f6208038960f"
+        ],
+        "data": "0x000000000000000000000000000000000000000000000000005190532b390ff000000000000000000000000000000000000000000000000017ad200e62a6900000000000000000000000000000000000000000000000056769f13dd80c2433bc000000000000000000000000000000000000000000000000175b8fbb376d80100000000000000000000000000000000000000000000005676a42ce2b375d43ac",
+        "logIndex": 0,
+        "blockHash": "0x33b7441c1a3854b28a9b977ad1e90b3f5d460f67a39f624856e325c48f9feed3"
+      }
+    ],
+    "blockNumber": 24254667,
+    "cumulativeGasUsed": "573954",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [],
+  "numDeployments": 1,
+  "solcInputHash": "8e7920041f2d701acbb999bb466e5efa",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.11+commit.d7f03943\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"by\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"oldGameRegistry\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newGameRegistry\",\"type\":\"address\"}],\"name\":\"GameRegistryUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"by\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"oldMaintainer\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newMaintainer\",\"type\":\"address\"}],\"name\":\"MaintainerUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"by\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"oldOparcade\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOparcade\",\"type\":\"address\"}],\"name\":\"OrarcadeUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"gameRegistry\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"initialize\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"maintainer\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"oparcade\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_gameRegistry\",\"type\":\"address\"}],\"name\":\"updateGameRegistry\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_maintainer\",\"type\":\"address\"}],\"name\":\"updateMaintainer\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_oparcade\",\"type\":\"address\"}],\"name\":\"updateOparcade\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"author\":\"David Lee\",\"kind\":\"dev\",\"methods\":{\"owner()\":{\"details\":\"Returns the address of the current owner.\"},\"renounceOwnership()\":{\"details\":\"Leaves the contract without owner. It will not be possible to call `onlyOwner` functions anymore. Can only be called by the current owner. NOTE: Renouncing ownership will leave the contract without an owner, thereby removing any functionality that is only available to the owner.\"},\"transferOwnership(address)\":{\"details\":\"Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner.\"},\"updateGameRegistry(address)\":{\"details\":\"Only owner\",\"params\":{\"_gameRegistry\":\"TokenRegistry contract address\"}},\"updateMaintainer(address)\":{\"details\":\"Only owner\",\"params\":{\"_maintainer\":\"Maintainer address\"}},\"updateOparcade(address)\":{\"details\":\"Only owner\",\"params\":{\"_oparcade\":\"Oparcade contract address\"}}},\"stateVariables\":{\"gameRegistry\":{\"details\":\"GameRegistry contract address, can be zero if not set\"},\"maintainer\":{\"details\":\"Maintainer address, can be zero if not set\"},\"oparcade\":{\"details\":\"Oparcade contract address, can be zero if not set\"}},\"title\":\"AddressRegistry\",\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"updateGameRegistry(address)\":{\"notice\":\"Update GameRegistry contract address\"},\"updateMaintainer(address)\":{\"notice\":\"Update maintainer address\"},\"updateOparcade(address)\":{\"notice\":\"Update Oparcade contract address\"}},\"notice\":\"This stores all addresses in the Oparcade\",\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/AddressRegistry.sol\":\"AddressRegistry\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":800},\"remappings\":[]},\"sources\":{\"@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n\\npragma solidity ^0.8.0;\\n\\nimport \\\"../utils/ContextUpgradeable.sol\\\";\\nimport \\\"../proxy/utils/Initializable.sol\\\";\\n\\n/**\\n * @dev Contract module which provides a basic access control mechanism, where\\n * there is an account (an owner) that can be granted exclusive access to\\n * specific functions.\\n *\\n * By default, the owner account will be the one that deploys the contract. This\\n * can later be changed with {transferOwnership}.\\n *\\n * This module is used through inheritance. It will make available the modifier\\n * `onlyOwner`, which can be applied to your functions to restrict their use to\\n * the owner.\\n */\\nabstract contract OwnableUpgradeable is Initializable, ContextUpgradeable {\\n    address private _owner;\\n\\n    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);\\n\\n    /**\\n     * @dev Initializes the contract setting the deployer as the initial owner.\\n     */\\n    function __Ownable_init() internal initializer {\\n        __Context_init_unchained();\\n        __Ownable_init_unchained();\\n    }\\n\\n    function __Ownable_init_unchained() internal initializer {\\n        _setOwner(_msgSender());\\n    }\\n\\n    /**\\n     * @dev Returns the address of the current owner.\\n     */\\n    function owner() public view virtual returns (address) {\\n        return _owner;\\n    }\\n\\n    /**\\n     * @dev Throws if called by any account other than the owner.\\n     */\\n    modifier onlyOwner() {\\n        require(owner() == _msgSender(), \\\"Ownable: caller is not the owner\\\");\\n        _;\\n    }\\n\\n    /**\\n     * @dev Leaves the contract without owner. It will not be possible to call\\n     * `onlyOwner` functions anymore. Can only be called by the current owner.\\n     *\\n     * NOTE: Renouncing ownership will leave the contract without an owner,\\n     * thereby removing any functionality that is only available to the owner.\\n     */\\n    function renounceOwnership() public virtual onlyOwner {\\n        _setOwner(address(0));\\n    }\\n\\n    /**\\n     * @dev Transfers ownership of the contract to a new account (`newOwner`).\\n     * Can only be called by the current owner.\\n     */\\n    function transferOwnership(address newOwner) public virtual onlyOwner {\\n        require(newOwner != address(0), \\\"Ownable: new owner is the zero address\\\");\\n        _setOwner(newOwner);\\n    }\\n\\n    function _setOwner(address newOwner) private {\\n        address oldOwner = _owner;\\n        _owner = newOwner;\\n        emit OwnershipTransferred(oldOwner, newOwner);\\n    }\\n    uint256[49] private __gap;\\n}\\n\",\"keccak256\":\"0x35b09b69aca3bc2633da8f47382a81ecf367efe57167a2114f60f9ec81988afa\",\"license\":\"MIT\"},\"@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n\\npragma solidity ^0.8.0;\\n\\n/**\\n * @dev This is a base contract to aid in writing upgradeable contracts, or any kind of contract that will be deployed\\n * behind a proxy. Since a proxied contract can't have a constructor, it's common to move constructor logic to an\\n * external initializer function, usually called `initialize`. It then becomes necessary to protect this initializer\\n * function so it can only be called once. The {initializer} modifier provided by this contract will have this effect.\\n *\\n * TIP: To avoid leaving the proxy in an uninitialized state, the initializer function should be called as early as\\n * possible by providing the encoded function call as the `_data` argument to {ERC1967Proxy-constructor}.\\n *\\n * CAUTION: When used with inheritance, manual care must be taken to not invoke a parent initializer twice, or to ensure\\n * that all initializers are idempotent. This is not verified automatically as constructors are by Solidity.\\n */\\nabstract contract Initializable {\\n    /**\\n     * @dev Indicates that the contract has been initialized.\\n     */\\n    bool private _initialized;\\n\\n    /**\\n     * @dev Indicates that the contract is in the process of being initialized.\\n     */\\n    bool private _initializing;\\n\\n    /**\\n     * @dev Modifier to protect an initializer function from being invoked twice.\\n     */\\n    modifier initializer() {\\n        require(_initializing || !_initialized, \\\"Initializable: contract is already initialized\\\");\\n\\n        bool isTopLevelCall = !_initializing;\\n        if (isTopLevelCall) {\\n            _initializing = true;\\n            _initialized = true;\\n        }\\n\\n        _;\\n\\n        if (isTopLevelCall) {\\n            _initializing = false;\\n        }\\n    }\\n}\\n\",\"keccak256\":\"0x8b2abd85d0ece7e866e100e9d47ca9cbec93c87cf71a8d267b2b93eb81f7d5e9\",\"license\":\"MIT\"},\"@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n\\npragma solidity ^0.8.0;\\nimport \\\"../proxy/utils/Initializable.sol\\\";\\n\\n/*\\n * @dev Provides information about the current execution context, including the\\n * sender of the transaction and its data. While these are generally available\\n * via msg.sender and msg.data, they should not be accessed in such a direct\\n * manner, since when dealing with meta-transactions the account sending and\\n * paying for execution may not be the actual sender (as far as an application\\n * is concerned).\\n *\\n * This contract is only required for intermediate, library-like contracts.\\n */\\nabstract contract ContextUpgradeable is Initializable {\\n    function __Context_init() internal initializer {\\n        __Context_init_unchained();\\n    }\\n\\n    function __Context_init_unchained() internal initializer {\\n    }\\n    function _msgSender() internal view virtual returns (address) {\\n        return msg.sender;\\n    }\\n\\n    function _msgData() internal view virtual returns (bytes calldata) {\\n        return msg.data;\\n    }\\n    uint256[50] private __gap;\\n}\\n\",\"keccak256\":\"0x828a6fb02c79a63dc5867427f355c0a9c65b4359fecadae73883154da550f6f8\",\"license\":\"MIT\"},\"contracts/AddressRegistry.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.0;\\n\\nimport \\\"@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol\\\";\\n\\n/**\\n * @title AddressRegistry\\n * @notice This stores all addresses in the Oparcade\\n * @author David Lee\\n */\\ncontract AddressRegistry is OwnableUpgradeable {\\n  event OrarcadeUpdated(address indexed by, address indexed oldOparcade, address indexed newOparcade);\\n  event GameRegistryUpdated(address indexed by, address indexed oldGameRegistry, address indexed newGameRegistry);\\n  event MaintainerUpdated(address indexed by, address indexed oldMaintainer, address indexed newMaintainer);\\n\\n  /// @dev Oparcade contract address, can be zero if not set\\n  address public oparcade;\\n\\n  /// @dev GameRegistry contract address, can be zero if not set\\n  address public gameRegistry;\\n\\n  /// @dev Maintainer address, can be zero if not set\\n  address public maintainer;\\n\\n  function initialize() public initializer {\\n    __Ownable_init();\\n  }\\n\\n  /**\\n   * @notice Update Oparcade contract address\\n   * @dev Only owner\\n   * @param _oparcade Oparcade contract address\\n   */\\n  function updateOparcade(address _oparcade) external onlyOwner {\\n    require(_oparcade != address(0), \\\"!Oparcade\\\");\\n\\n    emit OrarcadeUpdated(msg.sender, oparcade, _oparcade);\\n\\n    oparcade = _oparcade;\\n  }\\n\\n  /**\\n   * @notice Update GameRegistry contract address\\n   * @dev Only owner\\n   * @param _gameRegistry TokenRegistry contract address\\n   */\\n  function updateGameRegistry(address _gameRegistry) external onlyOwner {\\n    require(_gameRegistry != address(0), \\\"!GameRegistry\\\");\\n\\n    emit GameRegistryUpdated(msg.sender, gameRegistry, _gameRegistry);\\n\\n    gameRegistry = _gameRegistry;\\n  }\\n\\n  /**\\n   * @notice Update maintainer address\\n   * @dev Only owner\\n   * @param _maintainer Maintainer address\\n   */\\n  function updateMaintainer(address _maintainer) external onlyOwner {\\n    require(_maintainer != address(0), \\\"!Maintainer\\\");\\n\\n    emit MaintainerUpdated(msg.sender, maintainer, _maintainer);\\n\\n    maintainer = _maintainer;\\n  }\\n}\\n\",\"keccak256\":\"0x5534e6450b6090b48a3ec72a19f30b8d51b3d683abce3af17358364aa5f38872\",\"license\":\"MIT\"}},\"version\":1}",
+  "bytecode": "0x608060405234801561001057600080fd5b50610970806100206000396000f3fe608060405234801561001057600080fd5b50600436106100be5760003560e01c80639850d32b11610076578063d81620251161005b578063d81620251461014e578063da09075514610161578063f2fde38b1461017457600080fd5b80639850d32b14610128578063c6e628e31461013b57600080fd5b80638129fc1c116100a75780638129fc1c146100e05780638d374f25146100e85780638da5cb5b1461011757600080fd5b8063205f9b5d146100c3578063715018a6146100d8575b600080fd5b6100d66100d136600461090a565b610187565b005b6100d661029a565b6100d6610300565b6065546100fb906001600160a01b031681565b6040516001600160a01b03909116815260200160405180910390f35b6033546001600160a01b03166100fb565b6067546100fb906001600160a01b031681565b6100d661014936600461090a565b6103bb565b6100d661015c36600461090a565b6104c9565b6066546100fb906001600160a01b031681565b6100d661018236600461090a565b6105d7565b6033546001600160a01b031633146101e65760405162461bcd60e51b815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e657260448201526064015b60405180910390fd5b6001600160a01b03811661023c5760405162461bcd60e51b815260206004820152600960248201527f214f70617263616465000000000000000000000000000000000000000000000060448201526064016101dd565b6065546040516001600160a01b0380841692169033907f81a62b4ec6b8e27999c1a6c79e7116706d779c2eddbb9b7c06fc1ce4ed10472e90600090a4606580546001600160a01b0319166001600160a01b0392909216919091179055565b6033546001600160a01b031633146102f45760405162461bcd60e51b815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e657260448201526064016101dd565b6102fe60006106b2565b565b600054610100900460ff1680610319575060005460ff16155b61037c5760405162461bcd60e51b815260206004820152602e60248201527f496e697469616c697a61626c653a20636f6e747261637420697320616c72656160448201526d191e481a5b9a5d1a585b1a5e995960921b60648201526084016101dd565b600054610100900460ff1615801561039e576000805461ffff19166101011790555b6103a6610704565b80156103b8576000805461ff00191690555b50565b6033546001600160a01b031633146104155760405162461bcd60e51b815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e657260448201526064016101dd565b6001600160a01b03811661046b5760405162461bcd60e51b815260206004820152600b60248201527f214d61696e7461696e657200000000000000000000000000000000000000000060448201526064016101dd565b6067546040516001600160a01b0380841692169033907f83a400e9e74352cc8b22e130d79f34e3aa90d5e07e725d765d6d3fcacce9dbd390600090a4606780546001600160a01b0319166001600160a01b0392909216919091179055565b6033546001600160a01b031633146105235760405162461bcd60e51b815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e657260448201526064016101dd565b6001600160a01b0381166105795760405162461bcd60e51b815260206004820152600d60248201527f2147616d6552656769737472790000000000000000000000000000000000000060448201526064016101dd565b6066546040516001600160a01b0380841692169033907f4fd12bc0e83e1662ef316ba8864c9246b55e6fe5a1027c12125b905920302c8790600090a4606680546001600160a01b0319166001600160a01b0392909216919091179055565b6033546001600160a01b031633146106315760405162461bcd60e51b815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e657260448201526064016101dd565b6001600160a01b0381166106ad5760405162461bcd60e51b815260206004820152602660248201527f4f776e61626c653a206e6577206f776e657220697320746865207a65726f206160448201527f646472657373000000000000000000000000000000000000000000000000000060648201526084016101dd565b6103b8815b603380546001600160a01b038381166001600160a01b0319831681179093556040519116919082907f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e090600090a35050565b600054610100900460ff168061071d575060005460ff16155b6107805760405162461bcd60e51b815260206004820152602e60248201527f496e697469616c697a61626c653a20636f6e747261637420697320616c72656160448201526d191e481a5b9a5d1a585b1a5e995960921b60648201526084016101dd565b600054610100900460ff161580156107a2576000805461ffff19166101011790555b6107aa6107b2565b6103a6610863565b600054610100900460ff16806107cb575060005460ff16155b61082e5760405162461bcd60e51b815260206004820152602e60248201527f496e697469616c697a61626c653a20636f6e747261637420697320616c72656160448201526d191e481a5b9a5d1a585b1a5e995960921b60648201526084016101dd565b600054610100900460ff161580156103a6576000805461ffff191661010117905580156103b8576000805461ff001916905550565b600054610100900460ff168061087c575060005460ff16155b6108df5760405162461bcd60e51b815260206004820152602e60248201527f496e697469616c697a61626c653a20636f6e747261637420697320616c72656160448201526d191e481a5b9a5d1a585b1a5e995960921b60648201526084016101dd565b600054610100900460ff16158015610901576000805461ffff19166101011790555b6103a6336106b2565b60006020828403121561091c57600080fd5b81356001600160a01b038116811461093357600080fd5b939250505056fea2646970667358221220b12f601a422262b86b8964b00dee573be927a260f4a10787c4e2d007e4af172464736f6c634300080b0033",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100be5760003560e01c80639850d32b11610076578063d81620251161005b578063d81620251461014e578063da09075514610161578063f2fde38b1461017457600080fd5b80639850d32b14610128578063c6e628e31461013b57600080fd5b80638129fc1c116100a75780638129fc1c146100e05780638d374f25146100e85780638da5cb5b1461011757600080fd5b8063205f9b5d146100c3578063715018a6146100d8575b600080fd5b6100d66100d136600461090a565b610187565b005b6100d661029a565b6100d6610300565b6065546100fb906001600160a01b031681565b6040516001600160a01b03909116815260200160405180910390f35b6033546001600160a01b03166100fb565b6067546100fb906001600160a01b031681565b6100d661014936600461090a565b6103bb565b6100d661015c36600461090a565b6104c9565b6066546100fb906001600160a01b031681565b6100d661018236600461090a565b6105d7565b6033546001600160a01b031633146101e65760405162461bcd60e51b815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e657260448201526064015b60405180910390fd5b6001600160a01b03811661023c5760405162461bcd60e51b815260206004820152600960248201527f214f70617263616465000000000000000000000000000000000000000000000060448201526064016101dd565b6065546040516001600160a01b0380841692169033907f81a62b4ec6b8e27999c1a6c79e7116706d779c2eddbb9b7c06fc1ce4ed10472e90600090a4606580546001600160a01b0319166001600160a01b0392909216919091179055565b6033546001600160a01b031633146102f45760405162461bcd60e51b815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e657260448201526064016101dd565b6102fe60006106b2565b565b600054610100900460ff1680610319575060005460ff16155b61037c5760405162461bcd60e51b815260206004820152602e60248201527f496e697469616c697a61626c653a20636f6e747261637420697320616c72656160448201526d191e481a5b9a5d1a585b1a5e995960921b60648201526084016101dd565b600054610100900460ff1615801561039e576000805461ffff19166101011790555b6103a6610704565b80156103b8576000805461ff00191690555b50565b6033546001600160a01b031633146104155760405162461bcd60e51b815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e657260448201526064016101dd565b6001600160a01b03811661046b5760405162461bcd60e51b815260206004820152600b60248201527f214d61696e7461696e657200000000000000000000000000000000000000000060448201526064016101dd565b6067546040516001600160a01b0380841692169033907f83a400e9e74352cc8b22e130d79f34e3aa90d5e07e725d765d6d3fcacce9dbd390600090a4606780546001600160a01b0319166001600160a01b0392909216919091179055565b6033546001600160a01b031633146105235760405162461bcd60e51b815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e657260448201526064016101dd565b6001600160a01b0381166105795760405162461bcd60e51b815260206004820152600d60248201527f2147616d6552656769737472790000000000000000000000000000000000000060448201526064016101dd565b6066546040516001600160a01b0380841692169033907f4fd12bc0e83e1662ef316ba8864c9246b55e6fe5a1027c12125b905920302c8790600090a4606680546001600160a01b0319166001600160a01b0392909216919091179055565b6033546001600160a01b031633146106315760405162461bcd60e51b815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e657260448201526064016101dd565b6001600160a01b0381166106ad5760405162461bcd60e51b815260206004820152602660248201527f4f776e61626c653a206e6577206f776e657220697320746865207a65726f206160448201527f646472657373000000000000000000000000000000000000000000000000000060648201526084016101dd565b6103b8815b603380546001600160a01b038381166001600160a01b0319831681179093556040519116919082907f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e090600090a35050565b600054610100900460ff168061071d575060005460ff16155b6107805760405162461bcd60e51b815260206004820152602e60248201527f496e697469616c697a61626c653a20636f6e747261637420697320616c72656160448201526d191e481a5b9a5d1a585b1a5e995960921b60648201526084016101dd565b600054610100900460ff161580156107a2576000805461ffff19166101011790555b6107aa6107b2565b6103a6610863565b600054610100900460ff16806107cb575060005460ff16155b61082e5760405162461bcd60e51b815260206004820152602e60248201527f496e697469616c697a61626c653a20636f6e747261637420697320616c72656160448201526d191e481a5b9a5d1a585b1a5e995960921b60648201526084016101dd565b600054610100900460ff161580156103a6576000805461ffff191661010117905580156103b8576000805461ff001916905550565b600054610100900460ff168061087c575060005460ff16155b6108df5760405162461bcd60e51b815260206004820152602e60248201527f496e697469616c697a61626c653a20636f6e747261637420697320616c72656160448201526d191e481a5b9a5d1a585b1a5e995960921b60648201526084016101dd565b600054610100900460ff16158015610901576000805461ffff19166101011790555b6103a6336106b2565b60006020828403121561091c57600080fd5b81356001600160a01b038116811461093357600080fd5b939250505056fea2646970667358221220b12f601a422262b86b8964b00dee573be927a260f4a10787c4e2d007e4af172464736f6c634300080b0033",
+  "devdoc": {
+    "author": "David Lee",
+    "kind": "dev",
+    "methods": {
+      "owner()": {
+        "details": "Returns the address of the current owner."
+      },
+      "renounceOwnership()": {
+        "details": "Leaves the contract without owner. It will not be possible to call `onlyOwner` functions anymore. Can only be called by the current owner. NOTE: Renouncing ownership will leave the contract without an owner, thereby removing any functionality that is only available to the owner."
+      },
+      "transferOwnership(address)": {
+        "details": "Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner."
+      },
+      "updateGameRegistry(address)": {
+        "details": "Only owner",
+        "params": {
+          "_gameRegistry": "TokenRegistry contract address"
+        }
+      },
+      "updateMaintainer(address)": {
+        "details": "Only owner",
+        "params": {
+          "_maintainer": "Maintainer address"
+        }
+      },
+      "updateOparcade(address)": {
+        "details": "Only owner",
+        "params": {
+          "_oparcade": "Oparcade contract address"
+        }
+      }
+    },
+    "stateVariables": {
+      "gameRegistry": {
+        "details": "GameRegistry contract address, can be zero if not set"
+      },
+      "maintainer": {
+        "details": "Maintainer address, can be zero if not set"
+      },
+      "oparcade": {
+        "details": "Oparcade contract address, can be zero if not set"
+      }
+    },
+    "title": "AddressRegistry",
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {
+      "updateGameRegistry(address)": {
+        "notice": "Update GameRegistry contract address"
+      },
+      "updateMaintainer(address)": {
+        "notice": "Update maintainer address"
+      },
+      "updateOparcade(address)": {
+        "notice": "Update Oparcade contract address"
+      }
+    },
+    "notice": "This stores all addresses in the Oparcade",
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [
+      {
+        "astId": 130,
+        "contract": "contracts/AddressRegistry.sol:AddressRegistry",
+        "label": "_initialized",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_bool"
+      },
+      {
+        "astId": 133,
+        "contract": "contracts/AddressRegistry.sol:AddressRegistry",
+        "label": "_initializing",
+        "offset": 1,
+        "slot": "0",
+        "type": "t_bool"
+      },
+      {
+        "astId": 929,
+        "contract": "contracts/AddressRegistry.sol:AddressRegistry",
+        "label": "__gap",
+        "offset": 0,
+        "slot": "1",
+        "type": "t_array(t_uint256)50_storage"
+      },
+      {
+        "astId": 10,
+        "contract": "contracts/AddressRegistry.sol:AddressRegistry",
+        "label": "_owner",
+        "offset": 0,
+        "slot": "51",
+        "type": "t_address"
+      },
+      {
+        "astId": 123,
+        "contract": "contracts/AddressRegistry.sol:AddressRegistry",
+        "label": "__gap",
+        "offset": 0,
+        "slot": "52",
+        "type": "t_array(t_uint256)49_storage"
+      },
+      {
+        "astId": 1146,
+        "contract": "contracts/AddressRegistry.sol:AddressRegistry",
+        "label": "oparcade",
+        "offset": 0,
+        "slot": "101",
+        "type": "t_address"
+      },
+      {
+        "astId": 1149,
+        "contract": "contracts/AddressRegistry.sol:AddressRegistry",
+        "label": "gameRegistry",
+        "offset": 0,
+        "slot": "102",
+        "type": "t_address"
+      },
+      {
+        "astId": 1152,
+        "contract": "contracts/AddressRegistry.sol:AddressRegistry",
+        "label": "maintainer",
+        "offset": 0,
+        "slot": "103",
+        "type": "t_address"
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      },
+      "t_array(t_uint256)49_storage": {
+        "base": "t_uint256",
+        "encoding": "inplace",
+        "label": "uint256[49]",
+        "numberOfBytes": "1568"
+      },
+      "t_array(t_uint256)50_storage": {
+        "base": "t_uint256",
+        "encoding": "inplace",
+        "label": "uint256[50]",
+        "numberOfBytes": "1600"
+      },
+      "t_bool": {
+        "encoding": "inplace",
+        "label": "bool",
+        "numberOfBytes": "1"
+      },
+      "t_uint256": {
+        "encoding": "inplace",
+        "label": "uint256",
+        "numberOfBytes": "32"
+      }
+    }
+  }
+}

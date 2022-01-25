@@ -1,19 +1,28 @@
 const { expect } = require("chai");
 const { ethers, upgrades } = require("hardhat");
 
+const getSignature = async (signer, gid, winner, token, amount, nonce) => {
+  let message = ethers.utils.solidityKeccak256(
+    ["uint256", "address", "address", "uint256", "uint256"],
+    [gid, winner, token, amount, nonce],
+  );
+  let signature = await signer.signMessage(ethers.utils.arrayify(message));
+  return signature;
+};
+
 describe("Oparcade", () => {
-  let addressRegistry, gameRegistry, oparcade, mockUSDT, mockOPC;
+  let addressRegistry, gameRegistry, oparcade, mockUSDT, mockOPC, platformFee;
 
   let game1 = "Game1",
     game2 = "Game2";
 
-  const MockUSDTDepositAmount = 100,
-    mockOPCDepositAmount = 500;
+  const MockUSDTDepositAmount = 10000,
+    mockOPCDepositAmount = 50000;
 
-  before(async () => {
+  beforeEach(async () => {
     [deployer, alice, bob, maintainer, feeRecipient] = await ethers.getSigners();
 
-    const platformFee = 10; // 1%
+    platformFee = 10; // 1%
 
     // Initialize AddressRegistry contract
     const AddressRegistry = await ethers.getContractFactory("AddressRegistry");
@@ -75,14 +84,111 @@ describe("Oparcade", () => {
   });
 
   it("Should be able to claim tokens...", async () => {
-    // set gid
-    const gid = 0;
-
-    // set claimable amount and nonce
-    const claimableAmount = 50;
-    const nonce = 0;
-
     // deposit tokens
-    await oparcade.claim(alice.address, gid, mockUSDT.address, claimableAmount, nonce);
+    let gid = 0;
+    await mockUSDT.approve(oparcade.address, MockUSDTDepositAmount);
+    await oparcade.deposit(gid, mockUSDT.address);
+
+    gid = 1;
+    await mockOPC.approve(oparcade.address, mockOPCDepositAmount);
+    await oparcade.deposit(gid, mockOPC.address);
+
+    // set gid, claimable amount and nonce
+    gid = 0;
+    const claimableAmount = 5000;
+    const nonce = 0;
+    const feeAmount = (claimableAmount * platformFee) / 1000;
+
+    // get signature
+    let signature = await getSignature(maintainer, gid, alice.address, mockUSDT.address, claimableAmount, nonce);
+
+    // claim tokens
+    await oparcade.connect(alice).claim(gid, alice.address, mockUSDT.address, claimableAmount, nonce, signature);
+
+    // check balace
+    expect(await mockUSDT.balanceOf(feeRecipient.address)).to.equal(feeAmount);
+    expect(await mockUSDT.balanceOf(alice.address)).to.equal(claimableAmount - feeAmount);
+  });
+
+  it("Should revert if the signature is used twice...", async () => {
+    // deposit tokens
+    let gid = 0;
+    await mockUSDT.approve(oparcade.address, MockUSDTDepositAmount);
+    await oparcade.deposit(gid, mockUSDT.address);
+
+    gid = 1;
+    await mockOPC.approve(oparcade.address, mockOPCDepositAmount);
+    await oparcade.deposit(gid, mockOPC.address);
+
+    // set gid, claimable amount and nonce
+    gid = 0;
+    const claimableAmount = 5000;
+    const nonce = 0;
+    const feeAmount = (claimableAmount * platformFee) / 1000;
+
+    // get signature
+    let signature = await getSignature(maintainer, gid, alice.address, mockUSDT.address, claimableAmount, nonce);
+
+    // claim tokens
+    await oparcade.connect(alice).claim(gid, alice.address, mockUSDT.address, claimableAmount, nonce, signature);
+
+    // check balace
+    expect(await mockUSDT.balanceOf(feeRecipient.address)).to.equal(feeAmount);
+    expect(await mockUSDT.balanceOf(alice.address)).to.equal(claimableAmount - feeAmount);
+
+    // claim twice with the same signature
+    await expect(
+      oparcade.connect(alice).claim(gid, alice.address, mockUSDT.address, claimableAmount, nonce, signature),
+    ).to.be.revertedWith("Already used signature");
+  });
+
+  it("Should revert if msg.sender is not a winner...", async () => {
+    // deposit tokens
+    let gid = 0;
+    await mockUSDT.approve(oparcade.address, MockUSDTDepositAmount);
+    await oparcade.deposit(gid, mockUSDT.address);
+
+    gid = 1;
+    await mockOPC.approve(oparcade.address, mockOPCDepositAmount);
+    await oparcade.deposit(gid, mockOPC.address);
+
+    // set gid, claimable amount and nonce
+    gid = 0;
+    const claimableAmount = 5000;
+    const nonce = 0;
+    const feeAmount = (claimableAmount * platformFee) / 1000;
+
+    // get signature
+    let signature = await getSignature(maintainer, gid, alice.address, mockUSDT.address, claimableAmount, nonce);
+
+    // claim tokens
+    await expect(
+      oparcade.connect(bob).claim(gid, alice.address, mockUSDT.address, claimableAmount, nonce, signature),
+    ).to.be.revertedWith("Only winner can claim");
+  });
+
+  it("Should revert if the maintainer is not a message signer...", async () => {
+    // deposit tokens
+    let gid = 0;
+    await mockUSDT.approve(oparcade.address, MockUSDTDepositAmount);
+    await oparcade.deposit(gid, mockUSDT.address);
+
+    gid = 1;
+    await mockOPC.approve(oparcade.address, mockOPCDepositAmount);
+    await oparcade.deposit(gid, mockOPC.address);
+
+    // set gid, claimable amount and nonce
+    gid = 0;
+    const claimableAmount = 5000;
+    const nonce = 0;
+    const feeAmount = (claimableAmount * platformFee) / 1000;
+
+    // get signature
+    let signature = await getSignature(alice, gid, alice.address, mockUSDT.address, claimableAmount, nonce);
+
+    // claim tokens
+    await expect(
+      oparcade.connect(alice).claim(gid, alice.address, mockUSDT.address, claimableAmount, nonce, signature),
+    ).to.be.revertedWith("Wrong signer");
   });
 });

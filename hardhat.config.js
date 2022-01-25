@@ -1,12 +1,13 @@
 const fs = require("fs");
 const path = require("path");
 require("@nomiclabs/hardhat-waffle");
+require("@nomiclabs/hardhat-etherscan");
 require("@nomiclabs/hardhat-ethers");
 require("@openzeppelin/hardhat-upgrades");
+require('hardhat-deploy');
 require("hardhat-gas-reporter");
 require("hardhat-abi-exporter");
 require("solidity-coverage");
-require("@nomiclabs/hardhat-etherscan");
 require('dotenv').config();
 
 // This is a sample Hardhat task. To learn how to create your own go to
@@ -74,11 +75,11 @@ module.exports = {
     },
   },
   solidity: {
-    version: "0.8.9",
+    version: "0.8.11",
     settings: {
       optimizer: {
-        enabled: false,
-        runs: 200,
+        enabled: true,
+        runs: 800,
       },
     },
   },
@@ -90,19 +91,20 @@ module.exports = {
     coverageJson: "./coverage.json",
     artifacts: "./artifacts",
   },
-  namedAccounts: {
-    deployer: 0,
-  },
   mocha: {
     timeout: 50000,
   },
-  abiExporter: {
-    path: "./abi",
-    clear: true,
-    flat: true,
-    spacing: 2,
+  namedAccounts: {
+    deployer: {
+      default: 0,
+      mumbai: "0x8f96BFc80BC3B7D881767253EDb7A76429B7EC6B",
+    },
+    feeRecipient: {
+      default: 1,
+      mumbai: "0x8f96BFc80BC3B7D881767253EDb7A76429B7EC6B",
+    },
   },
   etherscan: {
-    apiKey: process.env.API_KEY
+    apiKey: process.env.ETHERSCAN_API_KEY
   }
 };

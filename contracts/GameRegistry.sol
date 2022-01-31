@@ -29,8 +29,14 @@ contract GameRegistry is OwnableUpgradeable {
   /// @dev Game name array
   string[] public games;
 
+  /// @dev Game ID -> Deposit token list
+  mapping(uint256 => address[]) public depositTokenList;
+
   /// @dev Game ID -> Token address -> Deposit amount
   mapping(uint256 => mapping(address => uint256)) public depositTokenAmount;
+
+  /// @dev Game ID -> Claimable token list
+  mapping(uint256 => address[]) public claimableTokenList;
 
   /// @dev Game ID -> Token address -> Bool
   mapping(uint256 => mapping(address => bool)) public claimable;
@@ -84,7 +90,20 @@ contract GameRegistry is OwnableUpgradeable {
   ) external onlyOwner onlyValidGID(_gid) {
     emit DepositAmountUpdated(msg.sender, _gid, _token, depositTokenAmount[_gid][_token], _amount);
 
+    // update deposit token amount
     depositTokenAmount[_gid][_token] = _amount;
+
+    // update deposit token list
+    if (_amount > 0) {
+      depositTokenList[_gid].push(_token);
+    } else {
+      for (uint256 i; i < depositTokenList[_gid].length; i++) {
+        if (_token == depositTokenList[_gid][i]) {
+          depositTokenList[_gid][i] = depositTokenList[_gid][depositTokenList[_gid].length - 1];
+          depositTokenList[_gid].pop();
+        }
+      }
+    }
   }
 
   /**
@@ -101,7 +120,28 @@ contract GameRegistry is OwnableUpgradeable {
   ) external onlyOwner onlyValidGID(_gid) {
     emit ClaimableAmountUpdated(msg.sender, _gid, _token, claimable[_gid][_token], _isClaimable);
 
+    // update claimable token amount
     claimable[_gid][_token] = _isClaimable;
+
+    // update claimable token list
+    if (_isClaimable) {
+      claimableTokenList[_gid].push(_token);
+    } else {
+      for (uint256 i; i < claimableTokenList[_gid].length; i++) {
+        if (_token == claimableTokenList[_gid][i]) {
+          claimableTokenList[_gid][i] = claimableTokenList[_gid][claimableTokenList[_gid].length - 1];
+          claimableTokenList[_gid].pop();
+        }
+      }
+    }
+  }
+
+  function getDepositTokenList(uint256 _gid) external view returns (address[] memory) {
+    return depositTokenList[_gid];
+  }
+
+  function getClaimableTokenList(uint256 _gid) external view returns (address[] memory) {
+    return claimableTokenList[_gid];
   }
 
   /**

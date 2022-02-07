@@ -8,7 +8,7 @@ describe("GameRegistry", () => {
     game2 = "Game2";
 
   before(async () => {
-    [deployer, token1, token2] = await ethers.getSigners();
+    [deployer, token1, token2, token3] = await ethers.getSigners();
 
     // Initialize GameRegistry contract
     const GameRegistry = await ethers.getContractFactory("GameRegistry");
@@ -45,20 +45,60 @@ describe("GameRegistry", () => {
     expect(await gameRegistry.isDeprecatedGame(gid)).to.be.true;
   });
 
-  it("Should be able to update the deposit amount...", async () => {
+  it("Should be able to update the deposit token...", async () => {
     const gid = 1;
+    let depositTokenList = [];
     const token1_amount = 100;
+    const token2_amount = 200;
 
-    // update the deposit token amount
+    // add token1
     await gameRegistry.updateDepositTokenAmount(gid, token1.address, token1_amount);
+
     expect(await gameRegistry.depositTokenAmount(gid, token1.address)).to.equal(token1_amount);
+    expect((await gameRegistry.getDepositTokenList(gid)).length).to.equal(1);
+    expect(await gameRegistry.depositTokenList(gid, 0)).to.equal(token1.address);
+
+    // add token2
+    await gameRegistry.updateDepositTokenAmount(gid, token2.address, token2_amount);
+
+    expect(await gameRegistry.depositTokenAmount(gid, token2.address)).to.equal(token2_amount);
+    expect((await gameRegistry.getDepositTokenList(gid)).length).to.equal(2);
+    expect(await gameRegistry.depositTokenList(gid, 1)).to.equal(token2.address);
+
+    // remove token1
+    await gameRegistry.updateDepositTokenAmount(gid, token1.address, 0);
+
+    expect(await gameRegistry.depositTokenAmount(gid, token1.address)).to.equal(0);
+    expect((await gameRegistry.getDepositTokenList(gid)).length).to.equal(1);
+    expect(await gameRegistry.depositTokenList(gid, 0)).to.equal(token2.address);
+
+    // remove token3
+    await gameRegistry.updateDepositTokenAmount(gid, token3.address, 0);
+
+    expect(await gameRegistry.depositTokenAmount(gid, token3.address)).to.equal(0);
+    expect((await gameRegistry.getDepositTokenList(gid)).length).to.equal(1);
+    expect(await gameRegistry.depositTokenList(gid, 0)).to.equal(token2.address);
   });
 
-  it("Should be able to update the claimable amount...", async () => {
+  it("Should be able to update the claimable token...", async () => {
     const gid = 1;
 
-    // update the claimable token address
+    // add token1
     await gameRegistry.updateClaimableTokenAddress(gid, token1.address, true);
+
+    expect((await gameRegistry.getClaimableTokenList(gid)).length).to.equal(1);
     expect(await gameRegistry.claimable(gid, token1.address)).to.be.true;
+
+    // add token2
+    await gameRegistry.updateClaimableTokenAddress(gid, token2.address, true);
+
+    expect((await gameRegistry.getClaimableTokenList(gid)).length).to.equal(2);
+    expect(await gameRegistry.claimable(gid, token2.address)).to.be.true;
+
+    // remove token2
+    await gameRegistry.updateClaimableTokenAddress(gid, token2.address, false);
+
+    expect((await gameRegistry.getClaimableTokenList(gid)).length).to.equal(1);
+    expect(await gameRegistry.claimable(gid, token2.address)).to.be.false;
   });
 });

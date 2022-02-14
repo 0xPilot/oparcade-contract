@@ -52,10 +52,10 @@ function updateDepositTokenAmount(
 The third step is to add tokens available for the claim of each game.
 
 ````solidity
-function updateClaimableTokenAddress(
+function updateDistributableTokenAddress(
     uint256 _gid,
     address _token,
-    bool _isClaimable
+    bool _isDistributable
 ) external onlyOwner;
 ````
 

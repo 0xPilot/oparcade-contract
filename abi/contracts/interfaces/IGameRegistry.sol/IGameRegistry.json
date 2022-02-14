@@ -12,12 +12,12 @@
         "type": "address"
       }
     ],
-    "name": "claimable",
+    "name": "depositTokenAmount",
     "outputs": [
       {
-        "internalType": "bool",
+        "internalType": "uint256",
         "name": "",
-        "type": "bool"
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -36,12 +36,12 @@
         "type": "address"
       }
     ],
-    "name": "depositTokenAmount",
+    "name": "distributable",
     "outputs": [
       {
-        "internalType": "uint256",
+        "internalType": "bool",
         "name": "",
-        "type": "uint256"
+        "type": "bool"
       }
     ],
     "stateMutability": "view",

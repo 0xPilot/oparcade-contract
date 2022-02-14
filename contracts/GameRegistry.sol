@@ -18,7 +18,7 @@ contract GameRegistry is OwnableUpgradeable {
     uint256 oldAmount,
     uint256 newAmount
   );
-  event ClaimableAmountUpdated(
+  event DistributableAmountUpdated(
     address indexed by,
     uint256 indexed gid,
     address indexed token,
@@ -35,11 +35,11 @@ contract GameRegistry is OwnableUpgradeable {
   /// @dev Game ID -> Token address -> Deposit amount
   mapping(uint256 => mapping(address => uint256)) public depositTokenAmount;
 
-  /// @dev Game ID -> Claimable token list
-  mapping(uint256 => address[]) public claimableTokenList;
+  /// @dev Game ID -> Distributable token list
+  mapping(uint256 => address[]) public distributableTokenList;
 
   /// @dev Game ID -> Token address -> Bool
-  mapping(uint256 => mapping(address => bool)) public claimable;
+  mapping(uint256 => mapping(address => bool)) public distributable;
 
   /// @dev Game ID -> Bool
   mapping(uint256 => bool) public isDeprecatedGame;
@@ -90,12 +90,12 @@ contract GameRegistry is OwnableUpgradeable {
   ) external onlyOwner onlyValidGID(_gid) {
     emit DepositAmountUpdated(msg.sender, _gid, _token, depositTokenAmount[_gid][_token], _amount);
 
-    // update deposit token amount
-    depositTokenAmount[_gid][_token] = _amount;
-
     // update deposit token list
     if (_amount > 0) {
-      depositTokenList[_gid].push(_token);
+      if (depositTokenAmount[_gid][_token] == 0) {
+        // add token to the list only if it's added newly
+        depositTokenList[_gid].push(_token);
+      }
     } else {
       for (uint256 i; i < depositTokenList[_gid].length; i++) {
         if (_token == depositTokenList[_gid][i]) {
@@ -104,44 +104,50 @@ contract GameRegistry is OwnableUpgradeable {
         }
       }
     }
+
+    // update deposit token amount
+    depositTokenAmount[_gid][_token] = _amount;
   }
 
   /**
-   * @notice Update claimable token address
+   * @notice Update distributable token address
    * @dev Only owner
    * @param _gid Game ID
    * @param _token Token address to allow/disallow the deposit
-   * @param _isClaimable true: claimable false: not claimable
+   * @param _isDistributable true: distributable false: not distributable
    */
-  function updateClaimableTokenAddress(
+  function updateDistributableTokenAddress(
     uint256 _gid,
     address _token,
-    bool _isClaimable
+    bool _isDistributable
   ) external onlyOwner onlyValidGID(_gid) {
-    emit ClaimableAmountUpdated(msg.sender, _gid, _token, claimable[_gid][_token], _isClaimable);
+    emit DistributableAmountUpdated(msg.sender, _gid, _token, distributable[_gid][_token], _isDistributable);
 
-    // update claimable token amount
-    claimable[_gid][_token] = _isClaimable;
-
-    // update claimable token list
-    if (_isClaimable) {
-      claimableTokenList[_gid].push(_token);
+    // update distributable token list
+    if (_isDistributable) {
+      if (!distributable[_gid][_token]) {
+        // add token to the list only if it's added newly
+        distributableTokenList[_gid].push(_token);
+      }
     } else {
-      for (uint256 i; i < claimableTokenList[_gid].length; i++) {
-        if (_token == claimableTokenList[_gid][i]) {
-          claimableTokenList[_gid][i] = claimableTokenList[_gid][claimableTokenList[_gid].length - 1];
-          claimableTokenList[_gid].pop();
+      for (uint256 i; i < distributableTokenList[_gid].length; i++) {
+        if (_token == distributableTokenList[_gid][i]) {
+          distributableTokenList[_gid][i] = distributableTokenList[_gid][distributableTokenList[_gid].length - 1];
+          distributableTokenList[_gid].pop();
         }
       }
     }
+
+    // update distributable token amount
+    distributable[_gid][_token] = _isDistributable;
   }
 
   function getDepositTokenList(uint256 _gid) external view returns (address[] memory) {
     return depositTokenList[_gid];
   }
 
-  function getClaimableTokenList(uint256 _gid) external view returns (address[] memory) {
-    return claimableTokenList[_gid];
+  function getDistributableTokenList(uint256 _gid) external view returns (address[] memory) {
+    return distributableTokenList[_gid];
   }
 
   /**

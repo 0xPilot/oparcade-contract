@@ -22,18 +22,18 @@
       },
       {
         "indexed": false,
-        "internalType": "bool",
-        "name": "oldStatus",
-        "type": "bool"
+        "internalType": "uint256",
+        "name": "oldAmount",
+        "type": "uint256"
       },
       {
         "indexed": false,
-        "internalType": "bool",
-        "name": "newStatus",
-        "type": "bool"
+        "internalType": "uint256",
+        "name": "newAmount",
+        "type": "uint256"
       }
     ],
-    "name": "ClaimableAmountUpdated",
+    "name": "DepositAmountUpdated",
     "type": "event"
   },
   {
@@ -59,18 +59,18 @@
       },
       {
         "indexed": false,
-        "internalType": "uint256",
-        "name": "oldAmount",
-        "type": "uint256"
+        "internalType": "bool",
+        "name": "oldStatus",
+        "type": "bool"
       },
       {
         "indexed": false,
-        "internalType": "uint256",
-        "name": "newAmount",
-        "type": "uint256"
+        "internalType": "bool",
+        "name": "newStatus",
+        "type": "bool"
       }
     ],
-    "name": "DepositAmountUpdated",
+    "name": "DistributableAmountUpdated",
     "type": "event"
   },
   {
@@ -174,54 +174,6 @@
         "type": "address"
       }
     ],
-    "name": "claimable",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "claimableTokenList",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
     "name": "depositTokenAmount",
     "outputs": [
       {
@@ -247,6 +199,54 @@
       }
     ],
     "name": "depositTokenList",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "distributable",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "distributableTokenList",
     "outputs": [
       {
         "internalType": "address",
@@ -297,7 +297,7 @@
         "type": "uint256"
       }
     ],
-    "name": "getClaimableTokenList",
+    "name": "getDepositTokenList",
     "outputs": [
       {
         "internalType": "address[]",
@@ -316,7 +316,7 @@
         "type": "uint256"
       }
     ],
-    "name": "getDepositTokenList",
+    "name": "getDistributableTokenList",
     "outputs": [
       {
         "internalType": "address[]",
@@ -412,12 +412,12 @@
         "type": "address"
       },
       {
-        "internalType": "bool",
-        "name": "_isClaimable",
-        "type": "bool"
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
       }
     ],
-    "name": "updateClaimableTokenAddress",
+    "name": "updateDepositTokenAmount",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -435,12 +435,12 @@
         "type": "address"
       },
       {
-        "internalType": "uint256",
-        "name": "_amount",
-        "type": "uint256"
+        "internalType": "bool",
+        "name": "_isDistributable",
+        "type": "bool"
       }
     ],
-    "name": "updateDepositTokenAmount",
+    "name": "updateDistributableTokenAddress",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

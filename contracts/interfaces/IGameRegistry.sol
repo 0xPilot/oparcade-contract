@@ -19,9 +19,9 @@ interface IGameRegistry {
    * @notice Provide the claimability of the token given
    * @param _gid Game ID
    * @param _token Token address
-   * @return bool true: claimable, false: not claimable
+   * @return bool true: distributable, false: not distributable
    */
-  function claimable(uint256 _gid, address _token) external view returns (bool);
+  function distributable(uint256 _gid, address _token) external view returns (bool);
 
   /**
    * @notice Provide whether the game is deprecated or not

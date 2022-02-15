@@ -58,6 +58,14 @@ describe("GameRegistry", () => {
     expect((await gameRegistry.getDepositTokenList(gid)).length).to.equal(1);
     expect(await gameRegistry.depositTokenList(gid, 0)).to.equal(token1.address);
 
+    // update token1
+    const new_token1_amount = 300;
+    await gameRegistry.updateDepositTokenAmount(gid, token1.address, new_token1_amount);
+
+    expect(await gameRegistry.depositTokenAmount(gid, token1.address)).to.equal(new_token1_amount);
+    expect((await gameRegistry.getDepositTokenList(gid)).length).to.equal(1);
+    expect(await gameRegistry.depositTokenList(gid, 0)).to.equal(token1.address);
+
     // add token2
     await gameRegistry.updateDepositTokenAmount(gid, token2.address, token2_amount);
 
@@ -72,7 +80,7 @@ describe("GameRegistry", () => {
     expect((await gameRegistry.getDepositTokenList(gid)).length).to.equal(1);
     expect(await gameRegistry.depositTokenList(gid, 0)).to.equal(token2.address);
 
-    // remove token3
+    // remove token3 (unavailable token)
     await gameRegistry.updateDepositTokenAmount(gid, token3.address, 0);
 
     expect(await gameRegistry.depositTokenAmount(gid, token3.address)).to.equal(0);
@@ -80,25 +88,31 @@ describe("GameRegistry", () => {
     expect(await gameRegistry.depositTokenList(gid, 0)).to.equal(token2.address);
   });
 
-  it("Should be able to update the claimable token...", async () => {
+  it("Should be able to update the distributable token...", async () => {
     const gid = 1;
 
     // add token1
-    await gameRegistry.updateClaimableTokenAddress(gid, token1.address, true);
+    await gameRegistry.updateDistributableTokenAddress(gid, token1.address, true);
 
-    expect((await gameRegistry.getClaimableTokenList(gid)).length).to.equal(1);
-    expect(await gameRegistry.claimable(gid, token1.address)).to.be.true;
+    expect((await gameRegistry.getDistributableTokenList(gid)).length).to.equal(1);
+    expect(await gameRegistry.distributable(gid, token1.address)).to.be.true;
+
+    // update token1
+    await gameRegistry.updateDistributableTokenAddress(gid, token1.address, true);
+
+    expect((await gameRegistry.getDistributableTokenList(gid)).length).to.equal(1);
+    expect(await gameRegistry.distributable(gid, token1.address)).to.be.true;
 
     // add token2
-    await gameRegistry.updateClaimableTokenAddress(gid, token2.address, true);
+    await gameRegistry.updateDistributableTokenAddress(gid, token2.address, true);
 
-    expect((await gameRegistry.getClaimableTokenList(gid)).length).to.equal(2);
-    expect(await gameRegistry.claimable(gid, token2.address)).to.be.true;
+    expect((await gameRegistry.getDistributableTokenList(gid)).length).to.equal(2);
+    expect(await gameRegistry.distributable(gid, token2.address)).to.be.true;
 
     // remove token2
-    await gameRegistry.updateClaimableTokenAddress(gid, token2.address, false);
+    await gameRegistry.updateDistributableTokenAddress(gid, token2.address, false);
 
-    expect((await gameRegistry.getClaimableTokenList(gid)).length).to.equal(1);
-    expect(await gameRegistry.claimable(gid, token2.address)).to.be.false;
+    expect((await gameRegistry.getDistributableTokenList(gid)).length).to.equal(1);
+    expect(await gameRegistry.distributable(gid, token2.address)).to.be.false;
   });
 });

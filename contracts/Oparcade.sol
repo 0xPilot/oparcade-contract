@@ -19,8 +19,15 @@ contract Oparcade is OwnableUpgradeable, ReentrancyGuardUpgradeable, PausableUpg
   using ECDSAUpgradeable for bytes32;
   using SafeERC20Upgradeable for IERC20Upgradeable;
 
-  event Deposit(address indexed by, uint256 indexed gid, address indexed token, uint256 amount);
-  event Claim(address indexed by, uint256 indexed gid, address indexed token, uint256 amount);
+  event Deposit(address indexed by, uint256 indexed gid, uint256 indexed tid, address token, uint256 amount);
+  event Distribute(
+    address indexed by,
+    address winner,
+    uint256 indexed gid,
+    uint256 indexed tid,
+    address token,
+    uint256 amount
+  );
   event PlatformFeeUpdated(
     address indexed by,
     address indexed oldFeeRecipient,
@@ -28,6 +35,12 @@ contract Oparcade is OwnableUpgradeable, ReentrancyGuardUpgradeable, PausableUpg
     address indexed newFeeRecipient,
     uint256 newPlatformFee
   );
+
+  /// @dev Game ID -> Tournament ID -> Token Address -> Total Deposit Amount excluding fees
+  mapping(uint256 => mapping(uint256 => mapping(address => uint256))) totalDeposit;
+
+  /// @dev Game ID -> Tournament ID -> Token Address -> Total Distribution Amount excluding fees
+  mapping(uint256 => mapping(uint256 => mapping(address => uint256))) totalDistribution;
 
   /// @dev AddressRegistry
   IAddressRegistry public addressRegistry;
@@ -40,6 +53,11 @@ contract Oparcade is OwnableUpgradeable, ReentrancyGuardUpgradeable, PausableUpg
 
   /// @dev Platform fee recipient
   address public feeRecipient;
+
+  modifier onlyMaintainer(address _maintainer) {
+    require(_maintainer < addressRegistry.maintainer(), "Only maintainer");
+    _;
+  }
 
   function initialize(
     address _addressRegistry,
@@ -66,9 +84,14 @@ contract Oparcade is OwnableUpgradeable, ReentrancyGuardUpgradeable, PausableUpg
    * @notice Deposit ERC20 tokens from user
    * @dev Only tokens registered in GameRegistry with an amount greater than zero is valid for the deposit
    * @param _gid Game ID
+   * @param _tid Tournament ID
    * @param _token Token address to deposit
    */
-  function deposit(uint256 _gid, address _token) external whenNotPaused {
+  function deposit(
+    uint256 _gid,
+    uint256 _tid,
+    address _token
+  ) external whenNotPaused {
     // get token amount to deposit
     uint256 depositTokenAmount = IGameRegistry(addressRegistry.gameRegistry()).depositTokenAmount(_gid, _token);
 
@@ -77,15 +100,41 @@ contract Oparcade is OwnableUpgradeable, ReentrancyGuardUpgradeable, PausableUpg
 
     // calculate the fee
     uint256 feeAmount = (depositTokenAmount * platformFee) / 1000;
-    uint256 lockingAmount = depositTokenAmount - feeAmount;
+    uint256 gameAmount = depositTokenAmount - feeAmount;
 
     // transfer the fee
     IERC20Upgradeable(_token).safeTransferFrom(msg.sender, feeRecipient, feeAmount);
 
     // transfer the payment
-    IERC20Upgradeable(_token).safeTransferFrom(msg.sender, address(this), lockingAmount);
+    IERC20Upgradeable(_token).safeTransferFrom(msg.sender, address(this), gameAmount);
 
-    emit Deposit(msg.sender, _gid, _token, depositTokenAmount);
+    totalDeposit[_gid][_tid][_token] += gameAmount;
+
+    emit Deposit(msg.sender, _gid, _tid, _token, depositTokenAmount);
+  }
+
+  function distribute(
+    uint256 _gid,
+    uint256 _tid,
+    address[] memory _winners,
+    address _token,
+    uint256[] memory _amounts
+  ) external onlyMaintainer {
+    require(_winners.length == _amounts.length, "Mismatched winners and amounts");
+
+    // check if token is allowed to claim
+    require(IGameRegistry(addressRegistry.gameRegistry()).distributable(_gid, _token), "Disallowed distribution token");
+
+    // transfer the payment
+    for (uint256 i; i < _winners.length; i++) {
+      totalDistribution[_gid][_tid][_token] += _amounts[i];
+      IERC20Upgradeable(_token).transfer(_winners[i], _amounts[i]);
+
+      emit Distribute(msg.sender, _winners[i], _gid, _tid, _token, _amounts[i]);
+    }
+
+    // check if total payout is not exceeded the total deposit amount
+    require(totalDistribution[_gid][_tid][_token] <= totalDeposit[_gid][_tid][_token], "Total payouts exceeded");
   }
 
   // /**

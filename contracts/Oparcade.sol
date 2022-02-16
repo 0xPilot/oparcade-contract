@@ -37,10 +37,10 @@ contract Oparcade is OwnableUpgradeable, ReentrancyGuardUpgradeable, PausableUpg
   );
 
   /// @dev Game ID -> Tournament ID -> Token Address -> Total Deposit Amount excluding fees
-  mapping(uint256 => mapping(uint256 => mapping(address => uint256))) totalDeposit;
+  mapping(uint256 => mapping(uint256 => mapping(address => uint256))) public totalDeposit;
 
   /// @dev Game ID -> Tournament ID -> Token Address -> Total Distribution Amount excluding fees
-  mapping(uint256 => mapping(uint256 => mapping(address => uint256))) totalDistribution;
+  mapping(uint256 => mapping(uint256 => mapping(address => uint256))) public totalDistribution;
 
   /// @dev AddressRegistry
   IAddressRegistry public addressRegistry;
@@ -54,8 +54,8 @@ contract Oparcade is OwnableUpgradeable, ReentrancyGuardUpgradeable, PausableUpg
   /// @dev Platform fee recipient
   address public feeRecipient;
 
-  modifier onlyMaintainer(address _maintainer) {
-    require(_maintainer < addressRegistry.maintainer(), "Only maintainer");
+  modifier onlyMaintainer() {
+    require(msg.sender == addressRegistry.maintainer(), "Only maintainer");
     _;
   }
 
@@ -100,15 +100,15 @@ contract Oparcade is OwnableUpgradeable, ReentrancyGuardUpgradeable, PausableUpg
 
     // calculate the fee
     uint256 feeAmount = (depositTokenAmount * platformFee) / 1000;
-    uint256 gameAmount = depositTokenAmount - feeAmount;
+    uint256 lockingAmount = depositTokenAmount - feeAmount;
 
     // transfer the fee
     IERC20Upgradeable(_token).safeTransferFrom(msg.sender, feeRecipient, feeAmount);
 
     // transfer the payment
-    IERC20Upgradeable(_token).safeTransferFrom(msg.sender, address(this), gameAmount);
+    IERC20Upgradeable(_token).safeTransferFrom(msg.sender, address(this), lockingAmount);
 
-    totalDeposit[_gid][_tid][_token] += gameAmount;
+    totalDeposit[_gid][_tid][_token] += lockingAmount;
 
     emit Deposit(msg.sender, _gid, _tid, _token, depositTokenAmount);
   }
@@ -119,7 +119,7 @@ contract Oparcade is OwnableUpgradeable, ReentrancyGuardUpgradeable, PausableUpg
     address[] memory _winners,
     address _token,
     uint256[] memory _amounts
-  ) external onlyMaintainer {
+  ) external whenNotPaused onlyMaintainer {
     require(_winners.length == _amounts.length, "Mismatched winners and amounts");
 
     // check if token is allowed to claim

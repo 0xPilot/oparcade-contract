@@ -50,7 +50,7 @@ function updateDepositTokenAmount(
 ) external onlyOwner;
 ````
 
-The third step is to add tokens available for the claim of each game.
+The third step is to add tokens available for the distribution of each game.
 
 ````solidity
 function updateDistributableTokenAddress(
@@ -60,23 +60,24 @@ function updateDistributableTokenAddress(
 ) external onlyOwner;
 ````
 
-#### Deposit and Claim tokens
+#### Deposit tokens
 
 The first step is for users to deposit tokens for the game. Only registered tokens can be used for the deposit.
 
 ````solidity
-function deposit(uint256 _gid, address _token) external;
+function deposit(uint256 _gid, uint256 _tid, address _token) external;
 ````
 
-The second step is for winners to claim their prize from the game. Only registered tokens can be used for the claim.
+#### Distribute tokens
+
+The first step is to distribute the winners their prizes based on the game result. The only trusted address can distribute tokens.
 
 ````solidity
-function claim(
+function distribute(
     uint256 _gid,
-    address _winner,
+    uint256 _tid,
+    address[] memory _winners,
     address _token,
-    uint256 _amount,
-    uint256 _nonce,
-    bytes calldata _signature
-) external;
+    uint256[] _amounts[]
+) external onlyMaintainer;
 ````

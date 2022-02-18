@@ -59,6 +59,8 @@ contract Oparcade is OwnableUpgradeable, ReentrancyGuardUpgradeable, PausableUpg
     _;
   }
 
+  receive() external payable {}
+
   function initialize(
     address _addressRegistry,
     address _feeRecipient,

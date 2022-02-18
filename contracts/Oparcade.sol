@@ -139,50 +139,6 @@ contract Oparcade is OwnableUpgradeable, ReentrancyGuardUpgradeable, PausableUpg
     require(totalDistribution[_gid][_tid][_token] <= totalDeposit[_gid][_tid][_token], "Total payouts exceeded");
   }
 
-  // /**
-  //  * @notice Allow for the users to claim ERC20 tokens
-  //  * @dev Only winners with the valid signature are able to claim
-  //  * @param _gid Game ID
-  //  * @param _winner Winner address
-  //  * @param _token Token address to claim
-  //  * @param _amount Token amount to claim
-  //  * @param _nonce Nonce
-  //  * @param _signature Signature
-  //  */
-  // function claim(
-  //   uint256 _gid,
-  //   address _winner,
-  //   address _token,
-  //   uint256 _amount,
-  //   uint256 _nonce,
-  //   bytes calldata _signature
-  // ) external nonReentrant whenNotPaused {
-  //   // check if nonce is already used
-  //   require(!signatures[_signature], "Already used signature");
-  //   signatures[_signature] = true;
-
-  //   // check if msg.sender is the _winner
-  //   require(msg.sender == _winner, "Only winner can claim");
-
-  //   // check signer
-  //   address maintainer = addressRegistry.maintainer();
-  //   bytes32 data = keccak256(abi.encodePacked(_gid, msg.sender, _token, _amount, _nonce));
-  //   require(data.toEthSignedMessageHash().recover(_signature) == maintainer, "Wrong signer");
-
-  //   // check if token is allowed to claim
-  //   require(IGameRegistry(addressRegistry.gameRegistry()).distributable(_gid, _token), "Disallowed claim token");
-
-  //   // calculate payment amount
-  //   uint256 feeAmount = (_amount * platformFee) / 1000;
-  //   uint256 winnerAmount = _amount - feeAmount;
-
-  //   // transfer payment
-  //   IERC20Upgradeable(_token).safeTransfer(feeRecipient, feeAmount);
-  //   IERC20Upgradeable(_token).safeTransfer(msg.sender, winnerAmount);
-
-  //   emit Claim(msg.sender, _gid, _token, _amount);
-  // }
-
   /**
    * @notice Update platform fee
    *

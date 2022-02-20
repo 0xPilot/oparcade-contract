@@ -1,5 +1,5 @@
 {
-  "address": "0xe3923dF069bf85510DEF779Aa4923857Ef96ca7E",
+  "address": "0xa32615ebA338ea80B6Bd31cF8e801655630EDFAC",
   "abi": [
     {
       "anonymous": false,
@@ -134,18 +134,18 @@
         },
         {
           "indexed": false,
-          "internalType": "bool",
-          "name": "oldStatus",
-          "type": "bool"
+          "internalType": "uint256",
+          "name": "oldAmount",
+          "type": "uint256"
         },
         {
           "indexed": false,
-          "internalType": "bool",
-          "name": "newStatus",
-          "type": "bool"
+          "internalType": "uint256",
+          "name": "newAmount",
+          "type": "uint256"
         }
       ],
-      "name": "ClaimableAmountUpdated",
+      "name": "DepositAmountUpdated",
       "type": "event"
     },
     {
@@ -171,18 +171,18 @@
         },
         {
           "indexed": false,
-          "internalType": "uint256",
-          "name": "oldAmount",
-          "type": "uint256"
+          "internalType": "bool",
+          "name": "oldStatus",
+          "type": "bool"
         },
         {
           "indexed": false,
-          "internalType": "uint256",
-          "name": "newAmount",
-          "type": "uint256"
+          "internalType": "bool",
+          "name": "newStatus",
+          "type": "bool"
         }
       ],
-      "name": "DepositAmountUpdated",
+      "name": "DistributableAmountUpdated",
       "type": "event"
     },
     {
@@ -286,12 +286,36 @@
           "type": "address"
         }
       ],
-      "name": "claimable",
+      "name": "depositTokenAmount",
       "outputs": [
         {
-          "internalType": "bool",
+          "internalType": "uint256",
           "name": "",
-          "type": "bool"
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "depositTokenList",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
         }
       ],
       "stateMutability": "view",
@@ -310,12 +334,36 @@
           "type": "address"
         }
       ],
-      "name": "depositTokenAmount",
+      "name": "distributable",
       "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
         {
           "internalType": "uint256",
           "name": "",
           "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "distributableTokenList",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
         }
       ],
       "stateMutability": "view",
@@ -348,6 +396,44 @@
           "internalType": "string",
           "name": "",
           "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_gid",
+          "type": "uint256"
+        }
+      ],
+      "name": "getDepositTokenList",
+      "outputs": [
+        {
+          "internalType": "address[]",
+          "name": "",
+          "type": "address[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_gid",
+          "type": "uint256"
+        }
+      ],
+      "name": "getDistributableTokenList",
+      "outputs": [
+        {
+          "internalType": "address[]",
+          "name": "",
+          "type": "address[]"
         }
       ],
       "stateMutability": "view",
@@ -438,12 +524,12 @@
           "type": "address"
         },
         {
-          "internalType": "bool",
-          "name": "_isClaimable",
-          "type": "bool"
+          "internalType": "uint256",
+          "name": "_amount",
+          "type": "uint256"
         }
       ],
-      "name": "updateClaimableTokenAddress",
+      "name": "updateDepositTokenAmount",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -461,12 +547,12 @@
           "type": "address"
         },
         {
-          "internalType": "uint256",
-          "name": "_amount",
-          "type": "uint256"
+          "internalType": "bool",
+          "name": "_isDistributable",
+          "type": "bool"
         }
       ],
-      "name": "updateDepositTokenAmount",
+      "name": "updateDistributableTokenAddress",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -493,35 +579,35 @@
       "type": "constructor"
     }
   ],
-  "transactionHash": "0xa46aac79db5871a7c3c6d81f6f4ee99101d7cfecd12c9d3d4917d913c04edba1",
+  "transactionHash": "0x53a593972bb115a281dd90c4ec5a13caeb25e60444ef06c3745424c2e4c3cc1c",
   "receipt": {
     "to": null,
     "from": "0x8f96BFc80BC3B7D881767253EDb7A76429B7EC6B",
-    "contractAddress": "0xe3923dF069bf85510DEF779Aa4923857Ef96ca7E",
-    "transactionIndex": 1,
-    "gasUsed": "592848",
-    "logsBloom": "0x00000000000000001000000000000000000000000000000000800000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000001000000800001000000000000000100000000004000000000020000000000000000000800000000000000000080000000000000400000000000000400000000000000000000000000000080000000000000000000200000000000000000000000000000000000000000000000000000000000004000000000000000000001000000000000000000100000000000100040000020000000000000000000000000040000000000000000020000000000000000100000",
-    "blockHash": "0x1467873e6a307269306b932765b65ff1b7b3f1b9ddb5ef2adfe3480561c4d01e",
-    "transactionHash": "0xa46aac79db5871a7c3c6d81f6f4ee99101d7cfecd12c9d3d4917d913c04edba1",
+    "contractAddress": "0xa32615ebA338ea80B6Bd31cF8e801655630EDFAC",
+    "transactionIndex": 0,
+    "gasUsed": "592885",
+    "logsBloom": "0x00000000000000001000000000000000000000000000000000800000000000000000000000000000000000000000104000008000000000000000000000000000000000000000000000000000000000800001000000000000000100000000004000000000020000000000000000000800000000000000000080000000000000400000000000000400000000000000000000000000000080000000000000000000200000000000000000000000000000000000000000000000000000000000004000000000000000000001000000000000000000000000000000100040000020000000000000000000000000000000000000000000020000000000000000100000",
+    "blockHash": "0xc0ac14333f9fd04bd9971b35f7f2066fc1dc4864232ac9c0db9a5bc39bd4b3a4",
+    "transactionHash": "0x53a593972bb115a281dd90c4ec5a13caeb25e60444ef06c3745424c2e4c3cc1c",
     "logs": [
       {
-        "transactionIndex": 1,
-        "blockNumber": 24254682,
-        "transactionHash": "0xa46aac79db5871a7c3c6d81f6f4ee99101d7cfecd12c9d3d4917d913c04edba1",
-        "address": "0xe3923dF069bf85510DEF779Aa4923857Ef96ca7E",
+        "transactionIndex": 0,
+        "blockNumber": 25126175,
+        "transactionHash": "0x53a593972bb115a281dd90c4ec5a13caeb25e60444ef06c3745424c2e4c3cc1c",
+        "address": "0xa32615ebA338ea80B6Bd31cF8e801655630EDFAC",
         "topics": [
           "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0",
           "0x0000000000000000000000000000000000000000000000000000000000000000",
           "0x0000000000000000000000008f96bfc80bc3b7d881767253edb7a76429b7ec6b"
         ],
         "data": "0x",
-        "logIndex": 3,
-        "blockHash": "0x1467873e6a307269306b932765b65ff1b7b3f1b9ddb5ef2adfe3480561c4d01e"
+        "logIndex": 0,
+        "blockHash": "0xc0ac14333f9fd04bd9971b35f7f2066fc1dc4864232ac9c0db9a5bc39bd4b3a4"
       },
       {
-        "transactionIndex": 1,
-        "blockNumber": 24254682,
-        "transactionHash": "0xa46aac79db5871a7c3c6d81f6f4ee99101d7cfecd12c9d3d4917d913c04edba1",
+        "transactionIndex": 0,
+        "blockNumber": 25126175,
+        "transactionHash": "0x53a593972bb115a281dd90c4ec5a13caeb25e60444ef06c3745424c2e4c3cc1c",
         "address": "0x0000000000000000000000000000000000001010",
         "topics": [
           "0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63",
@@ -529,19 +615,19 @@
           "0x0000000000000000000000008f96bfc80bc3b7d881767253edb7a76429b7ec6b",
           "0x000000000000000000000000be188d6641e8b680743a4815dfa0f6208038960f"
         ],
-        "data": "0x00000000000000000000000000000000000000000000000000543faf418ca1800000000000000000000000000000000000000000000000001683440e88de20000000000000000000000000000000000000000000000005676e51232f2ace57a4000000000000000000000000000000000000000000000000162f045f47517e800000000000000000000000000000000000000000000005676ea562de6c5af924",
-        "logIndex": 4,
-        "blockHash": "0x1467873e6a307269306b932765b65ff1b7b3f1b9ddb5ef2adfe3480561c4d01e"
+        "data": "0x00000000000000000000000000000000000000000000000000544107d86c70580000000000000000000000000000000000000000000000000fb5a315a0b095ad00000000000000000000000000000000000000000000074d7ed32f081cfe6b0d0000000000000000000000000000000000000000000000000f61620dc844255500000000000000000000000000000000000000000000074d7f27700ff56adb65",
+        "logIndex": 1,
+        "blockHash": "0xc0ac14333f9fd04bd9971b35f7f2066fc1dc4864232ac9c0db9a5bc39bd4b3a4"
       }
     ],
-    "blockNumber": 24254682,
-    "cumulativeGasUsed": "719811",
+    "blockNumber": 25126175,
+    "cumulativeGasUsed": "592885",
     "status": 1,
     "byzantium": true
   },
   "args": [
-    "0x4207FF0356E46E68CbA01A6d2Ca60B5650904de3",
-    "0x41509e71f28830f0820dFFd6748C7e0C2Bd4505b",
+    "0x3213C59c1bA47301Ef1777028254eBC62B963d18",
+    "0x2D067b61133a90dE2be5663dDB44265Ba596Ca0B",
     "0x8129fc1c"
   ],
   "numDeployments": 1,
@@ -553,7 +639,7 @@
     "methodName": "initialize",
     "args": []
   },
-  "implementation": "0x4207FF0356E46E68CbA01A6d2Ca60B5650904de3",
+  "implementation": "0x3213C59c1bA47301Ef1777028254eBC62B963d18",
   "devdoc": {
     "details": "This contract implements a proxy that is upgradeable by an admin.  To avoid https://medium.com/nomic-labs-blog/malicious-backdoors-in-ethereum-proxies-62629adf3357[proxy selector clashing], which can potentially be used in an attack, this contract uses the https://blog.openzeppelin.com/the-transparent-proxy-pattern/[transparent proxy pattern]. This pattern implies two things that go hand in hand:  1. If any account other than the admin calls the proxy, the call will be forwarded to the implementation, even if that call matches one of the admin functions exposed by the proxy itself. 2. If the admin calls the proxy, it can access the admin functions, but its calls will never be forwarded to the implementation. If the admin tries to call a function on the implementation it will fail with an error that says \"admin cannot fallback to proxy target\".  These properties mean that the admin account can only be used for admin actions like upgrading the proxy or changing the admin, so it's best if it's a dedicated account that is not used for anything else. This will avoid headaches due to sudden errors when trying to call a function from the proxy implementation.  Our recommendation is for the dedicated account to be an instance of the {ProxyAdmin} contract. If set up this way, you should think of the `ProxyAdmin` instance as the real administrative inerface of your proxy.",
     "events": {

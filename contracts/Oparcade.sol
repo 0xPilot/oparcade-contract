@@ -115,6 +115,16 @@ contract Oparcade is OwnableUpgradeable, ReentrancyGuardUpgradeable, PausableUpg
     emit Deposit(msg.sender, _gid, _tid, _token, depositTokenAmount);
   }
 
+  /**
+   * @notice Distribute winners their prizes
+   * @dev only maintainer
+   * @dev Total distribution amount of the tournament of the game must be equal to/less than the double amount deposited in the tournament of the game due to the bonus
+   * @param _gid Game ID
+   * @param _tid Tournament ID
+   * @param _winners Winners list
+   * @param _token Distribution token address
+   * @param _amounts Prize list
+   */
   function distribute(
     uint256 _gid,
     uint256 _tid,
@@ -135,8 +145,8 @@ contract Oparcade is OwnableUpgradeable, ReentrancyGuardUpgradeable, PausableUpg
       emit Distribute(msg.sender, _winners[i], _gid, _tid, _token, _amounts[i]);
     }
 
-    // check if total payout is not exceeded the total deposit amount
-    require(totalDistribution[_gid][_tid][_token] <= totalDeposit[_gid][_tid][_token], "Total payouts exceeded");
+    // check if total payout is not exceeded the (2 * total deposit amount), there might be some bonus
+    require(totalDistribution[_gid][_tid][_token] <= 2 * totalDeposit[_gid][_tid][_token], "Total payouts exceeded");
   }
 
   /**

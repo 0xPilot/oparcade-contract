@@ -288,7 +288,7 @@ describe("Oparcade", () => {
 
     it("Should revert if total payment amount is exceeded...", async () => {
       // lock more tokens
-      await mockUSDT.transfer(oparcade.address, MockUSDTDepositAmount);
+      await mockUSDT.transfer(oparcade.address, 10 * MockUSDTDepositAmount);
 
       // deposit tokens
       let gid = 0;
@@ -303,11 +303,11 @@ describe("Oparcade", () => {
       // calculate total fees
       let MockUSDTFeeAmount = (2 * (MockUSDTDepositAmount * platformFee)) / 1000;
 
-      // set distributable amount
+      // set exceeded distributable amount
       const totalMockUSDTDistributableAmount = 2 * MockUSDTDepositAmount - MockUSDTFeeAmount;
 
-      const aliceMockUSDTAmount = totalMockUSDTDistributableAmount * 0.7;
-      const bobMockUSDTAmount = totalMockUSDTDistributableAmount * 0.5;
+      const aliceMockUSDTAmount = (totalMockUSDTDistributableAmount * 0.7) * 2 + 1;
+      const bobMockUSDTAmount = (totalMockUSDTDistributableAmount * 0.3) * 2 + 1;
 
       const mockUSDTDistributableAmount = [aliceMockUSDTAmount, bobMockUSDTAmount];
 

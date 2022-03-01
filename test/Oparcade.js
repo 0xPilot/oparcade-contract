@@ -306,8 +306,8 @@ describe("Oparcade", () => {
       // set exceeded distributable amount
       const totalMockUSDTDistributableAmount = 2 * MockUSDTDepositAmount - MockUSDTFeeAmount;
 
-      const aliceMockUSDTAmount = (totalMockUSDTDistributableAmount * 0.7) * 2 + 1;
-      const bobMockUSDTAmount = (totalMockUSDTDistributableAmount * 0.3) * 2 + 1;
+      const aliceMockUSDTAmount = totalMockUSDTDistributableAmount * 0.7 * 2 + 1;
+      const bobMockUSDTAmount = totalMockUSDTDistributableAmount * 0.3 * 2 + 1;
 
       const mockUSDTDistributableAmount = [aliceMockUSDTAmount, bobMockUSDTAmount];
 

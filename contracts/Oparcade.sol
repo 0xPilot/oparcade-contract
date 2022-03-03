@@ -45,9 +45,6 @@ contract Oparcade is OwnableUpgradeable, ReentrancyGuardUpgradeable, PausableUpg
   /// @dev AddressRegistry
   IAddressRegistry public addressRegistry;
 
-  /// @dev Signature -> Bool
-  mapping(bytes => bool) public signatures;
-
   /// @dev Platform fee
   uint16 public platformFee;
 

@@ -20,6 +20,8 @@ contract Oparcade is OwnableUpgradeable, ReentrancyGuardUpgradeable, PausableUpg
   using SafeERC20Upgradeable for IERC20Upgradeable;
 
   event Deposit(address indexed by, uint256 indexed gid, uint256 indexed tid, address token, uint256 amount);
+  event DepositPrize(address indexed by, uint256 indexed gid, uint256 indexed tid, address token, uint256 amount);
+  event WithdrawPrize(address indexed by, uint256 indexed gid, uint256 indexed tid, address token, uint256 amount);
   event Distribute(
     address indexed by,
     address winner,
@@ -37,10 +39,12 @@ contract Oparcade is OwnableUpgradeable, ReentrancyGuardUpgradeable, PausableUpg
   );
 
   /// @dev Game ID -> Tournament ID -> Token Address -> Total Deposit Amount excluding fees
-  mapping(uint256 => mapping(uint256 => mapping(address => uint256))) public totalDeposit;
+  mapping(uint256 => mapping(uint256 => mapping(address => uint256))) public totalUserDeposit;
+
+  mapping(uint256 => mapping(uint256 => mapping(address => uint256))) public totalPrizeDeposit;
 
   /// @dev Game ID -> Tournament ID -> Token Address -> Total Distribution Amount excluding fees
-  mapping(uint256 => mapping(uint256 => mapping(address => uint256))) public totalDistribution;
+  mapping(uint256 => mapping(uint256 => mapping(address => uint256))) public totalPrizeDistribution;
 
   /// @dev AddressRegistry
   IAddressRegistry public addressRegistry;
@@ -106,10 +110,41 @@ contract Oparcade is OwnableUpgradeable, ReentrancyGuardUpgradeable, PausableUpg
 
     // transfer the payment
     IERC20Upgradeable(_token).safeTransferFrom(msg.sender, address(this), lockingAmount);
-
-    totalDeposit[_gid][_tid][_token] += lockingAmount;
+    totalUserDeposit[_gid][_tid][_token] += lockingAmount;
 
     emit Deposit(msg.sender, _gid, _tid, _token, depositTokenAmount);
+  }
+
+  function depositPrize(
+    uint256 _gid,
+    uint256 _tid,
+    address _token,
+    uint256 _amount
+  ) external onlyOwner {
+    // check if token is allowed to claim as a prize
+    require(IGameRegistry(addressRegistry.gameRegistry()).distributable(_gid, _token), "Disallowed distribution token");
+
+    // deposit the prize tokens
+    IERC20Upgradeable(_token).safeTransferFrom(msg.sender, address(this), _amount);
+    totalPrizeDeposit[_gid][_tid][_token] += _amount;
+
+    emit DepositPrize(msg.sender, _gid, _tid, _token, _amount);
+  }
+
+  function withdrawPrize(
+    uint256 _gid,
+    uint256 _tid,
+    address _token,
+    uint256 _amount
+  ) external onlyOwner {
+    // check if the prize is sufficient to withdraw
+    require(totalPrizeDeposit[_gid][_tid][_token] >= _amount, "Insufficient prize");
+
+    // withdraw the prize
+    IERC20Upgradeable(_token).safeTransfer(msg.sender, _amount);
+    totalUserDeposit[_gid][_tid][_token] -= _amount;
+
+    emit WithdrawPrize(msg.sender, _gid, _tid, _token, _amount);
   }
 
   /**
@@ -136,14 +171,17 @@ contract Oparcade is OwnableUpgradeable, ReentrancyGuardUpgradeable, PausableUpg
 
     // transfer the payment
     for (uint256 i; i < _winners.length; i++) {
-      totalDistribution[_gid][_tid][_token] += _amounts[i];
+      totalPrizeDistribution[_gid][_tid][_token] += _amounts[i];
       IERC20Upgradeable(_token).transfer(_winners[i], _amounts[i]);
 
       emit Distribute(msg.sender, _winners[i], _gid, _tid, _token, _amounts[i]);
     }
 
     // check if total payout is not exceeded the (2 * total deposit amount), there might be some bonus
-    require(totalDistribution[_gid][_tid][_token] <= 2 * totalDeposit[_gid][_tid][_token], "Total payouts exceeded");
+    require(
+      totalPrizeDistribution[_gid][_tid][_token] <= 2 * totalUserDeposit[_gid][_tid][_token],
+      "Total payouts exceeded"
+    );
   }
 
   /**

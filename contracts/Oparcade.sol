@@ -15,19 +15,22 @@ import "./interfaces/IGameRegistry.sol";
  * @notice This manages the token deposit/distribution from/to the users
  * @author David Lee
  */
-contract Oparcade is OwnableUpgradeable, ReentrancyGuardUpgradeable, PausableUpgradeable {
-  using ECDSAUpgradeable for bytes32;
+contract Oparcade is
+  OwnableUpgradeable,
+  ReentrancyGuardUpgradeable,
+  PausableUpgradeable
+{
   using SafeERC20Upgradeable for IERC20Upgradeable;
 
-  event Deposit(address indexed by, uint256 indexed gid, uint256 indexed tid, address token, uint256 amount);
-  event DepositPrize(address indexed by, uint256 indexed gid, uint256 indexed tid, address token, uint256 amount);
-  event WithdrawPrize(address indexed by, uint256 indexed gid, uint256 indexed tid, address token, uint256 amount);
-  event Distribute(
-    address indexed by,
+  event UserDeposited(address by, uint256 indexed gid, uint256 indexed tid, address indexed token, uint256 amount);
+  event PrizeDeposited(address by, uint256 indexed gid, uint256 indexed tid, address indexed token, uint256 amount);
+  event PrizeWithdrawn(address by, uint256 indexed gid, uint256 indexed tid, address indexed token, uint256 amount);
+  event PrizeDistributed(
+    address by,
     address winner,
     uint256 indexed gid,
     uint256 indexed tid,
-    address token,
+    address indexed token,
     uint256 amount
   );
   event PlatformFeeUpdated(
@@ -38,13 +41,17 @@ contract Oparcade is OwnableUpgradeable, ReentrancyGuardUpgradeable, PausableUpg
     uint256 newPlatformFee
   );
 
-  /// @dev Game ID -> Tournament ID -> Token Address -> Total Deposit Amount excluding fees
+  /// @dev Game ID -> Tournament ID -> Token Address -> Total User Deposit Amount
   mapping(uint256 => mapping(uint256 => mapping(address => uint256))) public totalUserDeposit;
 
+  /// @dev Game ID -> Tournament ID -> Token Address -> Total Prize Deposit Amount
   mapping(uint256 => mapping(uint256 => mapping(address => uint256))) public totalPrizeDeposit;
 
-  /// @dev Game ID -> Tournament ID -> Token Address -> Total Distribution Amount excluding fees
+  /// @dev Game ID -> Tournament ID -> Token Address -> Total Prize Distribution Amount excluding Fee
   mapping(uint256 => mapping(uint256 => mapping(address => uint256))) public totalPrizeDistribution;
+
+  /// @dev Game ID -> Tournament ID -> Token Address -> Total Prize Fee Amount
+  mapping(uint256 => mapping(uint256 => mapping(address => uint256))) public totalPrizeFee;
 
   /// @dev AddressRegistry
   IAddressRegistry public addressRegistry;
@@ -101,36 +108,46 @@ contract Oparcade is OwnableUpgradeable, ReentrancyGuardUpgradeable, PausableUpg
     // check if the token address is valid
     require(depositTokenAmount > 0, "Invalid deposit token");
 
-    // calculate the fee
-    uint256 feeAmount = (depositTokenAmount * platformFee) / 1000;
-    uint256 lockingAmount = depositTokenAmount - feeAmount;
-
-    // transfer the fee
-    IERC20Upgradeable(_token).safeTransferFrom(msg.sender, feeRecipient, feeAmount);
-
     // transfer the payment
-    IERC20Upgradeable(_token).safeTransferFrom(msg.sender, address(this), lockingAmount);
-    totalUserDeposit[_gid][_tid][_token] += lockingAmount;
+    IERC20Upgradeable(_token).safeTransferFrom(msg.sender, address(this), depositTokenAmount);
+    totalUserDeposit[_gid][_tid][_token] += depositTokenAmount;
 
-    emit Deposit(msg.sender, _gid, _tid, _token, depositTokenAmount);
+    emit UserDeposited(msg.sender, _gid, _tid, _token, depositTokenAmount);
   }
 
+  /**
+   * @notice Deposit the prize tokens for the specific game/tournament
+   * @dev Only owner
+   * @dev Only tokens which are allowed as a distributable token can be deposited
+   * @param _gid Game ID
+   * @param _tid Tournament ID
+   * @param _token Prize token address
+   * @param _amount Prize amount to deposit
+   */
   function depositPrize(
     uint256 _gid,
     uint256 _tid,
     address _token,
     uint256 _amount
   ) external onlyOwner {
-    // check if token is allowed to claim as a prize
+    // check if tokens are allowed to claim as a prize
     require(IGameRegistry(addressRegistry.gameRegistry()).distributable(_gid, _token), "Disallowed distribution token");
 
-    // deposit the prize tokens
+    // deposit prize tokens
     IERC20Upgradeable(_token).safeTransferFrom(msg.sender, address(this), _amount);
     totalPrizeDeposit[_gid][_tid][_token] += _amount;
 
-    emit DepositPrize(msg.sender, _gid, _tid, _token, _amount);
+    emit PrizeDeposited(msg.sender, _gid, _tid, _token, _amount);
   }
 
+  /**
+   * @notice Withdraw the prize tokens from the specific game/tournament
+   * @dev Only owner
+   * @param _gid Game ID
+   * @param _tid Tournament ID
+   * @param _token Prize token address
+   * @param _amount Prize amount to withdraw
+   */
   function withdrawPrize(
     uint256 _gid,
     uint256 _tid,
@@ -142,22 +159,21 @@ contract Oparcade is OwnableUpgradeable, ReentrancyGuardUpgradeable, PausableUpg
 
     // withdraw the prize
     IERC20Upgradeable(_token).safeTransfer(msg.sender, _amount);
-    totalUserDeposit[_gid][_tid][_token] -= _amount;
+    totalPrizeDeposit[_gid][_tid][_token] -= _amount;
 
-    emit WithdrawPrize(msg.sender, _gid, _tid, _token, _amount);
+    emit PrizeWithdrawn(msg.sender, _gid, _tid, _token, _amount);
   }
 
   /**
    * @notice Distribute winners their prizes
-   * @dev only maintainer
-   * @dev Total distribution amount of the tournament of the game must be equal to/less than the double amount deposited in the tournament of the game due to the bonus
+   * @dev Only maintainer
    * @param _gid Game ID
    * @param _tid Tournament ID
    * @param _winners Winners list
-   * @param _token Distribution token address
+   * @param _token Prize token address
    * @param _amounts Prize list
    */
-  function distribute(
+  function distributePrize(
     uint256 _gid,
     uint256 _tid,
     address[] memory _winners,
@@ -166,30 +182,36 @@ contract Oparcade is OwnableUpgradeable, ReentrancyGuardUpgradeable, PausableUpg
   ) external whenNotPaused onlyMaintainer {
     require(_winners.length == _amounts.length, "Mismatched winners and amounts");
 
-    // check if token is allowed to claim
+    // check if token is allowed to distribute
     require(IGameRegistry(addressRegistry.gameRegistry()).distributable(_gid, _token), "Disallowed distribution token");
 
     // transfer the payment
     for (uint256 i; i < _winners.length; i++) {
-      totalPrizeDistribution[_gid][_tid][_token] += _amounts[i];
-      IERC20Upgradeable(_token).transfer(_winners[i], _amounts[i]);
+      // calculate the fee
+      uint256 feeAmount = (_amounts[i] * platformFee) / 1000;
+      uint256 userAmount = _amounts[i] - feeAmount;
 
-      emit Distribute(msg.sender, _winners[i], _gid, _tid, _token, _amounts[i]);
+      // transfer the prize and fee
+      IERC20Upgradeable(_token).safeTransfer(feeRecipient, feeAmount);
+      IERC20Upgradeable(_token).safeTransfer(_winners[i], userAmount);
+      totalPrizeFee[_gid][_tid][_token] += feeAmount;
+      totalPrizeDistribution[_gid][_tid][_token] += userAmount;
+
+      emit PrizeDistributed(msg.sender, _winners[i], _gid, _tid, _token, userAmount);
     }
 
-    // check if total payout is not exceeded the (2 * total deposit amount), there might be some bonus
+    // check if the prize amount is not exceeded
     require(
-      totalPrizeDistribution[_gid][_tid][_token] <= 2 * totalUserDeposit[_gid][_tid][_token],
-      "Total payouts exceeded"
+      totalPrizeDistribution[_gid][_tid][_token] + totalPrizeFee[_gid][_tid][_token] <=
+        totalPrizeDeposit[_gid][_tid][_token],
+      "Prize amount exceeded"
     );
   }
 
   /**
    * @notice Update platform fee
-   *
    * @dev Only owner
    * @dev Allow zero recipient address only of fee is also zero
-   *
    * @param _platformFee platform fee
    */
   function updatePlatformFee(address _feeRecipient, uint16 _platformFee) external onlyOwner {
@@ -204,7 +226,6 @@ contract Oparcade is OwnableUpgradeable, ReentrancyGuardUpgradeable, PausableUpg
 
   /**
    * @notice Pause Oparcade
-   *
    * @dev Only owner
    */
   function pause() external onlyOwner {
@@ -213,7 +234,6 @@ contract Oparcade is OwnableUpgradeable, ReentrancyGuardUpgradeable, PausableUpg
 
   /**
    * @notice Resume Oparcade
-   *
    * @dev Only owner
    */
   function unpause() external onlyOwner {

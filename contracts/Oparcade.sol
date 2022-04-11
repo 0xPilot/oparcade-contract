@@ -38,13 +38,17 @@ contract Oparcade is OwnableUpgradeable, ReentrancyGuardUpgradeable, PausableUpg
     uint256 newPlatformFee
   );
 
-  /// @dev Game ID -> Tournament ID -> Token Address -> Total Deposit Amount excluding fees
+  /// @dev Game ID -> Tournament ID -> Token Address -> Total User Deposit Amount
   mapping(uint256 => mapping(uint256 => mapping(address => uint256))) public totalUserDeposit;
 
+  /// @dev Game ID -> Tournament ID -> Token Address -> Total Prize Deposit Amount
   mapping(uint256 => mapping(uint256 => mapping(address => uint256))) public totalPrizeDeposit;
 
-  /// @dev Game ID -> Tournament ID -> Token Address -> Total Distribution Amount excluding fees
+  /// @dev Game ID -> Tournament ID -> Token Address -> Total Prize Distribution Amount excluding fees
   mapping(uint256 => mapping(uint256 => mapping(address => uint256))) public totalPrizeDistribution;
+
+  /// @dev Game ID -> Tournament ID -> Token Address -> Total Prize Fee Amount
+  mapping(uint256 => mapping(uint256 => mapping(address => uint256))) public totalPrizeFee;
 
   /// @dev AddressRegistry
   IAddressRegistry public addressRegistry;
@@ -101,22 +105,15 @@ contract Oparcade is OwnableUpgradeable, ReentrancyGuardUpgradeable, PausableUpg
     // check if the token address is valid
     require(depositTokenAmount > 0, "Invalid deposit token");
 
-    // calculate the fee
-    uint256 feeAmount = (depositTokenAmount * platformFee) / 1000;
-    uint256 lockingAmount = depositTokenAmount - feeAmount;
-
-    // transfer the fee
-    IERC20Upgradeable(_token).safeTransferFrom(msg.sender, feeRecipient, feeAmount);
-
     // transfer the payment
-    IERC20Upgradeable(_token).safeTransferFrom(msg.sender, address(this), lockingAmount);
-    totalUserDeposit[_gid][_tid][_token] += lockingAmount;
+    IERC20Upgradeable(_token).safeTransferFrom(msg.sender, address(this), depositTokenAmount);
+    totalUserDeposit[_gid][_tid][_token] += depositTokenAmount;
 
     emit UserDeposited(msg.sender, _gid, _tid, _token, depositTokenAmount);
   }
 
   /**
-   * @notice Deposit the prize tokens for specific game/tournament
+   * @notice Deposit the prize tokens for the specific game/tournament
    * @dev Only owner
    * @dev Only tokens which are allowed as a distributable token can be deposited
    * @param _gid Game ID
@@ -140,6 +137,13 @@ contract Oparcade is OwnableUpgradeable, ReentrancyGuardUpgradeable, PausableUpg
     emit PrizeDeposited(msg.sender, _gid, _tid, _token, _amount);
   }
 
+  /**
+   * @notice Withdraw the prize tokens from the specific game/tournament
+   * @dev Only owner
+   * @param _gid Game ID
+   * @param _tid Tournament ID
+   * @param _token Prize token address
+   */
   function withdrawPrize(
     uint256 _gid,
     uint256 _tid,
@@ -180,10 +184,16 @@ contract Oparcade is OwnableUpgradeable, ReentrancyGuardUpgradeable, PausableUpg
 
     // transfer the payment
     for (uint256 i; i < _winners.length; i++) {
-      totalPrizeDistribution[_gid][_tid][_token] += _amounts[i];
-      IERC20Upgradeable(_token).transfer(_winners[i], _amounts[i]);
+      // calculate the fee
+      uint256 feeAmount = (_amounts[i] * platformFee) / 1000;
+      uint256 userAmount = _amounts[i] - feeAmount;
 
-      emit PrizeDistributed(msg.sender, _winners[i], _gid, _tid, _token, _amounts[i]);
+      // transfer the fee
+      IERC20Upgradeable(_token).safeTransfer(feeRecipient, feeAmount);
+      IERC20Upgradeable(_token).safeTransfer(_winners[i], userAmount);
+      totalPrizeDistribution[_gid][_tid][_token] += _amounts[i];
+
+      emit PrizeDistributed(msg.sender, _winners[i], _gid, _tid, _token, userAmount);
     }
 
     // check if total payout is not exceeded the (2 * total deposit amount), there might be some bonus

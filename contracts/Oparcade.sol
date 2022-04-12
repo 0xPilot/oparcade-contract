@@ -30,6 +30,7 @@ contract Oparcade is OwnableUpgradeable, ReentrancyGuardUpgradeable, PausableUpg
     address token,
     uint256 amount
   );
+  event Withdrawn(address indexed by, address indexed token, uint256 amount);
   event PlatformFeeUpdated(
     address indexed by,
     address indexed oldFeeRecipient,
@@ -44,7 +45,7 @@ contract Oparcade is OwnableUpgradeable, ReentrancyGuardUpgradeable, PausableUpg
   /// @dev Game ID -> Tournament ID -> Token Address -> Total Prize Deposit Amount
   mapping(uint256 => mapping(uint256 => mapping(address => uint256))) public totalPrizeDeposit;
 
-  /// @dev Game ID -> Tournament ID -> Token Address -> Total Prize Distribution Amount excluding fees
+  /// @dev Game ID -> Tournament ID -> Token Address -> Total Prize Distribution Amount excluding Fee
   mapping(uint256 => mapping(uint256 => mapping(address => uint256))) public totalPrizeDistribution;
 
   /// @dev Game ID -> Tournament ID -> Token Address -> Total Prize Fee Amount
@@ -126,11 +127,11 @@ contract Oparcade is OwnableUpgradeable, ReentrancyGuardUpgradeable, PausableUpg
     uint256 _tid,
     address _token,
     uint256 _amount
-  ) external onlyOwner {
-    // check if token is allowed to claim as a prize
+  ) external whenNotPaused onlyOwner {
+    // check if tokens are allowed to claim as a prize
     require(IGameRegistry(addressRegistry.gameRegistry()).distributable(_gid, _token), "Disallowed distribution token");
 
-    // deposit the prize tokens
+    // deposit prize tokens
     IERC20Upgradeable(_token).safeTransferFrom(msg.sender, address(this), _amount);
     totalPrizeDeposit[_gid][_tid][_token] += _amount;
 
@@ -188,19 +189,42 @@ contract Oparcade is OwnableUpgradeable, ReentrancyGuardUpgradeable, PausableUpg
       uint256 feeAmount = (_amounts[i] * platformFee) / 1000;
       uint256 userAmount = _amounts[i] - feeAmount;
 
-      // transfer the fee
+      // transfer the prize and fee
       IERC20Upgradeable(_token).safeTransfer(feeRecipient, feeAmount);
       IERC20Upgradeable(_token).safeTransfer(_winners[i], userAmount);
-      totalPrizeDistribution[_gid][_tid][_token] += _amounts[i];
+      totalPrizeFee[_gid][_tid][_token] += feeAmount;
+      totalPrizeDistribution[_gid][_tid][_token] += userAmount;
 
       emit PrizeDistributed(msg.sender, _winners[i], _gid, _tid, _token, userAmount);
     }
 
-    // check if total payout is not exceeded the (2 * total deposit amount), there might be some bonus
+    // check if the prize amount is not exceeded
     require(
-      totalPrizeDistribution[_gid][_tid][_token] <= 2 * totalUserDeposit[_gid][_tid][_token],
-      "Total payouts exceeded"
+      totalPrizeDistribution[_gid][_tid][_token] + totalPrizeFee[_gid][_tid][_token] <=
+        totalPrizeDeposit[_gid][_tid][_token],
+      "Prize amount exceeded"
     );
+  }
+
+  /**
+   * @notice Withdraw tokens
+   * @dev Only owner
+   * @param _tokens Token addresses
+   * @param _amounts Token amounts
+   * @param _beneficiary Beneficiary address
+   */
+  function withdraw(
+    address[] memory _tokens,
+    uint256[] memory _amounts,
+    address _beneficiary
+  ) external onlyOwner {
+    require(_tokens.length == _amounts.length, "Mismatched withdrawal data");
+
+    for (uint256 i; i < _tokens.length; i++) {
+      IERC20Upgradeable(_tokens[i]).safeTransfer(_beneficiary, _amounts[i]);
+
+      emit Withdrawn(msg.sender, _tokens[i], _amounts[i]);
+    }
   }
 
   /**

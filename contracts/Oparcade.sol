@@ -4,9 +4,14 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/utils/ERC721HolderUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC1155/utils/ERC1155HolderUpgradeable.sol";
+import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import "@openzeppelin/contracts-upgradeable/utils/cryptography/ECDSAUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC1155/IERC1155Upgradeable.sol";
 import "./interfaces/IAddressRegistry.sol";
 import "./interfaces/IGameRegistry.sol";
 
@@ -15,13 +20,29 @@ import "./interfaces/IGameRegistry.sol";
  * @notice This manages the token deposit/distribution from/to the users
  * @author David Lee
  */
-contract Oparcade is OwnableUpgradeable, ReentrancyGuardUpgradeable, PausableUpgradeable {
+contract Oparcade is
+  OwnableUpgradeable,
+  ReentrancyGuardUpgradeable,
+  PausableUpgradeable,
+  ERC721HolderUpgradeable,
+  ERC1155HolderUpgradeable
+{
   using ECDSAUpgradeable for bytes32;
   using SafeERC20Upgradeable for IERC20Upgradeable;
 
-  event UserDeposited(address indexed by, uint256 indexed gid, uint256 indexed tid, address token, uint256 amount);
-  event PrizeDeposited(address indexed by, uint256 indexed gid, uint256 indexed tid, address token, uint256 amount);
-  event PrizeWithdrawn(address indexed by, uint256 indexed gid, uint256 indexed tid, address token, uint256 amount);
+  event UserDeposited(address by, uint256 indexed gid, uint256 indexed tid, address indexed token, uint256 amount);
+  event PrizeDeposited(address by, uint256 indexed gid, uint256 indexed tid, address indexed token, uint256 amount);
+  event PrizeWithdrawn(address by, uint256 indexed gid, uint256 indexed tid, address indexed token, uint256 amount);
+  event NFTPrizeDeposited(
+    address by,
+    address from,
+    uint256 indexed gid,
+    uint256 indexed tid,
+    address indexed nftAddress,
+    uint256 nftType,
+    uint256[] tokenIds,
+    uint256[] amounts
+  );
   event PrizeDistributed(
     address indexed by,
     address winner,
@@ -39,6 +60,10 @@ contract Oparcade is OwnableUpgradeable, ReentrancyGuardUpgradeable, PausableUpg
     uint256 newPlatformFee
   );
 
+  bytes4 private constant INTERFACE_ID_ERC721 = 0x80ac58cd;
+
+  bytes4 private constant INTERFACE_ID_ERC1155 = 0xd9b67a26;
+
   /// @dev Game ID -> Tournament ID -> Token Address -> Total User Deposit Amount
   mapping(uint256 => mapping(uint256 => mapping(address => uint256))) public totalUserDeposit;
 
@@ -50,6 +75,9 @@ contract Oparcade is OwnableUpgradeable, ReentrancyGuardUpgradeable, PausableUpg
 
   /// @dev Game ID -> Tournament ID -> Token Address -> Total Prize Fee Amount
   mapping(uint256 => mapping(uint256 => mapping(address => uint256))) public totalPrizeFee;
+
+  /// @dev Game ID -> Tournament ID -> NFT Address -> Token ID -> Amount
+  mapping(uint256 => mapping(uint256 => mapping(address => mapping(uint256 => uint256)))) public totalNFTPrizeDeposit;
 
   /// @dev AddressRegistry
   IAddressRegistry public addressRegistry;
@@ -75,6 +103,8 @@ contract Oparcade is OwnableUpgradeable, ReentrancyGuardUpgradeable, PausableUpg
     __Ownable_init();
     __ReentrancyGuard_init();
     __Pausable_init();
+    __ERC721Holder_init();
+    __ERC1155Holder_init();
 
     require(_addressRegistry != address(0), "Invalid AddressRegistry");
     require(_feeRecipient != address(0) || _platformFee == 0, "Fee recipient not set");
@@ -159,6 +189,56 @@ contract Oparcade is OwnableUpgradeable, ReentrancyGuardUpgradeable, PausableUpg
     totalUserDeposit[_gid][_tid][_token] -= _amount;
 
     emit PrizeWithdrawn(msg.sender, _gid, _tid, _token, _amount);
+  }
+
+  /**
+   * @notice Deposint NFT prize for the specific game/tournament
+   * @dev Only owner
+   * @dev NFT type should be either 721 or 1155
+   * @param _from NFT owner address
+   * @param _gid Game ID
+   * @param _tid Tournament ID
+   * @param _nftAddress NFT address
+   * @param _nftType NFT type (721/1155)
+   * @param _tokenIds Token Id list
+   * @param _amounts Token amount list
+   */
+  function depositNFTPrize(
+    address _from,
+    uint256 _gid,
+    uint256 _tid,
+    address _nftAddress,
+    uint256 _nftType,
+    uint256[] memory _tokenIds,
+    uint256[] memory _amounts
+  ) external whenNotPaused onlyOwner {
+    require(_nftType == 721 || _nftType == 1155, "Unexpected NFT type");
+    require(_tokenIds.length == _amounts.length, "Mismatched deposit data");
+
+    uint256 totalAmounts;
+    if (_nftType == 721) {
+      require(IERC165(_nftAddress).supportsInterface(INTERFACE_ID_ERC721), "Unexpected NFT address");
+
+      // transfer NFTs to the contract and update totalNFTPrizeDeposit
+      for (uint256 i; i < _tokenIds.length; i++) {
+        IERC721Upgradeable(_nftAddress).safeTransferFrom(_from, address(this), _tokenIds[i]);
+        totalNFTPrizeDeposit[_gid][_tid][_nftAddress][_tokenIds[i]] = 1;
+        totalAmounts += _amounts[i];
+      }
+
+      // check if all amount value is 1
+      require(totalAmounts == _tokenIds.length, "Invalid amount value");
+    } else {
+      require(IERC165(_nftAddress).supportsInterface(INTERFACE_ID_ERC1155), "Unexpected NFT address");
+
+      // transfer NFTs to the contract and update totalNFTPrizeDeposit
+      IERC1155Upgradeable(_nftAddress).safeBatchTransferFrom(_from, address(this), _tokenIds, _amounts, bytes(""));
+      for (uint256 i; i < _tokenIds.length; i++) {
+        totalNFTPrizeDeposit[_gid][_tid][_nftAddress][_tokenIds[i]] = _amounts[i];
+      }
+    }
+
+    emit NFTPrizeDeposited(msg.sender, _from, _gid, _tid, _nftAddress, _nftType, _tokenIds, _amounts);
   }
 
   /**

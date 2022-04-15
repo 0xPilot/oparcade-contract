@@ -54,11 +54,21 @@ contract Oparcade is
     uint256[] amounts
   );
   event PrizeDistributed(
-    address indexed by,
+    address by,
     address winner,
     uint256 indexed gid,
     uint256 indexed tid,
-    address token,
+    address indexed token,
+    uint256 amount
+  );
+  event NFTPrizeDistributed(
+    address by,
+    address winner,
+    uint256 indexed gid,
+    uint256 indexed tid,
+    address indexed nftAddress,
+    uint256 nftType,
+    uint256 tokenId,
     uint256 amount
   );
   event Withdrawn(address indexed by, address indexed token, uint256 amount);
@@ -86,8 +96,12 @@ contract Oparcade is
   /// @dev Game ID -> Tournament ID -> Token Address -> Total Prize Fee Amount
   mapping(uint256 => mapping(uint256 => mapping(address => uint256))) public totalPrizeFee;
 
-  /// @dev Game ID -> Tournament ID -> NFT Address -> Token ID -> Amount
+  /// @dev Game ID -> Tournament ID -> NFT Address -> Token ID -> Deposit Amount
   mapping(uint256 => mapping(uint256 => mapping(address => mapping(uint256 => uint256)))) public totalNFTPrizeDeposit;
+
+  /// @dev Game ID -> Tournament ID -> NFT Address -> Token ID -> Distribution Amount
+  mapping(uint256 => mapping(uint256 => mapping(address => mapping(uint256 => uint256))))
+    public totalNFTPrizeDistribution;
 
   /// @dev AddressRegistry
   IAddressRegistry public addressRegistry;
@@ -222,6 +236,12 @@ contract Oparcade is
     uint256[] memory _tokenIds,
     uint256[] memory _amounts
   ) external whenNotPaused onlyOwner {
+    // check if NFT is allowed to distribute
+    require(
+      IGameRegistry(addressRegistry.gameRegistry()).distributable(_gid, _nftAddress),
+      "Disallowed distribution token"
+    );
+
     require(_nftType == 721 || _nftType == 1155, "Unexpected NFT type");
     require(_tokenIds.length == _amounts.length, "Mismatched deposit data");
 
@@ -294,11 +314,13 @@ contract Oparcade is
       // transfer NFTs to the contract and update totalNFTPrizeDeposit
       IERC1155Upgradeable(_nftAddress).safeBatchTransferFrom(address(this), _to, _tokenIds, _amounts, bytes(""));
       for (uint256 i; i < _tokenIds.length; i++) {
+        require(totalNFTPrizeDeposit[_gid][_tid][_nftAddress][_tokenIds[i]] >= _amounts[i], "Insufficient NFT prize");
+
         totalNFTPrizeDeposit[_gid][_tid][_nftAddress][_tokenIds[i]] -= _amounts[i];
       }
     }
 
-    emit NFTPrizeDeposited(msg.sender, _to, _gid, _tid, _nftAddress, _nftType, _tokenIds, _amounts);
+    emit NFTPrizeWithdrawn(msg.sender, _to, _gid, _tid, _nftAddress, _nftType, _tokenIds, _amounts);
   }
 
   /**
@@ -311,7 +333,7 @@ contract Oparcade is
    * @param _token Prize token address
    * @param _amounts Prize list
    */
-  function distribute(
+  function distributePrize(
     uint256 _gid,
     uint256 _tid,
     address[] memory _winners,
@@ -320,7 +342,7 @@ contract Oparcade is
   ) external whenNotPaused onlyMaintainer {
     require(_winners.length == _amounts.length, "Mismatched winners and amounts");
 
-    // check if token is allowed to claim
+    // check if token is allowed to distribute
     require(IGameRegistry(addressRegistry.gameRegistry()).distributable(_gid, _token), "Disallowed distribution token");
 
     // transfer the payment
@@ -344,6 +366,68 @@ contract Oparcade is
         totalPrizeDeposit[_gid][_tid][_token],
       "Prize amount exceeded"
     );
+  }
+
+  function distributeNFTPrize(
+    uint256 _gid,
+    uint256 _tid,
+    address[] memory _winners,
+    address _nftAddress,
+    uint256 _nftType,
+    uint256[] memory _tokenIds,
+    uint256[] memory _amounts
+  ) external whenNotPaused nonReentrant onlyMaintainer {
+    // check if token is allowed to distribute
+    require(
+      IGameRegistry(addressRegistry.gameRegistry()).distributable(_gid, _nftAddress),
+      "Disallowed distribution token"
+    );
+
+    require(_nftType == 721 || _nftType == 1155, "Unexpected NFT type");
+    require(
+      _winners.length == _tokenIds.length && _tokenIds.length == _amounts.length,
+      "Mismatched NFT distribution data"
+    );
+
+    uint256 totalAmounts;
+    if (_nftType == 721) {
+      require(IERC165(_nftAddress).supportsInterface(INTERFACE_ID_ERC721), "Unexpected NFT address");
+
+      // transfer NFTs to the contract and update totalNFTPrizeDeposit
+      for (uint256 i; i < _winners.length; i++) {
+        require(totalNFTPrizeDistribution[_gid][_tid][_nftAddress][_tokenIds[i]] == 1, "NFT prize amount exceeded");
+
+        IERC721Upgradeable(_nftAddress).safeTransferFrom(address(this), _winners[i], _tokenIds[i]);
+        totalNFTPrizeDistribution[_gid][_tid][_nftAddress][_tokenIds[i]] = 0;
+        totalAmounts += _amounts[i];
+
+        emit NFTPrizeDistributed(msg.sender, _winners[i], _gid, _tid, _nftAddress, _nftType, _tokenIds[i], _amounts[i]);
+      }
+
+      // check if all amount value is 1
+      require(totalAmounts == _winners.length, "Invalid amount value");
+    } else {
+      require(IERC165(_nftAddress).supportsInterface(INTERFACE_ID_ERC1155), "Unexpected NFT address");
+
+      // transfer NFTs to the contract and update totalNFTPrizeDeposit
+      for (uint256 i; i < _winners.length; i++) {
+        require(
+          totalNFTPrizeDeposit[_gid][_tid][_nftAddress][_tokenIds[i]] >= _amounts[i],
+          "NFT prize amount exceeded"
+        );
+
+        IERC1155Upgradeable(_nftAddress).safeTransferFrom(
+          address(this),
+          _winners[i],
+          _tokenIds[i],
+          _amounts[i],
+          bytes("")
+        );
+        totalNFTPrizeDeposit[_gid][_tid][_nftAddress][_tokenIds[i]] -= _amounts[i];
+
+        emit NFTPrizeDistributed(msg.sender, _winners[i], _gid, _tid, _nftAddress, _nftType, _tokenIds[i], _amounts[i]);
+      }
+    }
   }
 
   /**

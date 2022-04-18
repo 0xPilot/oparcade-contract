@@ -27,10 +27,10 @@ contract Oparcade is
   ERC721HolderUpgradeable,
   ERC1155HolderUpgradeable
 {
-  using ECDSAUpgradeable for bytes32;
   using SafeERC20Upgradeable for IERC20Upgradeable;
 
   event UserDeposited(address by, uint256 indexed gid, uint256 indexed tid, address indexed token, uint256 amount);
+  event Withdrawn(address indexed by, address indexed token, uint256 amount);
   event PrizeDeposited(address by, uint256 indexed gid, uint256 indexed tid, address indexed token, uint256 amount);
   event PrizeWithdrawn(address by, uint256 indexed gid, uint256 indexed tid, address indexed token, uint256 amount);
   event NFTPrizeDeposited(
@@ -71,7 +71,6 @@ contract Oparcade is
     uint256 tokenId,
     uint256 amount
   );
-  event Withdrawn(address indexed by, address indexed token, uint256 amount);
   event PlatformFeeUpdated(
     address indexed by,
     address indexed oldFeeRecipient,
@@ -86,6 +85,9 @@ contract Oparcade is
 
   /// @dev Game ID -> Tournament ID -> Token Address -> Total User Deposit Amount
   mapping(uint256 => mapping(uint256 => mapping(address => uint256))) public totalUserDeposit;
+
+  /// @dev Token Address -> Total Withdraw Amount
+  mapping(address => uint256) public totalWithdrawAmount;
 
   /// @dev Game ID -> Tournament ID -> Token Address -> Total Prize Deposit Amount
   mapping(uint256 => mapping(uint256 => mapping(address => uint256))) public totalPrizeDeposit;
@@ -168,6 +170,28 @@ contract Oparcade is
   }
 
   /**
+   * @notice Withdraw tokens
+   * @dev Only owner
+   * @param _tokens Token addresses
+   * @param _amounts Token amounts
+   * @param _beneficiary Beneficiary address
+   */
+  function withdraw(
+    address[] memory _tokens,
+    uint256[] memory _amounts,
+    address _beneficiary
+  ) external onlyOwner {
+    require(_tokens.length == _amounts.length, "Mismatched withdrawal data");
+
+    for (uint256 i; i < _tokens.length; i++) {
+      IERC20Upgradeable(_tokens[i]).safeTransfer(_beneficiary, _amounts[i]);
+      totalWithdrawAmount[_tokens[i]] += _amounts[i];
+
+      emit Withdrawn(msg.sender, _tokens[i], _amounts[i]);
+    }
+  }
+
+  /**
    * @notice Deposit the prize tokens for the specific game/tournament
    * @dev Only owner
    * @dev Only tokens which are allowed as a distributable token can be deposited
@@ -181,7 +205,7 @@ contract Oparcade is
     uint256 _tid,
     address _token,
     uint256 _amount
-  ) external whenNotPaused onlyOwner {
+  ) external onlyOwner {
     // check if tokens are allowed to claim as a prize
     require(IGameRegistry(addressRegistry.gameRegistry()).distributable(_gid, _token), "Disallowed distribution token");
 
@@ -235,7 +259,7 @@ contract Oparcade is
     uint256 _nftType,
     uint256[] memory _tokenIds,
     uint256[] memory _amounts
-  ) external whenNotPaused onlyOwner {
+  ) external onlyOwner {
     // check if NFT is allowed to distribute
     require(
       IGameRegistry(addressRegistry.gameRegistry()).distributable(_gid, _nftAddress),
@@ -291,7 +315,7 @@ contract Oparcade is
     uint256 _nftType,
     uint256[] memory _tokenIds,
     uint256[] memory _amounts
-  ) external whenNotPaused nonReentrant onlyOwner {
+  ) external nonReentrant onlyOwner {
     require(_nftType == 721 || _nftType == 1155, "Unexpected NFT type");
     require(_tokenIds.length == _amounts.length, "Mismatched deposit data");
 
@@ -325,8 +349,7 @@ contract Oparcade is
 
   /**
    * @notice Distribute winners their prizes
-   * @dev only maintainer
-   * @dev Total distribution amount of the tournament of the game must be equal to/less than the double amount deposited in the tournament of the game due to the bonus
+   * @dev Only maintainer
    * @param _gid Game ID
    * @param _tid Tournament ID
    * @param _winners Winners list
@@ -368,6 +391,18 @@ contract Oparcade is
     );
   }
 
+  /**
+   * @notice Distribute winners NFT prizes
+   * @dev Only maintainer
+   * @dev NFT type should be either 721 or 1155
+   * @param _gid Game ID
+   * @param _tid Tournament ID
+   * @param _winners Winners list
+   * @param _nftAddress NFT address
+   * @param _nftType NFT type (721/1155)
+   * @param _tokenIds Token Id list
+   * @param _amounts Token amount list
+   */
   function distributeNFTPrize(
     uint256 _gid,
     uint256 _tid,
@@ -431,32 +466,9 @@ contract Oparcade is
   }
 
   /**
-   * @notice Withdraw tokens
-   * @dev Only owner
-   * @param _tokens Token addresses
-   * @param _amounts Token amounts
-   * @param _beneficiary Beneficiary address
-   */
-  function withdraw(
-    address[] memory _tokens,
-    uint256[] memory _amounts,
-    address _beneficiary
-  ) external onlyOwner {
-    require(_tokens.length == _amounts.length, "Mismatched withdrawal data");
-
-    for (uint256 i; i < _tokens.length; i++) {
-      IERC20Upgradeable(_tokens[i]).safeTransfer(_beneficiary, _amounts[i]);
-
-      emit Withdrawn(msg.sender, _tokens[i], _amounts[i]);
-    }
-  }
-
-  /**
    * @notice Update platform fee
-   *
    * @dev Only owner
    * @dev Allow zero recipient address only of fee is also zero
-   *
    * @param _platformFee platform fee
    */
   function updatePlatformFee(address _feeRecipient, uint16 _platformFee) external onlyOwner {
@@ -471,7 +483,6 @@ contract Oparcade is
 
   /**
    * @notice Pause Oparcade
-   *
    * @dev Only owner
    */
   function pause() external onlyOwner {
@@ -480,7 +491,6 @@ contract Oparcade is
 
   /**
    * @notice Resume Oparcade
-   *
    * @dev Only owner
    */
   function unpause() external onlyOwner {

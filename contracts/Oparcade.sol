@@ -7,7 +7,6 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/utils/ERC721HolderUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC1155/utils/ERC1155HolderUpgradeable.sol";
 import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
-import "@openzeppelin/contracts-upgradeable/utils/cryptography/ECDSAUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol";
@@ -170,28 +169,6 @@ contract Oparcade is
   }
 
   /**
-   * @notice Withdraw tokens
-   * @dev Only owner
-   * @param _tokens Token addresses
-   * @param _amounts Token amounts
-   * @param _beneficiary Beneficiary address
-   */
-  function withdraw(
-    address[] memory _tokens,
-    uint256[] memory _amounts,
-    address _beneficiary
-  ) external onlyOwner {
-    require(_tokens.length == _amounts.length, "Mismatched withdrawal data");
-
-    for (uint256 i; i < _tokens.length; i++) {
-      IERC20Upgradeable(_tokens[i]).safeTransfer(_beneficiary, _amounts[i]);
-      totalWithdrawAmount[_tokens[i]] += _amounts[i];
-
-      emit Withdrawn(msg.sender, _tokens[i], _amounts[i]);
-    }
-  }
-
-  /**
    * @notice Deposit the prize tokens for the specific game/tournament
    * @dev Only owner
    * @dev Only tokens which are allowed as a distributable token can be deposited
@@ -222,6 +199,7 @@ contract Oparcade is
    * @param _gid Game ID
    * @param _tid Tournament ID
    * @param _token Prize token address
+   * @param _amount Prize amount to withdraw
    */
   function withdrawPrize(
     uint256 _gid,
@@ -234,7 +212,7 @@ contract Oparcade is
 
     // withdraw the prize
     IERC20Upgradeable(_token).safeTransfer(msg.sender, _amount);
-    totalUserDeposit[_gid][_tid][_token] -= _amount;
+    totalPrizeDeposit[_gid][_tid][_token] -= _amount;
 
     emit PrizeWithdrawn(msg.sender, _gid, _tid, _token, _amount);
   }
@@ -462,6 +440,28 @@ contract Oparcade is
 
         emit NFTPrizeDistributed(msg.sender, _winners[i], _gid, _tid, _nftAddress, _nftType, _tokenIds[i], _amounts[i]);
       }
+    }
+  }
+
+  /**
+   * @notice Withdraw tokens
+   * @dev Only owner
+   * @param _tokens Token addresses
+   * @param _amounts Token amounts
+   * @param _beneficiary Beneficiary address
+   */
+  function withdraw(
+    address[] memory _tokens,
+    uint256[] memory _amounts,
+    address _beneficiary
+  ) external onlyOwner {
+    require(_tokens.length == _amounts.length, "Mismatched withdrawal data");
+
+    for (uint256 i; i < _tokens.length; i++) {
+      IERC20Upgradeable(_tokens[i]).safeTransfer(_beneficiary, _amounts[i]);
+      totalWithdrawAmount[_tokens[i]] += _amounts[i];
+
+      emit Withdrawn(msg.sender, _tokens[i], _amounts[i]);
     }
   }
 

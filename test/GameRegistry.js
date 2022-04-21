@@ -47,43 +47,45 @@ describe("GameRegistry", () => {
 
   it("Should be able to update the deposit token...", async () => {
     const gid = 1;
+    const tid0 = 0;
+    const tid1 = 1;
     let depositTokenList = [];
     const token1_amount = 100;
     const token2_amount = 200;
 
     // add token1
-    await gameRegistry.updateDepositTokenAmount(gid, token1.address, token1_amount);
+    await gameRegistry.updateDepositTokenAmount(gid, tid0, token1.address, token1_amount);
 
-    expect(await gameRegistry.depositTokenAmount(gid, token1.address)).to.equal(token1_amount);
+    expect(await gameRegistry.depositTokenAmount(gid, tid0, token1.address)).to.equal(token1_amount);
     expect((await gameRegistry.getDepositTokenList(gid)).length).to.equal(1);
     expect(await gameRegistry.depositTokenList(gid, 0)).to.equal(token1.address);
 
     // update token1
     const new_token1_amount = 300;
-    await gameRegistry.updateDepositTokenAmount(gid, token1.address, new_token1_amount);
+    await gameRegistry.updateDepositTokenAmount(gid, tid0, token1.address, new_token1_amount);
 
-    expect(await gameRegistry.depositTokenAmount(gid, token1.address)).to.equal(new_token1_amount);
+    expect(await gameRegistry.depositTokenAmount(gid, tid0, token1.address)).to.equal(new_token1_amount);
     expect((await gameRegistry.getDepositTokenList(gid)).length).to.equal(1);
     expect(await gameRegistry.depositTokenList(gid, 0)).to.equal(token1.address);
 
     // add token2
-    await gameRegistry.updateDepositTokenAmount(gid, token2.address, token2_amount);
+    await gameRegistry.updateDepositTokenAmount(gid, tid1, token2.address, token2_amount);
 
-    expect(await gameRegistry.depositTokenAmount(gid, token2.address)).to.equal(token2_amount);
+    expect(await gameRegistry.depositTokenAmount(gid, tid1, token2.address)).to.equal(token2_amount);
     expect((await gameRegistry.getDepositTokenList(gid)).length).to.equal(2);
     expect(await gameRegistry.depositTokenList(gid, 1)).to.equal(token2.address);
 
     // remove token1
-    await gameRegistry.updateDepositTokenAmount(gid, token1.address, 0);
+    await gameRegistry.updateDepositTokenAmount(gid, tid1, token1.address, 0);
 
-    expect(await gameRegistry.depositTokenAmount(gid, token1.address)).to.equal(0);
+    expect(await gameRegistry.depositTokenAmount(gid, tid1, token1.address)).to.equal(0);
     expect((await gameRegistry.getDepositTokenList(gid)).length).to.equal(1);
     expect(await gameRegistry.depositTokenList(gid, 0)).to.equal(token2.address);
 
     // remove token3 (unavailable token)
-    await gameRegistry.updateDepositTokenAmount(gid, token3.address, 0);
+    await gameRegistry.updateDepositTokenAmount(gid, tid1, token3.address, 0);
 
-    expect(await gameRegistry.depositTokenAmount(gid, token3.address)).to.equal(0);
+    expect(await gameRegistry.depositTokenAmount(gid, tid1, token3.address)).to.equal(0);
     expect((await gameRegistry.getDepositTokenList(gid)).length).to.equal(1);
     expect(await gameRegistry.depositTokenList(gid, 0)).to.equal(token2.address);
   });

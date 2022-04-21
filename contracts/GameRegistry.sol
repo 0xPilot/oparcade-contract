@@ -32,8 +32,8 @@ contract GameRegistry is OwnableUpgradeable {
   /// @dev Game ID -> Deposit token list
   mapping(uint256 => address[]) public depositTokenList;
 
-  /// @dev Game ID -> Token address -> Deposit amount
-  mapping(uint256 => mapping(address => uint256)) public depositTokenAmount;
+  /// @dev Game ID -> Tournament ID -> Token address -> Deposit amount
+  mapping(uint256 => mapping(uint256 => mapping(address => uint256))) public depositTokenAmount;
 
   /// @dev Game ID -> Distributable token list
   mapping(uint256 => address[]) public distributableTokenList;
@@ -80,19 +80,21 @@ contract GameRegistry is OwnableUpgradeable {
    * @dev Only owner
    * @dev Only tokens with an amount greater than zero is valid for the deposit
    * @param _gid Game ID
+   * @param _tid Tournament ID
    * @param _token Token address to allow/disallow the deposit
    * @param _amount Token amount
    */
   function updateDepositTokenAmount(
     uint256 _gid,
+    uint256 _tid,
     address _token,
     uint256 _amount
   ) external onlyOwner onlyValidGID(_gid) {
-    emit DepositAmountUpdated(msg.sender, _gid, _token, depositTokenAmount[_gid][_token], _amount);
+    emit DepositAmountUpdated(msg.sender, _gid, _token, depositTokenAmount[_gid][_tid][_token], _amount);
 
     // update deposit token list
     if (_amount > 0) {
-      if (depositTokenAmount[_gid][_token] == 0) {
+      if (depositTokenAmount[_gid][_tid][_token] == 0) {
         // add token to the list only if it's added newly
         depositTokenList[_gid].push(_token);
       }
@@ -106,7 +108,7 @@ contract GameRegistry is OwnableUpgradeable {
     }
 
     // update deposit token amount
-    depositTokenAmount[_gid][_token] = _amount;
+    depositTokenAmount[_gid][_tid][_token] = _amount;
   }
 
   /**

@@ -156,7 +156,7 @@ contract Oparcade is
     address _token
   ) external whenNotPaused {
     // get token amount to deposit
-    uint256 depositTokenAmount = IGameRegistry(addressRegistry.gameRegistry()).depositTokenAmount(_gid, _token);
+    uint256 depositTokenAmount = IGameRegistry(addressRegistry.gameRegistry()).depositTokenAmount(_gid, _tid, _token);
 
     // check if the token address is valid
     require(depositTokenAmount > 0, "Invalid deposit token");

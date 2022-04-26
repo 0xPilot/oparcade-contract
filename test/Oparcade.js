@@ -105,12 +105,8 @@ describe("Oparcade", () => {
       await mockUSDT.approve(oparcade.address, MockUSDTDepositAmount);
       await oparcade.deposit(gid, tid, mockUSDT.address);
 
-      // calculate fee amount
-      let feeAmount = (MockUSDTDepositAmount * platformFee) / 1000;
-
       // check balances
-      expect(await mockUSDT.balanceOf(feeRecipient.address)).to.equal(feeAmount);
-      expect(await mockUSDT.balanceOf(oparcade.address)).to.equal(MockUSDTDepositAmount - feeAmount);
+      expect(await mockUSDT.balanceOf(oparcade.address)).to.equal(MockUSDTDepositAmount);
 
       // set new gid
       gid = 1;
@@ -119,12 +115,8 @@ describe("Oparcade", () => {
       await mockOPC.approve(oparcade.address, mockOPCDepositAmount);
       await oparcade.deposit(gid, tid, mockOPC.address);
 
-      // calculate fee amount
-      feeAmount = (mockOPCDepositAmount * platformFee) / 1000;
-
       // check balances
-      expect(await mockOPC.balanceOf(feeRecipient.address)).to.equal(feeAmount);
-      expect(await mockOPC.balanceOf(oparcade.address)).to.equal(mockOPCDepositAmount - feeAmount);
+      expect(await mockOPC.balanceOf(oparcade.address)).to.equal(mockOPCDepositAmount);
     });
 
     it("Should revert if users deposit the invalid token...", async () => {
@@ -156,13 +148,18 @@ describe("Oparcade", () => {
       await mockOPC.connect(bob).approve(oparcade.address, mockOPCDepositAmount);
       await oparcade.connect(bob).deposit(gid, tid, mockOPC.address);
 
-      // calculate total fees
-      let MockUSDTFeeAmount = (2 * (MockUSDTDepositAmount * platformFee)) / 1000;
-      let MockOPCFeeAmount = (2 * (mockOPCDepositAmount * platformFee)) / 1000;
+      // deposit prize
+      gid = 0;
+      await mockUSDT.approve(oparcade.address, 2 * MockUSDTDepositAmount);
+      await oparcade.depositPrize(gid, tid, mockUSDT.address, 2 * MockUSDTDepositAmount);
+
+      gid = 1;
+      await mockOPC.approve(oparcade.address, 2 * mockOPCDepositAmount);
+      await oparcade.depositPrize(gid, tid, mockOPC.address, 2 * mockOPCDepositAmount);
 
       // set distributable amount
-      const totalMockUSDTDistributableAmount = 2 * MockUSDTDepositAmount - MockUSDTFeeAmount;
-      const totalMockOPCDistributableAmount = 2 * mockOPCDepositAmount - MockOPCFeeAmount;
+      const totalMockUSDTDistributableAmount = 2 * MockUSDTDepositAmount;
+      const totalMockOPCDistributableAmount = 2 * mockOPCDepositAmount;
 
       const aliceMockUSDTAmount = totalMockUSDTDistributableAmount * 0.7;
       const bobMockUSDTAmount = totalMockUSDTDistributableAmount * 0.3;
@@ -172,7 +169,7 @@ describe("Oparcade", () => {
       const mockUSDTDistributableAmount = [aliceMockUSDTAmount, bobMockUSDTAmount];
       const mockOPCDistributableAmount = [aliceMockOPCAmount, bobMockOPCAmount];
 
-      // check old balaces
+      // check old balances
       const beforeAliceMockUSDTAmount = await mockUSDT.balanceOf(alice.address);
       const beforeBobMockUSDTAmount = await mockUSDT.balanceOf(bob.address);
       const beforeAliceMockOPCAmount = await mockOPC.balanceOf(alice.address);
@@ -182,18 +179,30 @@ describe("Oparcade", () => {
       gid = 0;
       await oparcade
         .connect(maintainer)
-        .distribute(gid, tid, [alice.address, bob.address], mockUSDT.address, mockUSDTDistributableAmount);
+        .distributePrize(gid, tid, [alice.address, bob.address], mockUSDT.address, mockUSDTDistributableAmount);
 
       gid = 1;
       await oparcade
         .connect(maintainer)
-        .distribute(gid, tid, [alice.address, bob.address], mockOPC.address, mockOPCDistributableAmount);
+        .distributePrize(gid, tid, [alice.address, bob.address], mockOPC.address, mockOPCDistributableAmount);
 
-      // check new balaces
-      expect(await mockUSDT.balanceOf(alice.address)).to.equal(beforeAliceMockUSDTAmount.add(aliceMockUSDTAmount));
-      expect(await mockUSDT.balanceOf(bob.address)).to.equal(beforeBobMockUSDTAmount.add(bobMockUSDTAmount));
-      expect(await mockOPC.balanceOf(alice.address)).to.equal(beforeAliceMockOPCAmount.add(aliceMockOPCAmount));
-      expect(await mockOPC.balanceOf(bob.address)).to.equal(beforeBobMockOPCAmount.add(bobMockOPCAmount));
+      // calculate total fees
+      let MockUSDTFeeAmount = (totalMockUSDTDistributableAmount * platformFee) / 1000;
+      let MockOPCFeeAmount = (totalMockOPCDistributableAmount * platformFee) / 1000;
+
+      // check new balances
+      expect(await mockUSDT.balanceOf(alice.address)).to.equal(
+        beforeAliceMockUSDTAmount.add((aliceMockUSDTAmount * (1000 - platformFee)) / 1000),
+      );
+      expect(await mockUSDT.balanceOf(bob.address)).to.equal(
+        beforeBobMockUSDTAmount.add((bobMockUSDTAmount * (1000 - platformFee)) / 1000),
+      );
+      expect(await mockOPC.balanceOf(alice.address)).to.equal(
+        beforeAliceMockOPCAmount.add((aliceMockOPCAmount * (1000 - platformFee)) / 1000),
+      );
+      expect(await mockOPC.balanceOf(bob.address)).to.equal(
+        beforeBobMockOPCAmount.add((bobMockOPCAmount * (1000 - platformFee)) / 1000),
+      );
     });
 
     it("Should revert if the distributor is not a maintainer...", async () => {
@@ -207,11 +216,8 @@ describe("Oparcade", () => {
       await mockUSDT.connect(bob).approve(oparcade.address, MockUSDTDepositAmount);
       await oparcade.connect(bob).deposit(gid, tid, mockUSDT.address);
 
-      // calculate total fees
-      let MockUSDTFeeAmount = (2 * (MockUSDTDepositAmount * platformFee)) / 1000;
-
       // set distributable amount
-      const totalMockUSDTDistributableAmount = 2 * MockUSDTDepositAmount - MockUSDTFeeAmount;
+      const totalMockUSDTDistributableAmount = 2 * MockUSDTDepositAmount;
 
       const aliceMockUSDTAmount = totalMockUSDTDistributableAmount * 0.7;
       const bobMockUSDTAmount = totalMockUSDTDistributableAmount * 0.3;
@@ -222,7 +228,7 @@ describe("Oparcade", () => {
       await expect(
         oparcade
           .connect(alice)
-          .distribute(gid, tid, [alice.address, bob.address], mockUSDT.address, mockUSDTDistributableAmount),
+          .distributePrize(gid, tid, [alice.address, bob.address], mockUSDT.address, mockUSDTDistributableAmount),
       ).to.be.revertedWith("Only maintainer");
     });
 
@@ -237,11 +243,8 @@ describe("Oparcade", () => {
       await mockUSDT.connect(bob).approve(oparcade.address, MockUSDTDepositAmount);
       await oparcade.connect(bob).deposit(gid, tid, mockUSDT.address);
 
-      // calculate total fees
-      let MockUSDTFeeAmount = (2 * (MockUSDTDepositAmount * platformFee)) / 1000;
-
       // set distributable amount
-      const totalMockUSDTDistributableAmount = 2 * MockUSDTDepositAmount - MockUSDTFeeAmount;
+      const totalMockUSDTDistributableAmount = 2 * MockUSDTDepositAmount;
 
       const aliceMockUSDTAmount = totalMockUSDTDistributableAmount * 0.7;
       const bobMockUSDTAmount = totalMockUSDTDistributableAmount * 0.5;
@@ -252,7 +255,7 @@ describe("Oparcade", () => {
       await expect(
         oparcade
           .connect(maintainer)
-          .distribute(gid, tid, [alice.address], mockUSDT.address, mockUSDTDistributableAmount),
+          .distributePrize(gid, tid, [alice.address], mockUSDT.address, mockUSDTDistributableAmount),
       ).to.be.revertedWith("Mismatched winners and amounts");
     });
 
@@ -267,11 +270,8 @@ describe("Oparcade", () => {
       await mockUSDT.connect(bob).approve(oparcade.address, MockUSDTDepositAmount);
       await oparcade.connect(bob).deposit(gid, tid, mockUSDT.address);
 
-      // calculate total fees
-      let MockUSDTFeeAmount = (2 * (MockUSDTDepositAmount * platformFee)) / 1000;
-
       // set distributable amount
-      const totalMockUSDTDistributableAmount = 2 * MockUSDTDepositAmount - MockUSDTFeeAmount;
+      const totalMockUSDTDistributableAmount = 2 * MockUSDTDepositAmount;
 
       const aliceMockUSDTAmount = totalMockUSDTDistributableAmount * 0.7;
       const bobMockUSDTAmount = totalMockUSDTDistributableAmount * 0.3;
@@ -282,7 +282,7 @@ describe("Oparcade", () => {
       await expect(
         oparcade
           .connect(maintainer)
-          .distribute(gid, tid, [alice.address, bob.address], mockOPC.address, mockUSDTDistributableAmount),
+          .distributePrize(gid, tid, [alice.address, bob.address], mockOPC.address, mockUSDTDistributableAmount),
       ).to.be.revertedWith("Disallowed distribution token");
     });
 
@@ -300,11 +300,12 @@ describe("Oparcade", () => {
       await mockUSDT.connect(bob).approve(oparcade.address, MockUSDTDepositAmount);
       await oparcade.connect(bob).deposit(gid, tid, mockUSDT.address);
 
-      // calculate total fees
-      let MockUSDTFeeAmount = (2 * (MockUSDTDepositAmount * platformFee)) / 1000;
+      // deposit prize
+      await mockUSDT.approve(oparcade.address, 2 * MockUSDTDepositAmount);
+      await oparcade.depositPrize(gid, tid, mockUSDT.address, 2 * MockUSDTDepositAmount);
 
       // set exceeded distributable amount
-      const totalMockUSDTDistributableAmount = 2 * MockUSDTDepositAmount - MockUSDTFeeAmount;
+      const totalMockUSDTDistributableAmount = 2 * MockUSDTDepositAmount;
 
       const aliceMockUSDTAmount = totalMockUSDTDistributableAmount * 0.7 * 2 + 1;
       const bobMockUSDTAmount = totalMockUSDTDistributableAmount * 0.3 * 2 + 1;
@@ -315,8 +316,81 @@ describe("Oparcade", () => {
       await expect(
         oparcade
           .connect(maintainer)
-          .distribute(gid, tid, [alice.address, bob.address], mockUSDT.address, mockUSDTDistributableAmount),
-      ).to.be.revertedWith("Total payouts exceeded");
+          .distributePrize(gid, tid, [alice.address, bob.address], mockUSDT.address, mockUSDTDistributableAmount),
+      ).to.be.revertedWith("Prize amount exceeded");
+    });
+  });
+
+  describe("depositPrize", () => {
+    it("Should deposit the ERC20 token prize", async () => {
+      // check old balance
+      expect(await mockUSDT.balanceOf(oparcade.address)).to.equal(0);
+
+      // set gid and tid
+      let gid = 0;
+      let tid = 0;
+
+      // deposit the prize
+      await mockUSDT.approve(oparcade.address, MockUSDTDepositAmount);
+      await oparcade.depositPrize(gid, tid, mockUSDT.address, MockUSDTDepositAmount);
+
+      expect(await mockUSDT.balanceOf(oparcade.address)).to.equal(MockUSDTDepositAmount);
+    });
+
+    it("Should revert if the token is not allowed to distribute...", async () => {
+      // set gid and tid
+      let gid = 0;
+      let tid = 0;
+
+      // deposit the prize
+      await mockOPC.approve(oparcade.address, mockOPCDepositAmount);
+      await expect(oparcade.depositPrize(gid, tid, mockOPC.address, mockOPCDepositAmount)).to.be.revertedWith(
+        "Disallowed distribution token",
+      );
+    });
+  });
+
+  describe("withdrawPrize", () => {
+    it("Should withdraw the ERC20 token prize", async () => {
+      // set gid and tid
+      let gid = 0;
+      let tid = 0;
+
+      // deposit the prize
+      await mockUSDT.approve(oparcade.address, MockUSDTDepositAmount);
+      await oparcade.depositPrize(gid, tid, mockUSDT.address, MockUSDTDepositAmount);
+
+      // deposit the prize again
+      await mockUSDT.approve(oparcade.address, MockUSDTDepositAmount);
+      await oparcade.depositPrize(gid, tid, mockUSDT.address, MockUSDTDepositAmount);
+
+      // check old balance
+      const beforeOwnerMockUSDTAmount = await mockUSDT.balanceOf(deployer.address);
+
+      // withdraw the prize
+      await oparcade.withdrawPrize(gid, tid, mockUSDT.address, MockUSDTDepositAmount * 1.5);
+
+      // check new balance
+      expect(await mockUSDT.balanceOf(deployer.address)).to.equal(
+        beforeOwnerMockUSDTAmount.add(MockUSDTDepositAmount * 1.5),
+      );
+    });
+
+    it("Should revert if the prize token is not enough to withdraw...", async () => {
+      // set gid and tid
+      let gid = 0;
+      let tid = 0;
+
+      // deposit prize
+      await mockOPC.approve(oparcade.address, mockOPCDepositAmount);
+      await expect(oparcade.depositPrize(gid, tid, mockOPC.address, mockOPCDepositAmount)).to.be.revertedWith(
+        "Disallowed distribution token",
+      );
+
+      // withdraw the prize
+      await expect(oparcade.withdrawPrize(gid, tid, mockUSDT.address, MockUSDTDepositAmount * 1.5)).to.be.revertedWith(
+        "Insufficient prize",
+      );
     });
   });
 

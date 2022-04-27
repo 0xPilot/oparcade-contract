@@ -38,8 +38,12 @@ describe("Oparcade", () => {
 
     // deploy mock tokens
     const ERC20Mock = await ethers.getContractFactory("ERC20Mock");
+    const MockERC721 = await ethers.getContractFactory("MockERC721");
+    const MockERC1155 = await ethers.getContractFactory("MockERC1155");
     mockUSDT = await ERC20Mock.deploy("mockUSDT", "mockUSDT");
     mockOPC = await ERC20Mock.deploy("mockOPC", "mockOPC");
+    mockERC721 = await MockERC721.deploy();
+    mockERC1155 = await MockERC1155.deploy();
 
     // register the contract addresses and maintainer to the AddressRegistery
     await addressRegistry.updateOparcade(oparcade.address);
@@ -66,9 +70,13 @@ describe("Oparcade", () => {
     await mockUSDT.transfer(bob.address, initAmount);
     await mockOPC.transfer(alice.address, initAmount);
     await mockOPC.transfer(bob.address, initAmount);
+    await mockERC721.mint(deployer.address, 1);
+    await mockERC721.mint(deployer.address, 2);
+    await mockERC721.mint(deployer.address, 3);
+    await mockERC1155.mint(deployer.address, [1, 2, 3], [3, 3, 3]);
   });
 
-  describe("deposit and distribute", () => {
+  describe("deposit and distributePrize", () => {
     it("Fail to initialize, addressRegistry == address (0), should revert...", async () => {
       // Initialize Oparcade contract
       const Oparcade = await ethers.getContractFactory("Oparcade");
@@ -158,8 +166,8 @@ describe("Oparcade", () => {
       await oparcade.depositPrize(gid, tid, mockOPC.address, 2 * mockOPCDepositAmount);
 
       // set distributable amount
-      const totalMockUSDTDistributableAmount = 2 * MockUSDTDepositAmount;
-      const totalMockOPCDistributableAmount = 2 * mockOPCDepositAmount;
+      const totalMockUSDTDistributableAmount = 4 * MockUSDTDepositAmount;
+      const totalMockOPCDistributableAmount = 4 * mockOPCDepositAmount;
 
       const aliceMockUSDTAmount = totalMockUSDTDistributableAmount * 0.7;
       const bobMockUSDTAmount = totalMockUSDTDistributableAmount * 0.3;
@@ -305,12 +313,12 @@ describe("Oparcade", () => {
       await oparcade.depositPrize(gid, tid, mockUSDT.address, 2 * MockUSDTDepositAmount);
 
       // set exceeded distributable amount
-      const totalMockUSDTDistributableAmount = 2 * MockUSDTDepositAmount;
+      const totalMockUSDTDistributableAmount = 4 * MockUSDTDepositAmount;
 
-      const aliceMockUSDTAmount = totalMockUSDTDistributableAmount * 0.7 * 2 + 1;
-      const bobMockUSDTAmount = totalMockUSDTDistributableAmount * 0.3 * 2 + 1;
+      const aliceMockUSDTAmount = totalMockUSDTDistributableAmount * 0.7;
+      const bobMockUSDTAmount = totalMockUSDTDistributableAmount * 0.3;
 
-      const mockUSDTDistributableAmount = [aliceMockUSDTAmount, bobMockUSDTAmount];
+      const mockUSDTDistributableAmount = [aliceMockUSDTAmount, bobMockUSDTAmount + 1];
 
       // distribute tokens
       await expect(
@@ -347,6 +355,94 @@ describe("Oparcade", () => {
       await expect(oparcade.depositPrize(gid, tid, mockOPC.address, mockOPCDepositAmount)).to.be.revertedWith(
         "Disallowed distribution token",
       );
+    });
+  });
+
+  describe("distributeNFTPrize", () => {
+    beforeEach(async () => {
+      let gid = 0;
+      let tid = 0;
+      let nftType = 721;
+      let tokenIds = [1, 2, 3];
+      let tokenAmounts = [1, 1, 1];
+
+      // deposit mockERC721 NFTs
+      await gameRegistry.updateDistributableTokenAddress(gid, mockERC721.address, true);
+      await mockERC721.approve(oparcade.address, tokenIds[0]);
+      await mockERC721.approve(oparcade.address, tokenIds[1]);
+      await mockERC721.approve(oparcade.address, tokenIds[2]);
+      await oparcade.depositNFTPrize(deployer.address, gid, tid, mockERC721.address, nftType, tokenIds, tokenAmounts);
+
+      gid = 1;
+      tid = 1;
+      nftType = 1155;
+      tokenIds = [1, 2, 3];
+      tokenAmounts = [3, 3, 3];
+
+      // deposit mockERC1155 NFTs
+      await gameRegistry.updateDistributableTokenAddress(gid, mockERC1155.address, true);
+      await mockERC1155.setApprovalForAll(oparcade.address, true);
+      await oparcade.depositNFTPrize(deployer.address, gid, tid, mockERC1155.address, nftType, tokenIds, tokenAmounts);
+    });
+
+    it("Should distribute the ERC721 NFT prize", async () => {
+      // check old balance
+      expect(await mockERC721.balanceOf(alice.address)).to.equal(0);
+      expect(await mockERC721.balanceOf(bob.address)).to.equal(0);
+
+      let gid = 0;
+      let tid = 0;
+      let nftType = 721;
+      let tokenIds = [1, 3];
+      let tokenAmounts = [1, 1];
+
+      // distribute ERC721 NFTs
+      await oparcade
+        .connect(maintainer)
+        .distributeNFTPrize(
+          gid,
+          tid,
+          [alice.address, bob.address],
+          mockERC721.address,
+          nftType,
+          tokenIds,
+          tokenAmounts,
+        );
+
+      // check new balance
+      expect(await mockERC721.balanceOf(alice.address)).to.equal(1);
+      expect(await mockERC721.balanceOf(bob.address)).to.equal(1);
+      expect(await mockERC721.ownerOf(1)).to.equal(alice.address);
+      expect(await mockERC721.ownerOf(3)).to.equal(bob.address);
+    });
+
+    it("Should distribute the ERC1155 NFT prize", async () => {
+      // check old balance
+      expect(await mockERC1155.balanceOf(alice.address, 1)).to.equal(0);
+      expect(await mockERC1155.balanceOf(bob.address, 3)).to.equal(0);
+
+      let gid = 1;
+      let tid = 1;
+      let nftType = 1155;
+      let tokenIds = [1, 3];
+      let tokenAmounts = [1, 2];
+
+      // distribute ERC1155 NFTs
+      await oparcade
+        .connect(maintainer)
+        .distributeNFTPrize(
+          gid,
+          tid,
+          [alice.address, bob.address],
+          mockERC1155.address,
+          nftType,
+          tokenIds,
+          tokenAmounts,
+        );
+
+      // check new balance
+      expect(await mockERC1155.balanceOf(alice.address, 1)).to.equal(1);
+      expect(await mockERC1155.balanceOf(bob.address, 3)).to.equal(2);
     });
   });
 

@@ -62,6 +62,7 @@ describe("Oparcade", () => {
     gid = 1;
     await gameRegistry.updateDepositTokenAmount(gid, mockUSDT.address, MockUSDTDepositAmount);
     await gameRegistry.updateDepositTokenAmount(gid, mockOPC.address, mockOPCDepositAmount);
+    await gameRegistry.updateDistributableTokenAddress(gid, mockUSDT.address, true);
     await gameRegistry.updateDistributableTokenAddress(gid, mockOPC.address, true);
 
     // Initial mock token distribution
@@ -487,6 +488,124 @@ describe("Oparcade", () => {
       await expect(oparcade.withdrawPrize(gid, tid, mockUSDT.address, MockUSDTDepositAmount * 1.5)).to.be.revertedWith(
         "Insufficient prize",
       );
+    });
+  });
+
+  describe("depositNFTPrize", () => {
+    it("Should deposit the ERC721 NFT prize", async () => {
+      // check old balance
+      expect(await mockERC721.balanceOf(oparcade.address)).to.equal(0);
+
+      let gid = 0;
+      let tid = 0;
+      let nftType = 721;
+      let tokenIds = [1, 2, 3];
+      let tokenAmounts = [1, 1, 1];
+
+      // deposit mockERC721 NFTs
+      await gameRegistry.updateDistributableTokenAddress(gid, mockERC721.address, true);
+      await mockERC721.approve(oparcade.address, tokenIds[0]);
+      await mockERC721.approve(oparcade.address, tokenIds[1]);
+      await mockERC721.approve(oparcade.address, tokenIds[2]);
+      await oparcade.depositNFTPrize(deployer.address, gid, tid, mockERC721.address, nftType, tokenIds, tokenAmounts);
+
+      // check new balance
+      expect(await mockERC721.balanceOf(oparcade.address)).to.equal(3);
+      expect(await mockERC721.ownerOf(1)).to.equal(oparcade.address);
+      expect(await mockERC721.ownerOf(2)).to.equal(oparcade.address);
+      expect(await mockERC721.ownerOf(3)).to.equal(oparcade.address);
+    });
+
+    it("Should deposit the ERC1155 NFT prize", async () => {
+      // check old balance
+      expect(await mockERC1155.balanceOf(oparcade.address, 1)).to.equal(0);
+      expect(await mockERC1155.balanceOf(oparcade.address, 2)).to.equal(0);
+      expect(await mockERC1155.balanceOf(oparcade.address, 3)).to.equal(0);
+
+      let gid = 1;
+      let tid = 1;
+      let nftType = 1155;
+      let tokenIds = [1, 2, 3];
+      let tokenAmounts = [3, 3, 3];
+
+      // deposit mockERC1155 NFTs
+      await gameRegistry.updateDistributableTokenAddress(gid, mockERC1155.address, true);
+      await mockERC1155.setApprovalForAll(oparcade.address, true);
+      await oparcade.depositNFTPrize(deployer.address, gid, tid, mockERC1155.address, nftType, tokenIds, tokenAmounts);
+
+      // check new balance
+      expect(await mockERC1155.balanceOf(oparcade.address, 1)).to.equal(3);
+      expect(await mockERC1155.balanceOf(oparcade.address, 2)).to.equal(3);
+      expect(await mockERC1155.balanceOf(oparcade.address, 3)).to.equal(3);
+    });
+  });
+
+  describe("withdrawNFTPrize", () => {
+    beforeEach(async () => {
+      let gid = 0;
+      let tid = 0;
+      let nftType = 721;
+      let tokenIds = [1, 2, 3];
+      let tokenAmounts = [1, 1, 1];
+
+      // deposit mockERC721 NFTs
+      await gameRegistry.updateDistributableTokenAddress(gid, mockERC721.address, true);
+      await mockERC721.approve(oparcade.address, tokenIds[0]);
+      await mockERC721.approve(oparcade.address, tokenIds[1]);
+      await mockERC721.approve(oparcade.address, tokenIds[2]);
+      await oparcade.depositNFTPrize(deployer.address, gid, tid, mockERC721.address, nftType, tokenIds, tokenAmounts);
+
+      gid = 1;
+      tid = 1;
+      nftType = 1155;
+      tokenIds = [1, 2, 3];
+      tokenAmounts = [3, 3, 3];
+
+      // deposit mockERC1155 NFTs
+      await gameRegistry.updateDistributableTokenAddress(gid, mockERC1155.address, true);
+      await mockERC1155.setApprovalForAll(oparcade.address, true);
+      await oparcade.depositNFTPrize(deployer.address, gid, tid, mockERC1155.address, nftType, tokenIds, tokenAmounts);
+    });
+
+    it("Should withdraw the ERC721 NFT prize", async () => {
+      // check old balance
+      expect(await mockERC721.balanceOf(alice.address)).to.equal(0);
+
+      let gid = 0;
+      let tid = 0;
+      let nftType = 721;
+      let tokenIds = [1, 2, 3];
+      let tokenAmounts = [1, 1, 1];
+
+      // withdraw mockERC721 NFTs
+      await oparcade.withdrawNFTPrize(alice.address, gid, tid, mockERC721.address, nftType, tokenIds, tokenAmounts);
+
+      // check new balance
+      expect(await mockERC721.balanceOf(alice.address)).to.equal(3);
+      expect(await mockERC721.ownerOf(1)).to.equal(alice.address);
+      expect(await mockERC721.ownerOf(2)).to.equal(alice.address);
+      expect(await mockERC721.ownerOf(3)).to.equal(alice.address);
+    });
+
+    it("Should withdraw the ERC1155 NFT prize", async () => {
+      // check old balance
+      expect(await mockERC1155.balanceOf(alice.address, 1)).to.equal(0);
+      expect(await mockERC1155.balanceOf(alice.address, 2)).to.equal(0);
+      expect(await mockERC1155.balanceOf(alice.address, 3)).to.equal(0);
+
+      let gid = 1;
+      let tid = 1;
+      let nftType = 1155;
+      let tokenIds = [1, 2, 3];
+      let tokenAmounts = [3, 3, 3];
+
+      // deposit mockERC1155 NFTs
+      await oparcade.withdrawNFTPrize(alice.address, gid, tid, mockERC1155.address, nftType, tokenIds, tokenAmounts);
+
+      // check new balance
+      expect(await mockERC1155.balanceOf(alice.address, 1)).to.equal(3);
+      expect(await mockERC1155.balanceOf(alice.address, 2)).to.equal(3);
+      expect(await mockERC1155.balanceOf(alice.address, 3)).to.equal(3);
     });
   });
 

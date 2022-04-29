@@ -599,13 +599,137 @@ describe("Oparcade", () => {
       let tokenIds = [1, 2, 3];
       let tokenAmounts = [3, 3, 3];
 
-      // deposit mockERC1155 NFTs
+      // withdraw mockERC1155 NFTs
       await oparcade.withdrawNFTPrize(alice.address, gid, tid, mockERC1155.address, nftType, tokenIds, tokenAmounts);
 
       // check new balance
       expect(await mockERC1155.balanceOf(alice.address, 1)).to.equal(3);
       expect(await mockERC1155.balanceOf(alice.address, 2)).to.equal(3);
       expect(await mockERC1155.balanceOf(alice.address, 3)).to.equal(3);
+    });
+
+    it("Should revert if NFT type is not acceptable", async () => {
+      let gid = 1;
+      let tid = 1;
+      let nftType = 0;
+      let tokenIds = [1, 2, 3];
+      let tokenAmounts = [3, 3, 3];
+
+      // withdraw mockERC1155 NFTs
+      await expect(
+        oparcade.withdrawNFTPrize(alice.address, gid, tid, mockERC1155.address, nftType, tokenIds, tokenAmounts),
+      ).to.be.revertedWith("Unexpected NFT type");
+    });
+
+    it("Should revert if the params are invalid", async () => {
+      let gid = 1;
+      let tid = 1;
+      let nftType = 1155;
+      let tokenIds = [1, 2, 3];
+      let tokenAmounts = [3, 3];
+
+      // withdraw mockERC1155 NFTs
+      await expect(
+        oparcade.withdrawNFTPrize(alice.address, gid, tid, mockERC1155.address, nftType, tokenIds, tokenAmounts),
+      ).to.be.revertedWith("Mismatched deposit data");
+    });
+
+    it("Should revert if NFT type is not matched with the param", async () => {
+      let gid = 0;
+      let tid = 0;
+      let nftType = 1155;
+      let tokenIds = [1, 2, 3];
+      let tokenAmounts = [3, 3, 3];
+
+      // withdraw mockERC721 NFTs
+      await expect(
+        oparcade.withdrawNFTPrize(alice.address, gid, tid, mockERC721.address, nftType, tokenIds, tokenAmounts),
+      ).to.be.revertedWith("Unexpected NFT address");
+
+      gid = 1;
+      tid = 1;
+      nftType = 721;
+      tokenIds = [1, 2, 3];
+      tokenAmounts = [3, 3, 3];
+
+      // withdraw mockERC1155 NFTs
+      await expect(
+        oparcade.withdrawNFTPrize(alice.address, gid, tid, mockERC1155.address, nftType, tokenIds, tokenAmounts),
+      ).to.be.revertedWith("Unexpected NFT address");
+    });
+
+    it("Should revert if NFT amount to withdraw is not enough", async () => {
+      let gid = 0;
+      let tid = 0;
+      let nftType = 721;
+      let tokenIds = [1, 2, 3];
+      let tokenAmounts = [1, 1, 0];
+
+      // withdraw mockERC721 NFTs
+      await expect(
+        oparcade.withdrawNFTPrize(alice.address, gid, tid, mockERC721.address, nftType, tokenIds, tokenAmounts),
+      ).to.be.revertedWith("Invalid amount value");
+
+      gid = 1;
+      tid = 1;
+      nftType = 1155;
+      tokenIds = [1, 2, 3];
+      tokenAmounts = [3, 3, 4];
+
+      // withdraw mockERC1155 NFTs
+      await expect(
+        oparcade.withdrawNFTPrize(alice.address, gid, tid, mockERC1155.address, nftType, tokenIds, tokenAmounts),
+      ).to.be.revertedWith("Insufficient NFT prize");
+    });
+  });
+
+  describe("withdraw", () => {
+    beforeEach(async () => {
+      // user deposit
+      let gid = 0;
+      let tid = 0;
+
+      await mockUSDT.approve(oparcade.address, MockUSDTDepositAmount);
+      await oparcade.deposit(gid, tid, mockUSDT.address);
+
+      // deposit the prize with different gid and tid
+      gid = 1;
+      tid = 1;
+
+      await mockUSDT.approve(oparcade.address, MockUSDTDepositAmount);
+      await oparcade.depositPrize(gid, tid, mockUSDT.address, MockUSDTDepositAmount);
+
+      await mockOPC.approve(oparcade.address, mockOPCDepositAmount);
+      await oparcade.depositPrize(gid, tid, mockOPC.address, mockOPCDepositAmount);
+    });
+
+    it("Should withdraw ERC20 tokens", async () => {
+      // check old balance
+      let oldMockUSDTBalance = await mockUSDT.balanceOf(alice.address);
+      let oldMockOPCBalance = await mockOPC.balanceOf(alice.address);
+
+      // withdraw ERC20 tokens
+      let tokens = [mockUSDT.address, mockOPC.address];
+      let amounts = [MockUSDTDepositAmount * 2, mockOPCDepositAmount];
+      await oparcade.withdraw(tokens, amounts, alice.address);
+
+      // check new balance
+      expect(await mockUSDT.balanceOf(alice.address)).to.equal(oldMockUSDTBalance.add(MockUSDTDepositAmount * 2));
+      expect(await mockOPC.balanceOf(alice.address)).to.equal(oldMockOPCBalance.add(mockOPCDepositAmount));
+    });
+
+    it("Should revert if params are invalid", async () => {
+      // withdraw ERC20 tokens
+      let tokens = [mockUSDT.address, mockOPC.address, mockOPC.address];
+      let amounts = [MockUSDTDepositAmount * 2, mockOPCDepositAmount];
+      await expect(oparcade.withdraw(tokens, amounts, alice.address)).to.be.revertedWith("Mismatched withdrawal data");
+    });
+
+    it("Should revert if the balance is not enough to withdraw", async () => {
+      // withdraw ERC20 tokens
+      let tokens = [mockUSDT.address, mockOPC.address];
+      let amounts = [MockUSDTDepositAmount * 2, mockOPCDepositAmount * 2];
+      await expect(oparcade.withdraw(tokens, amounts, alice.address)).to.be.reverted;
     });
   });
 

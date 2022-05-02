@@ -54,14 +54,18 @@ describe("Oparcade", () => {
     await gameRegistry.addGame(game1);
     await gameRegistry.addGame(game2);
 
-    // Set deposit token amount and distributable tokens for games
+    // Set deposit token amount and distributable tokens for games/tournaments
     let gid = 0;
-    await gameRegistry.updateDepositTokenAmount(gid, mockUSDT.address, MockUSDTDepositAmount);
+    for (let tid = 0; tid <= 2; tid++) {
+      await gameRegistry.updateDepositTokenAmount(gid, tid, mockUSDT.address, MockUSDTDepositAmount);
+    }
     await gameRegistry.updateDistributableTokenAddress(gid, mockUSDT.address, true);
 
     gid = 1;
-    await gameRegistry.updateDepositTokenAmount(gid, mockUSDT.address, MockUSDTDepositAmount);
-    await gameRegistry.updateDepositTokenAmount(gid, mockOPC.address, mockOPCDepositAmount);
+    for (tid = 0; tid <= 2; tid++) {
+      await gameRegistry.updateDepositTokenAmount(gid, tid, mockUSDT.address, MockUSDTDepositAmount);
+      await gameRegistry.updateDepositTokenAmount(gid, tid, mockOPC.address, mockOPCDepositAmount);
+    }
     await gameRegistry.updateDistributableTokenAddress(gid, mockUSDT.address, true);
     await gameRegistry.updateDistributableTokenAddress(gid, mockOPC.address, true);
 
@@ -330,35 +334,6 @@ describe("Oparcade", () => {
     });
   });
 
-  describe("depositPrize", () => {
-    it("Should deposit the ERC20 token prize", async () => {
-      // check old balance
-      expect(await mockUSDT.balanceOf(oparcade.address)).to.equal(0);
-
-      // set gid and tid
-      let gid = 0;
-      let tid = 0;
-
-      // deposit the prize
-      await mockUSDT.approve(oparcade.address, MockUSDTDepositAmount);
-      await oparcade.depositPrize(gid, tid, mockUSDT.address, MockUSDTDepositAmount);
-
-      expect(await mockUSDT.balanceOf(oparcade.address)).to.equal(MockUSDTDepositAmount);
-    });
-
-    it("Should revert if the token is not allowed to distribute...", async () => {
-      // set gid and tid
-      let gid = 0;
-      let tid = 0;
-
-      // deposit the prize
-      await mockOPC.approve(oparcade.address, mockOPCDepositAmount);
-      await expect(oparcade.depositPrize(gid, tid, mockOPC.address, mockOPCDepositAmount)).to.be.revertedWith(
-        "Disallowed distribution token",
-      );
-    });
-  });
-
   describe("distributeNFTPrize", () => {
     beforeEach(async () => {
       let gid = 0;
@@ -444,6 +419,35 @@ describe("Oparcade", () => {
       // check new balance
       expect(await mockERC1155.balanceOf(alice.address, 1)).to.equal(1);
       expect(await mockERC1155.balanceOf(bob.address, 3)).to.equal(2);
+    });
+  });
+
+  describe("depositPrize", () => {
+    it("Should deposit the ERC20 token prize", async () => {
+      // check old balance
+      expect(await mockUSDT.balanceOf(oparcade.address)).to.equal(0);
+
+      // set gid and tid
+      let gid = 0;
+      let tid = 0;
+
+      // deposit the prize
+      await mockUSDT.approve(oparcade.address, MockUSDTDepositAmount);
+      await oparcade.depositPrize(gid, tid, mockUSDT.address, MockUSDTDepositAmount);
+
+      expect(await mockUSDT.balanceOf(oparcade.address)).to.equal(MockUSDTDepositAmount);
+    });
+
+    it("Should revert if the token is not allowed to distribute...", async () => {
+      // set gid and tid
+      let gid = 0;
+      let tid = 0;
+
+      // deposit the prize
+      await mockOPC.approve(oparcade.address, mockOPCDepositAmount);
+      await expect(oparcade.depositPrize(gid, tid, mockOPC.address, mockOPCDepositAmount)).to.be.revertedWith(
+        "Disallowed distribution token",
+      );
     });
   });
 
@@ -537,6 +541,132 @@ describe("Oparcade", () => {
       expect(await mockERC1155.balanceOf(oparcade.address, 1)).to.equal(3);
       expect(await mockERC1155.balanceOf(oparcade.address, 2)).to.equal(3);
       expect(await mockERC1155.balanceOf(oparcade.address, 3)).to.equal(3);
+    });
+
+    it("Should revert if the ERC721 NFT to deposit is not allowed to distribute...", async () => {
+      let gid = 0;
+      let tid = 0;
+      let nftType = 721;
+      let tokenIds = [1, 2, 3];
+      let tokenAmounts = [1, 1, 1];
+
+      // deposit mockERC721 NFTs
+      await mockERC721.approve(oparcade.address, tokenIds[0]);
+      await mockERC721.approve(oparcade.address, tokenIds[1]);
+      await mockERC721.approve(oparcade.address, tokenIds[2]);
+      await expect(
+        oparcade.depositNFTPrize(deployer.address, gid, tid, mockERC721.address, nftType, tokenIds, tokenAmounts),
+      ).to.be.revertedWith("Disallowed distribution token");
+    });
+
+    it("Should revert if the ERC1155 NFT to deposit is not allowed to distribute...", async () => {
+      let gid = 1;
+      let tid = 1;
+      let nftType = 1155;
+      let tokenIds = [1, 2, 3];
+      let tokenAmounts = [3, 3, 3];
+
+      // deposit mockERC1155 NFTs
+      await mockERC1155.setApprovalForAll(oparcade.address, true);
+      await expect(
+        oparcade.depositNFTPrize(deployer.address, gid, tid, mockERC1155.address, nftType, tokenIds, tokenAmounts),
+      ).to.be.revertedWith("Disallowed distribution token");
+    });
+
+    it("Should revert if the NFT type (ERC721) to deposit is incorrect...", async () => {
+      let gid = 0;
+      let tid = 0;
+      let nftType = 0;
+      let tokenIds = [1, 2, 3];
+      let tokenAmounts = [1, 1, 1];
+
+      // deposit mockERC721 NFTs
+      await gameRegistry.updateDistributableTokenAddress(gid, mockERC721.address, true);
+      await mockERC721.approve(oparcade.address, tokenIds[0]);
+      await mockERC721.approve(oparcade.address, tokenIds[1]);
+      await mockERC721.approve(oparcade.address, tokenIds[2]);
+      await expect(
+        oparcade.depositNFTPrize(deployer.address, gid, tid, mockERC721.address, nftType, tokenIds, tokenAmounts),
+      ).to.be.revertedWith("Unexpected NFT type");
+    });
+
+    it("Should revert if the NFT type (ERC1155) to deposit is incorrect...", async () => {
+      let gid = 1;
+      let tid = 1;
+      let nftType = 0;
+      let tokenIds = [1, 2, 3];
+      let tokenAmounts = [3, 3, 3];
+
+      // deposit mockERC1155 NFTs
+      await gameRegistry.updateDistributableTokenAddress(gid, mockERC1155.address, true);
+      await mockERC1155.setApprovalForAll(oparcade.address, true);
+      await expect(
+        oparcade.depositNFTPrize(deployer.address, gid, tid, mockERC1155.address, nftType, tokenIds, tokenAmounts),
+      ).to.be.revertedWith("Unexpected NFT type");
+    });
+
+    it("Should revert if the deposit data is not matched...", async () => {
+      // ERC721
+      let gid = 0;
+      let tid = 0;
+      let nftType = 721;
+      let tokenIds = [1, 2, 3];
+      let tokenAmounts = [1, 1, 1, 1];
+
+      // deposit mockERC721 NFTs
+      await gameRegistry.updateDistributableTokenAddress(gid, mockERC721.address, true);
+      await mockERC721.approve(oparcade.address, tokenIds[0]);
+      await mockERC721.approve(oparcade.address, tokenIds[1]);
+      await mockERC721.approve(oparcade.address, tokenIds[2]);
+      await expect(
+        oparcade.depositNFTPrize(deployer.address, gid, tid, mockERC721.address, nftType, tokenIds, tokenAmounts),
+      ).to.be.revertedWith("Mismatched deposit data");
+
+      // ERC1155
+      gid = 1;
+      tid = 1;
+      nftType = 1155;
+      tokenIds = [1, 2, 3];
+      tokenAmounts = [3, 3, 3, 1];
+
+      // deposit mockERC1155 NFTs
+      await gameRegistry.updateDistributableTokenAddress(gid, mockERC1155.address, true);
+      await mockERC1155.setApprovalForAll(oparcade.address, true);
+      await expect(
+        oparcade.depositNFTPrize(deployer.address, gid, tid, mockERC1155.address, nftType, tokenIds, tokenAmounts),
+      ).to.be.revertedWith("Mismatched deposit data");
+    });
+
+    it("Should revert if the NFT interface (ERC721) to deposit is incorrect...", async () => {
+      let gid = 0;
+      let tid = 0;
+      let nftType = 1155;
+      let tokenIds = [1, 2, 3];
+      let tokenAmounts = [1, 1, 1];
+
+      // deposit mockERC721 NFTs
+      await gameRegistry.updateDistributableTokenAddress(gid, mockERC721.address, true);
+      await mockERC721.approve(oparcade.address, tokenIds[0]);
+      await mockERC721.approve(oparcade.address, tokenIds[1]);
+      await mockERC721.approve(oparcade.address, tokenIds[2]);
+      await expect(
+        oparcade.depositNFTPrize(deployer.address, gid, tid, mockERC721.address, nftType, tokenIds, tokenAmounts),
+      ).to.be.revertedWith("Unexpected NFT address");
+    });
+
+    it("Should revert if the NFT interface (ERC1155) to deposit is incorrect...", async () => {
+      let gid = 1;
+      let tid = 1;
+      let nftType = 721;
+      let tokenIds = [1, 2, 3];
+      let tokenAmounts = [3, 3, 3];
+
+      // deposit mockERC1155 NFTs
+      await gameRegistry.updateDistributableTokenAddress(gid, mockERC1155.address, true);
+      await mockERC1155.setApprovalForAll(oparcade.address, true);
+      await expect(
+        oparcade.depositNFTPrize(deployer.address, gid, tid, mockERC1155.address, nftType, tokenIds, tokenAmounts),
+      ).to.be.revertedWith("Unexpected NFT address");
     });
   });
 

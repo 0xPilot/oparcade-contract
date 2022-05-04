@@ -420,6 +420,190 @@ describe("Oparcade", () => {
       expect(await mockERC1155.balanceOf(alice.address, 1)).to.equal(1);
       expect(await mockERC1155.balanceOf(bob.address, 3)).to.equal(2);
     });
+
+    it("Should revert if NFT is not allowed to distribute", async () => {
+      let gid = 0;
+      let tid = 0;
+      let nftType = 1155;
+      let tokenIds = [1, 3];
+      let tokenAmounts = [1, 1];
+
+      // distribute ERC721 NFTs
+      await expect(
+        oparcade
+          .connect(maintainer)
+          .distributeNFTPrize(
+            gid,
+            tid,
+            [alice.address, bob.address],
+            mockERC1155.address,
+            nftType,
+            tokenIds,
+            tokenAmounts,
+          ),
+      ).to.be.revertedWith("Disallowed distribution token");
+    });
+
+    it("Should revert if NFT type is not acceptable", async () => {
+      let gid = 1;
+      let tid = 1;
+      let nftType = 0;
+      let tokenIds = [1, 2, 3];
+      let tokenAmounts = [3, 3, 3];
+
+      // distribute mockERC1155 NFTs
+      await expect(
+        oparcade
+          .connect(maintainer)
+          .distributeNFTPrize(
+            gid,
+            tid,
+            [alice.address, bob.address],
+            mockERC1155.address,
+            nftType,
+            tokenIds,
+            tokenAmounts,
+          ),
+      ).to.be.revertedWith("Unexpected NFT type");
+    });
+
+    it("Should revert if the distribution params are invalid", async () => {
+      let gid = 1;
+      let tid = 1;
+      let nftType = 1155;
+      let tokenIds = [1, 2, 3];
+      let tokenAmounts = [3, 3];
+
+      // distribute mockERC1155 NFTs
+      await expect(
+        oparcade
+          .connect(maintainer)
+          .distributeNFTPrize(
+            gid,
+            tid,
+            [alice.address, bob.address],
+            mockERC1155.address,
+            nftType,
+            tokenIds,
+            tokenAmounts,
+          ),
+      ).to.be.revertedWith("Mismatched NFT distribution data");
+    });
+
+    it("Should revert if NFT type (ERC721) is not matched with the param", async () => {
+      let gid = 0;
+      let tid = 0;
+      let nftType = 1155;
+      let tokenIds = [1, 2];
+      let tokenAmounts = [1, 1];
+
+      // distribute mockERC721 NFTs
+      await expect(
+        oparcade
+          .connect(maintainer)
+          .distributeNFTPrize(
+            gid,
+            tid,
+            [alice.address, bob.address],
+            mockERC721.address,
+            nftType,
+            tokenIds,
+            tokenAmounts,
+          ),
+      ).to.be.revertedWith("Unexpected NFT address");
+    });
+
+    it("Should revert if NFT type (ERC1155) is not matched with the param", async () => {
+      let gid = 1;
+      let tid = 1;
+      let nftType = 721;
+      let tokenIds = [1, 2];
+      let tokenAmounts = [3, 3];
+
+      // distribute mockERC1155 NFTs
+      await expect(
+        oparcade
+          .connect(maintainer)
+          .distributeNFTPrize(
+            gid,
+            tid,
+            [alice.address, bob.address],
+            mockERC1155.address,
+            nftType,
+            tokenIds,
+            tokenAmounts,
+          ),
+      ).to.be.revertedWith("Unexpected NFT address");
+    });
+
+    it("Should revert if NFT distribution amount (ERC721) is exceeded", async () => {
+      let gid = 0;
+      let tid = 0;
+      let nftType = 721;
+      let tokenIds = [1, 2, 3, 4];
+      let tokenAmounts = [1, 1, 1, 1];
+
+      // distribute mockERC721 NFTs
+      await expect(
+        oparcade
+          .connect(maintainer)
+          .distributeNFTPrize(
+            gid,
+            tid,
+            [alice.address, bob.address, alice.address, bob.address],
+            mockERC721.address,
+            nftType,
+            tokenIds,
+            tokenAmounts,
+          ),
+      ).to.be.revertedWith("NFT prize distribution amount exceeded");
+    });
+
+    it("Should revert if NFT distribution amount (ERC1155) is exceeded", async () => {
+      let gid = 1;
+      let tid = 1;
+      let nftType = 1155;
+      let tokenIds = [1, 2, 3];
+      let tokenAmounts = [3, 3, 5];
+
+      // distribute mockERC1155 NFTs
+      await expect(
+        oparcade
+          .connect(maintainer)
+          .distributeNFTPrize(
+            gid,
+            tid,
+            [alice.address, bob.address, alice.address],
+            mockERC1155.address,
+            nftType,
+            tokenIds,
+            tokenAmounts,
+          ),
+      ).to.be.revertedWith("NFT prize distribution amount exceeded");
+    });
+
+    it("Should revert if NFT distribution amount (ERC721) is incorrect", async () => {
+      let gid = 0;
+      let tid = 0;
+      let nftType = 721;
+      let tokenIds = [1, 2, 3];
+      let tokenAmounts = [1, 1, 0];
+
+      // distribute mockERC721 NFTs
+      await expect(
+        oparcade
+          .connect(maintainer)
+          .distributeNFTPrize(
+            gid,
+            tid,
+            [alice.address, bob.address, alice.address],
+            mockERC721.address,
+            nftType,
+            tokenIds,
+            tokenAmounts,
+          ),
+      ).to.be.revertedWith("Invalid amount value");
+    });
   });
 
   describe("depositPrize", () => {
@@ -668,6 +852,23 @@ describe("Oparcade", () => {
         oparcade.depositNFTPrize(deployer.address, gid, tid, mockERC1155.address, nftType, tokenIds, tokenAmounts),
       ).to.be.revertedWith("Unexpected NFT address");
     });
+
+    it("Should revert if the NFT amount (ERC721) to deposit is incorrect...", async () => {
+      let gid = 0;
+      let tid = 0;
+      let nftType = 721;
+      let tokenIds = [1, 2, 3];
+      let tokenAmounts = [1, 1, 0];
+
+      // deposit mockERC721 NFTs
+      await gameRegistry.updateDistributableTokenAddress(gid, mockERC721.address, true);
+      await mockERC721.approve(oparcade.address, tokenIds[0]);
+      await mockERC721.approve(oparcade.address, tokenIds[1]);
+      await mockERC721.approve(oparcade.address, tokenIds[2]);
+      await expect(
+        oparcade.depositNFTPrize(deployer.address, gid, tid, mockERC721.address, nftType, tokenIds, tokenAmounts),
+      ).to.be.revertedWith("Invalid amount value");
+    });
   });
 
   describe("withdrawNFTPrize", () => {
@@ -764,7 +965,7 @@ describe("Oparcade", () => {
       ).to.be.revertedWith("Mismatched deposit data");
     });
 
-    it("Should revert if NFT type is not matched with the param", async () => {
+    it("Should revert if NFT type (ERC721) is not matched with the param", async () => {
       let gid = 0;
       let tid = 0;
       let nftType = 1155;
@@ -775,12 +976,14 @@ describe("Oparcade", () => {
       await expect(
         oparcade.withdrawNFTPrize(alice.address, gid, tid, mockERC721.address, nftType, tokenIds, tokenAmounts),
       ).to.be.revertedWith("Unexpected NFT address");
+    });
 
-      gid = 1;
-      tid = 1;
-      nftType = 721;
-      tokenIds = [1, 2, 3];
-      tokenAmounts = [3, 3, 3];
+    it("Should revert if NFT type (ERC1155) is not matched with the param", async () => {
+      let gid = 1;
+      let tid = 1;
+      let nftType = 721;
+      let tokenIds = [1, 2, 3];
+      let tokenAmounts = [3, 3, 3];
 
       // withdraw mockERC1155 NFTs
       await expect(
@@ -788,7 +991,7 @@ describe("Oparcade", () => {
       ).to.be.revertedWith("Unexpected NFT address");
     });
 
-    it("Should revert if NFT amount to withdraw is not enough", async () => {
+    it("Should revert if NFT amount (ERC721) to withdraw is not enough", async () => {
       let gid = 0;
       let tid = 0;
       let nftType = 721;
@@ -799,12 +1002,14 @@ describe("Oparcade", () => {
       await expect(
         oparcade.withdrawNFTPrize(alice.address, gid, tid, mockERC721.address, nftType, tokenIds, tokenAmounts),
       ).to.be.revertedWith("Invalid amount value");
+    });
 
-      gid = 1;
-      tid = 1;
-      nftType = 1155;
-      tokenIds = [1, 2, 3];
-      tokenAmounts = [3, 3, 4];
+    it("Should revert if NFT amount (ERC1155) to withdraw is not enough", async () => {
+      let gid = 1;
+      let tid = 1;
+      let nftType = 1155;
+      let tokenIds = [1, 2, 3];
+      let tokenAmounts = [3, 3, 4];
 
       // withdraw mockERC1155 NFTs
       await expect(

@@ -991,6 +991,25 @@ describe("Oparcade", () => {
       ).to.be.revertedWith("Unexpected NFT address");
     });
 
+    it("Should revert if NFT amount (ERC721) to withdraw is insufficient", async () => {
+      let gid = 0;
+      let tid = 0;
+      let nftType = 721;
+      let tokenIds = [1];
+      let tokenAmounts = [1];
+
+      // withdraw mockERC721 NFTs
+      await oparcade.withdrawNFTPrize(alice.address, gid, tid, mockERC721.address, nftType, tokenIds, tokenAmounts);
+
+      tokenIds = [1, 2, 3];
+      tokenAmounts = [1, 1, 1];
+
+      // withdraw mockERC721 NFTs again
+      await expect(
+        oparcade.withdrawNFTPrize(alice.address, gid, tid, mockERC721.address, nftType, tokenIds, tokenAmounts),
+      ).to.be.revertedWith("Insufficient NFT prize");
+    });
+
     it("Should revert if NFT amount (ERC721) to withdraw is not enough", async () => {
       let gid = 0;
       let tid = 0;

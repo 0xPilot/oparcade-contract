@@ -4,9 +4,13 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/cryptography/ECDSAUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/utils/ERC721HolderUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC1155/utils/ERC1155HolderUpgradeable.sol";
+import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC1155/IERC1155Upgradeable.sol";
 import "./interfaces/IAddressRegistry.sol";
 import "./interfaces/IGameRegistry.sol";
 
@@ -18,21 +22,54 @@ import "./interfaces/IGameRegistry.sol";
 contract Oparcade is
   OwnableUpgradeable,
   ReentrancyGuardUpgradeable,
-  PausableUpgradeable
+  PausableUpgradeable,
+  ERC721HolderUpgradeable,
+  ERC1155HolderUpgradeable
 {
   using SafeERC20Upgradeable for IERC20Upgradeable;
 
   event UserDeposited(address by, uint256 indexed gid, uint256 indexed tid, address indexed token, uint256 amount);
-  event PrizeDeposited(address by, uint256 indexed gid, uint256 indexed tid, address indexed token, uint256 amount);
-  event PrizeWithdrawn(address by, uint256 indexed gid, uint256 indexed tid, address indexed token, uint256 amount);
   event PrizeDistributed(
     address by,
-    address winner,
+    address[] winners,
     uint256 indexed gid,
     uint256 indexed tid,
     address indexed token,
-    uint256 amount
+    uint256[] amounts
   );
+  event NFTPrizeDistributed(
+    address by,
+    address[] winners,
+    uint256 indexed gid,
+    uint256 indexed tid,
+    address indexed nftAddress,
+    uint256 nftType,
+    uint256[] tokenIds,
+    uint256[] amounts
+  );
+  event PrizeDeposited(address by, uint256 indexed gid, uint256 indexed tid, address indexed token, uint256 amount);
+  event PrizeWithdrawn(address by, uint256 indexed gid, uint256 indexed tid, address indexed token, uint256 amount);
+  event NFTPrizeDeposited(
+    address by,
+    address from,
+    uint256 indexed gid,
+    uint256 indexed tid,
+    address indexed nftAddress,
+    uint256 nftType,
+    uint256[] tokenIds,
+    uint256[] amounts
+  );
+  event NFTPrizeWithdrawn(
+    address by,
+    address to,
+    uint256 indexed gid,
+    uint256 indexed tid,
+    address indexed nftAddress,
+    uint256 nftType,
+    uint256[] tokenIds,
+    uint256[] amounts
+  );
+  event Withdrawn(address indexed by, address indexed beneficiary, address indexed token, uint256 amount);
   event PlatformFeeUpdated(
     address indexed by,
     address indexed oldFeeRecipient,
@@ -41,17 +78,31 @@ contract Oparcade is
     uint256 newPlatformFee
   );
 
+  bytes4 private constant INTERFACE_ID_ERC721 = 0x80ac58cd;
+
+  bytes4 private constant INTERFACE_ID_ERC1155 = 0xd9b67a26;
+
   /// @dev Game ID -> Tournament ID -> Token Address -> Total User Deposit Amount
   mapping(uint256 => mapping(uint256 => mapping(address => uint256))) public totalUserDeposit;
-
-  /// @dev Game ID -> Tournament ID -> Token Address -> Total Prize Deposit Amount
-  mapping(uint256 => mapping(uint256 => mapping(address => uint256))) public totalPrizeDeposit;
 
   /// @dev Game ID -> Tournament ID -> Token Address -> Total Prize Distribution Amount excluding Fee
   mapping(uint256 => mapping(uint256 => mapping(address => uint256))) public totalPrizeDistribution;
 
   /// @dev Game ID -> Tournament ID -> Token Address -> Total Prize Fee Amount
   mapping(uint256 => mapping(uint256 => mapping(address => uint256))) public totalPrizeFee;
+
+  /// @dev Game ID -> Tournament ID -> NFT Address -> Token ID -> Distribution Amount
+  mapping(uint256 => mapping(uint256 => mapping(address => mapping(uint256 => uint256))))
+    public totalNFTPrizeDistribution;
+
+  /// @dev Game ID -> Tournament ID -> Token Address -> Total Prize Deposit Amount
+  mapping(uint256 => mapping(uint256 => mapping(address => uint256))) public totalPrizeDeposit;
+
+  /// @dev Game ID -> Tournament ID -> NFT Address -> Token ID -> Deposit Amount
+  mapping(uint256 => mapping(uint256 => mapping(address => mapping(uint256 => uint256)))) public totalNFTPrizeDeposit;
+
+  /// @dev Token Address -> Total Withdraw Amount
+  mapping(address => uint256) public totalWithdrawAmount;
 
   /// @dev AddressRegistry
   IAddressRegistry public addressRegistry;
@@ -77,6 +128,8 @@ contract Oparcade is
     __Ownable_init();
     __ReentrancyGuard_init();
     __Pausable_init();
+    __ERC721Holder_init();
+    __ERC1155Holder_init();
 
     require(_addressRegistry != address(0), "Invalid AddressRegistry");
     require(_feeRecipient != address(0) || _platformFee == 0, "Fee recipient not set");
@@ -103,7 +156,7 @@ contract Oparcade is
     address _token
   ) external whenNotPaused {
     // get token amount to deposit
-    uint256 depositTokenAmount = IGameRegistry(addressRegistry.gameRegistry()).depositTokenAmount(_gid, _token);
+    uint256 depositTokenAmount = IGameRegistry(addressRegistry.gameRegistry()).depositTokenAmount(_gid, _tid, _token);
 
     // check if the token address is valid
     require(depositTokenAmount > 0, "Invalid deposit token");
@@ -116,8 +169,131 @@ contract Oparcade is
   }
 
   /**
+   * @notice Distribute winners their prizes
+   * @dev Only maintainer
+   * @dev The maximum distributable prize amount is the sum of the users' deposit and the prize that the owner deposited
+   * @param _gid Game ID
+   * @param _tid Tournament ID
+   * @param _winners Winners list
+   * @param _token Prize token address
+   * @param _amounts Prize list
+   */
+  function distributePrize(
+    uint256 _gid,
+    uint256 _tid,
+    address[] memory _winners,
+    address _token,
+    uint256[] memory _amounts
+  ) external whenNotPaused onlyMaintainer {
+    require(_winners.length == _amounts.length, "Mismatched winners and amounts");
+
+    // check if token is allowed to distribute
+    require(IGameRegistry(addressRegistry.gameRegistry()).distributable(_gid, _token), "Disallowed distribution token");
+
+    // transfer the payment
+    for (uint256 i; i < _winners.length; i++) {
+      // calculate the fee
+      uint256 feeAmount = (_amounts[i] * platformFee) / 1000;
+      uint256 userAmount = _amounts[i] - feeAmount;
+
+      // transfer the prize and fee
+      totalPrizeFee[_gid][_tid][_token] += feeAmount;
+      totalPrizeDistribution[_gid][_tid][_token] += userAmount;
+      IERC20Upgradeable(_token).safeTransfer(feeRecipient, feeAmount);
+      IERC20Upgradeable(_token).safeTransfer(_winners[i], userAmount);
+    }
+
+    // check if the prize amount is not exceeded
+    require(
+      totalPrizeDistribution[_gid][_tid][_token] + totalPrizeFee[_gid][_tid][_token] <=
+        totalPrizeDeposit[_gid][_tid][_token] + totalUserDeposit[_gid][_tid][_token],
+      "Prize amount exceeded"
+    );
+
+    emit PrizeDistributed(msg.sender, _winners, _gid, _tid, _token, _amounts);
+  }
+
+  /**
+   * @notice Distribute winners NFT prizes
+   * @dev Only maintainer
+   * @dev NFT type should be either 721 or 1155
+   * @param _gid Game ID
+   * @param _tid Tournament ID
+   * @param _winners Winners list
+   * @param _nftAddress NFT address
+   * @param _nftType NFT type (721/1155)
+   * @param _tokenIds Token Id list
+   * @param _amounts Token amount list
+   */
+  function distributeNFTPrize(
+    uint256 _gid,
+    uint256 _tid,
+    address[] memory _winners,
+    address _nftAddress,
+    uint256 _nftType,
+    uint256[] memory _tokenIds,
+    uint256[] memory _amounts
+  ) external whenNotPaused nonReentrant onlyMaintainer {
+    // check if token is allowed to distribute
+    require(
+      IGameRegistry(addressRegistry.gameRegistry()).distributable(_gid, _nftAddress),
+      "Disallowed distribution token"
+    );
+
+    require(_nftType == 721 || _nftType == 1155, "Unexpected NFT type");
+    require(
+      _winners.length == _tokenIds.length && _tokenIds.length == _amounts.length,
+      "Mismatched NFT distribution data"
+    );
+
+    uint256 totalAmounts;
+    if (_nftType == 721) {
+      require(IERC165(_nftAddress).supportsInterface(INTERFACE_ID_ERC721), "Unexpected NFT address");
+
+      // update totalNFTPrizeDeposit and transfer NFTs to the winners
+      for (uint256 i; i < _winners.length; i++) {
+        require(
+          totalNFTPrizeDeposit[_gid][_tid][_nftAddress][_tokenIds[i]] -
+            totalNFTPrizeDistribution[_gid][_tid][_nftAddress][_tokenIds[i]] ==
+            1,
+          "NFT prize distribution amount exceeded"
+        );
+
+        totalNFTPrizeDistribution[_gid][_tid][_nftAddress][_tokenIds[i]] = 1;
+        totalAmounts += _amounts[i];
+        IERC721Upgradeable(_nftAddress).safeTransferFrom(address(this), _winners[i], _tokenIds[i]);
+      }
+
+      // check if all amount value is 1
+      require(totalAmounts == _winners.length, "Invalid amount value");
+    } else {
+      require(IERC165(_nftAddress).supportsInterface(INTERFACE_ID_ERC1155), "Unexpected NFT address");
+
+      // update totalNFTPrizeDeposit and transfer NFTs to the winners
+      for (uint256 i; i < _winners.length; i++) {
+        require(
+          totalNFTPrizeDeposit[_gid][_tid][_nftAddress][_tokenIds[i]] -
+            totalNFTPrizeDistribution[_gid][_tid][_nftAddress][_tokenIds[i]] >=
+            _amounts[i],
+          "NFT prize distribution amount exceeded"
+        );
+
+        totalNFTPrizeDistribution[_gid][_tid][_nftAddress][_tokenIds[i]] += _amounts[i];
+        IERC1155Upgradeable(_nftAddress).safeTransferFrom(
+          address(this),
+          _winners[i],
+          _tokenIds[i],
+          _amounts[i],
+          bytes("")
+        );
+      }
+    }
+
+    emit NFTPrizeDistributed(msg.sender, _winners, _gid, _tid, _nftAddress, _nftType, _tokenIds, _amounts);
+  }
+
+  /**
    * @notice Deposit the prize tokens for the specific game/tournament
-   * @dev Only owner
    * @dev Only tokens which are allowed as a distributable token can be deposited
    * @param _gid Game ID
    * @param _tid Tournament ID
@@ -129,7 +305,7 @@ contract Oparcade is
     uint256 _tid,
     address _token,
     uint256 _amount
-  ) external onlyOwner {
+  ) external {
     // check if tokens are allowed to claim as a prize
     require(IGameRegistry(addressRegistry.gameRegistry()).distributable(_gid, _token), "Disallowed distribution token");
 
@@ -158,54 +334,152 @@ contract Oparcade is
     require(totalPrizeDeposit[_gid][_tid][_token] >= _amount, "Insufficient prize");
 
     // withdraw the prize
-    IERC20Upgradeable(_token).safeTransfer(msg.sender, _amount);
     totalPrizeDeposit[_gid][_tid][_token] -= _amount;
+    IERC20Upgradeable(_token).safeTransfer(msg.sender, _amount);
 
     emit PrizeWithdrawn(msg.sender, _gid, _tid, _token, _amount);
   }
 
   /**
-   * @notice Distribute winners their prizes
-   * @dev Only maintainer
+   * @notice Deposit NFT prize for the specific game/tournament
+   * @dev Only owner
+   * @dev NFT type should be either 721 or 1155
+   * @param _from NFT owner address
    * @param _gid Game ID
    * @param _tid Tournament ID
-   * @param _winners Winners list
-   * @param _token Prize token address
-   * @param _amounts Prize list
+   * @param _nftAddress NFT address
+   * @param _nftType NFT type (721/1155)
+   * @param _tokenIds Token Id list
+   * @param _amounts Token amount list
    */
-  function distributePrize(
+  function depositNFTPrize(
+    address _from,
     uint256 _gid,
     uint256 _tid,
-    address[] memory _winners,
-    address _token,
+    address _nftAddress,
+    uint256 _nftType,
+    uint256[] memory _tokenIds,
     uint256[] memory _amounts
-  ) external whenNotPaused onlyMaintainer {
-    require(_winners.length == _amounts.length, "Mismatched winners and amounts");
+  ) external onlyOwner {
+    // check if NFT is allowed to distribute
+    require(
+      IGameRegistry(addressRegistry.gameRegistry()).distributable(_gid, _nftAddress),
+      "Disallowed distribution token"
+    );
 
-    // check if token is allowed to distribute
-    require(IGameRegistry(addressRegistry.gameRegistry()).distributable(_gid, _token), "Disallowed distribution token");
+    require(_nftType == 721 || _nftType == 1155, "Unexpected NFT type");
+    require(_tokenIds.length == _amounts.length, "Mismatched deposit data");
 
-    // transfer the payment
-    for (uint256 i; i < _winners.length; i++) {
-      // calculate the fee
-      uint256 feeAmount = (_amounts[i] * platformFee) / 1000;
-      uint256 userAmount = _amounts[i] - feeAmount;
+    uint256 totalAmounts;
+    if (_nftType == 721) {
+      require(IERC165(_nftAddress).supportsInterface(INTERFACE_ID_ERC721), "Unexpected NFT address");
 
-      // transfer the prize and fee
-      IERC20Upgradeable(_token).safeTransfer(feeRecipient, feeAmount);
-      IERC20Upgradeable(_token).safeTransfer(_winners[i], userAmount);
-      totalPrizeFee[_gid][_tid][_token] += feeAmount;
-      totalPrizeDistribution[_gid][_tid][_token] += userAmount;
+      // transfer NFTs to the contract and update totalNFTPrizeDeposit
+      for (uint256 i; i < _tokenIds.length; i++) {
+        IERC721Upgradeable(_nftAddress).safeTransferFrom(_from, address(this), _tokenIds[i]);
+        totalNFTPrizeDeposit[_gid][_tid][_nftAddress][_tokenIds[i]] = 1;
+        totalAmounts += _amounts[i];
+      }
 
-      emit PrizeDistributed(msg.sender, _winners[i], _gid, _tid, _token, userAmount);
+      // check if all amount value is 1
+      require(totalAmounts == _tokenIds.length, "Invalid amount value");
+    } else {
+      require(IERC165(_nftAddress).supportsInterface(INTERFACE_ID_ERC1155), "Unexpected NFT address");
+
+      // transfer NFTs to the contract and update totalNFTPrizeDeposit
+      IERC1155Upgradeable(_nftAddress).safeBatchTransferFrom(_from, address(this), _tokenIds, _amounts, bytes(""));
+      for (uint256 i; i < _tokenIds.length; i++) {
+        totalNFTPrizeDeposit[_gid][_tid][_nftAddress][_tokenIds[i]] += _amounts[i];
+      }
     }
 
-    // check if the prize amount is not exceeded
-    require(
-      totalPrizeDistribution[_gid][_tid][_token] + totalPrizeFee[_gid][_tid][_token] <=
-        totalPrizeDeposit[_gid][_tid][_token],
-      "Prize amount exceeded"
-    );
+    emit NFTPrizeDeposited(msg.sender, _from, _gid, _tid, _nftAddress, _nftType, _tokenIds, _amounts);
+  }
+
+  /**
+   * @notice Withdraw NFT prize for the specific game/tournament
+   * @dev Only owner
+   * @dev NFT type should be either 721 or 1155
+   * @param _to NFT receiver address
+   * @param _gid Game ID
+   * @param _tid Tournament ID
+   * @param _nftAddress NFT address
+   * @param _nftType NFT type (721/1155)
+   * @param _tokenIds Token Id list
+   * @param _amounts Token amount list
+   */
+  function withdrawNFTPrize(
+    address _to,
+    uint256 _gid,
+    uint256 _tid,
+    address _nftAddress,
+    uint256 _nftType,
+    uint256[] memory _tokenIds,
+    uint256[] memory _amounts
+  ) external nonReentrant onlyOwner {
+    require(_nftType == 721 || _nftType == 1155, "Unexpected NFT type");
+    require(_tokenIds.length == _amounts.length, "Mismatched deposit data");
+
+    uint256 totalAmounts;
+    if (_nftType == 721) {
+      require(IERC165(_nftAddress).supportsInterface(INTERFACE_ID_ERC721), "Unexpected NFT address");
+
+      // update totalNFTPrizeDeposit and transfer NFTs from the contract
+      for (uint256 i; i < _tokenIds.length; i++) {
+        require(
+          totalNFTPrizeDeposit[_gid][_tid][_nftAddress][_tokenIds[i]] -
+            totalNFTPrizeDistribution[_gid][_tid][_nftAddress][_tokenIds[i]] ==
+            1,
+          "Insufficient NFT prize"
+        );
+
+        totalNFTPrizeDeposit[_gid][_tid][_nftAddress][_tokenIds[i]] = 0;
+        totalAmounts += _amounts[i];
+        IERC721Upgradeable(_nftAddress).safeTransferFrom(address(this), _to, _tokenIds[i]);
+      }
+
+      // check if all amount value is 1
+      require(totalAmounts == _tokenIds.length, "Invalid amount value");
+    } else {
+      require(IERC165(_nftAddress).supportsInterface(INTERFACE_ID_ERC1155), "Unexpected NFT address");
+
+      // update totalNFTPrizeDeposit and transfer NFTs from the contract
+      for (uint256 i; i < _tokenIds.length; i++) {
+        require(
+          totalNFTPrizeDeposit[_gid][_tid][_nftAddress][_tokenIds[i]] -
+            totalNFTPrizeDistribution[_gid][_tid][_nftAddress][_tokenIds[i]] >=
+            _amounts[i],
+          "Insufficient NFT prize"
+        );
+
+        totalNFTPrizeDeposit[_gid][_tid][_nftAddress][_tokenIds[i]] -= _amounts[i];
+      }
+      IERC1155Upgradeable(_nftAddress).safeBatchTransferFrom(address(this), _to, _tokenIds, _amounts, bytes(""));
+    }
+
+    emit NFTPrizeWithdrawn(msg.sender, _to, _gid, _tid, _nftAddress, _nftType, _tokenIds, _amounts);
+  }
+
+  /**
+   * @notice Withdraw tokens
+   * @dev Only owner
+   * @param _tokens Token addresses
+   * @param _amounts Token amounts
+   * @param _beneficiary Beneficiary address
+   */
+  function withdraw(
+    address[] memory _tokens,
+    uint256[] memory _amounts,
+    address _beneficiary
+  ) external onlyOwner {
+    require(_tokens.length == _amounts.length, "Mismatched withdrawal data");
+
+    for (uint256 i; i < _tokens.length; i++) {
+      totalWithdrawAmount[_tokens[i]] += _amounts[i];
+      IERC20Upgradeable(_tokens[i]).safeTransfer(_beneficiary, _amounts[i]);
+
+      emit Withdrawn(msg.sender, _beneficiary, _tokens[i], _amounts[i]);
+    }
   }
 
   /**

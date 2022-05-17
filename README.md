@@ -7,7 +7,7 @@
 
 #### Create .env file and make sure it's having following information:
 ```
-INFURA_KEY = INFURA_KEY
+ALCHEMY_KEY = INFURA_KEY
 PK = YOUR_PRIVATE_KEY
 API_KEY = YOUR_ETHERSCAN_API_KEY
 PLATFORM_FEE = (0, 1000]

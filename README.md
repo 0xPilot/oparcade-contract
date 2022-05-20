@@ -7,10 +7,12 @@
 
 #### Create .env file and make sure it's having following information:
 ```
-ALCHEMY_KEY = INFURA_KEY
+ALCHEMY_KEY = YOUR_ALCHEMY_KEY
 PK = YOUR_PRIVATE_KEY
 ETHERSCAN_API_KEY = YOUR_ETHERSCAN_API_KEY
 PLATFORM_FEE = (0, 1000]
+MUMBAI_DEPLOYER_ADDRESS = deployer address for mumbai network
+MUMBAI_FEE_RECIPIENT_ADDRESS = fee recipient address for mumbai network
 ```
 
 #### Compile code

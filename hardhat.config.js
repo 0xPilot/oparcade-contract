@@ -36,7 +36,7 @@ let privateKey = process.env.PK || "";
 const accounts = privateKey
   ? [
     privateKey,
-    ]
+  ]
   : undefined;
 
 module.exports = {
@@ -97,11 +97,11 @@ module.exports = {
   namedAccounts: {
     deployer: {
       default: 0,
-      mumbai: "0x8f96BFc80BC3B7D881767253EDb7A76429B7EC6B",
+      mumbai: process.env.MUMBAI_DEPLOYER_ADDRESS,
     },
     feeRecipient: {
       default: 1,
-      mumbai: "0x8f96BFc80BC3B7D881767253EDb7A76429B7EC6B",
+      mumbai: process.env.MUMBAI_FEE_RECIPIENT_ADDRESS,
     },
   },
   etherscan: {

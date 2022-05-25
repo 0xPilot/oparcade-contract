@@ -42,6 +42,11 @@ jobs:
           echo "CACHE_VERSION=${{ secrets.CACHE_VERSION_STAGING }}" >> $GITHUB_ENV
         if: ${{ github.event.workflow_run.head_branch == 'staging' }}
 
+      - name: Set prod-testnet environment variables
+        run: |
+          echo "CACHE_VERSION=${{ secrets.CACHE_VERSION_PRODTESTNET }}" >> $GITHUB_ENV
+        if: ${{ github.event.workflow_run.head_branch == 'prod-testnet' }}
+
       - name: View cache version
         id: check-cache-version
         run: |
@@ -99,6 +104,11 @@ jobs:
         run: |
           echo "AWS_STAGE_LABEL=staging" >> $GITHUB_ENV
         if: ${{ github.event.workflow_run.head_branch == 'staging' }}
+
+      - name: Set prod-testnet environment variables
+        run: |
+          echo "AWS_STAGE_LABEL=prod-testnet" >> $GITHUB_ENV
+        if: ${{ github.event.workflow_run.head_branch == 'prod-testnet' }}
 
       - name: Set common environment variables
         run: |
@@ -160,6 +170,11 @@ jobs:
         run: |
           echo "AWS_STAGE_LABEL=staging" >> $GITHUB_ENV
         if: ${{ github.event.workflow_run.head_branch == 'staging' }}
+
+      - name: Set prod-testnet environment variables
+        run: |
+          echo "AWS_STAGE_LABEL=prod-testnet" >> $GITHUB_ENV
+        if: ${{ github.event.workflow_run.head_branch == 'prod-testnet' }}
 
       - name: Set common environment variables
         run: |

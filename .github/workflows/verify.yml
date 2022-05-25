@@ -33,6 +33,11 @@ jobs:
           echo "AWS_STAGE_LABEL=staging" >> $GITHUB_ENV
         if: ${{ github.ref_name == 'staging' }}
 
+      - name: Set prod-testnet environment variables
+        run: |
+          echo "AWS_STAGE_LABEL=prod-testnet" >> $GITHUB_ENV
+        if: ${{ github.ref_name == 'prod-testnet' }}
+
       - name: Set common environment variables
         run: |
           echo "HARDHAT_NETWORK=mumbai" >> $GITHUB_ENV

@@ -177,7 +177,7 @@ contract GameRegistry is OwnableUpgradeable {
     baseGameCreatorFees[_gid] = _baseGameCreatorFee;
   }
 
-  function createTournamentByOP(
+  function createTournamentByDAO(
     uint256 _gid,
     uint256 _proposedGameCreatorFee,
     uint256 _tournamentCreatorFee
@@ -221,10 +221,20 @@ contract GameRegistry is OwnableUpgradeable {
     uint256 _proposedGameCreatorFee,
     uint256 _tournamentCreatorFee,
     address _depositTokenAddress,
-    uint256 _depositTokenAmount
+    uint256 _depositTokenAmount,
+    address _tokenToAddPrizePool,
+    uint256 _amountToAddPrizePool
   ) external onlyValidGID(_gid) returns (uint256 tid) {
+    // create new tournament
     tid = _createTournament(_gid, _proposedGameCreatorFee, _tournamentCreatorFee);
+
+    // set the deposit token amount
     _updateDepositTokenAmount(_gid, tid, _depositTokenAddress, _depositTokenAmount);
+
+    // initialize the prize pool
+    if (_amountToAddPrizePool > 0) {
+      IOparcade(addressRegistry.oparcade()).depositPrize(_gid, tid, _tokenToAddPrizePool, _amountToAddPrizePool);
+    }
   }
 
   /**

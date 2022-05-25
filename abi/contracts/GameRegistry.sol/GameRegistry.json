@@ -374,7 +374,7 @@
         "type": "uint256"
       }
     ],
-    "name": "createTournamentByOP",
+    "name": "createTournamentByDAO",
     "outputs": [
       {
         "internalType": "uint256",
@@ -410,6 +410,16 @@
       {
         "internalType": "uint256",
         "name": "_depositTokenAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_tokenToAddPrizePool",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_amountToAddPrizePool",
         "type": "uint256"
       }
     ],

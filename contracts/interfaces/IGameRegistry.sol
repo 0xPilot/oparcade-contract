@@ -2,11 +2,19 @@
 pragma solidity ^0.8.0;
 
 /**
- * @title TokenRegistry Contract Interface
- * @notice Define the interface used to get the token information
+ * @title GameRegistry Contract Interface
+ * @notice Define the interface used to get the game and tournament information
  * @author David Lee
  */
 interface IGameRegistry {
+  function gameCreators(uint256 _gid) external view returns (address);
+
+  function appliedGameCreatorFees(uint256 _gid, uint256 _tid) external view returns (uint256);
+
+  function tournamentCreators(uint256 _gid) external view returns (address[] memory);
+
+  function tournamentCreatorFees(uint256 _gid, uint256 _tid) external view returns (uint256);
+
   /**
    * @notice Provide the deposit amount of the token given
    * @param _gid Game ID

@@ -16,6 +16,43 @@
       },
       {
         "indexed": true,
+        "internalType": "uint256",
+        "name": "oldBaseGameCreatorFee",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "newBaseGameCreatorFee",
+        "type": "uint256"
+      }
+    ],
+    "name": "BaseGameCreatorFeeUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "by",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "gid",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "tid",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
         "internalType": "address",
         "name": "token",
         "type": "address"
@@ -70,7 +107,7 @@
         "type": "bool"
       }
     ],
-    "name": "DistributableAmountUpdated",
+    "name": "DistributableTokenAddressUpdated",
     "type": "event"
   },
   {
@@ -93,6 +130,18 @@
         "internalType": "string",
         "name": "gameName",
         "type": "string"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "gameCreator",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "baseGameCreatorFee",
+        "type": "uint256"
       }
     ],
     "name": "GameAdded",
@@ -114,10 +163,53 @@
         "type": "uint256"
       },
       {
+        "indexed": true,
+        "internalType": "address",
+        "name": "oldGameCreator",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "newGameCreator",
+        "type": "address"
+      }
+    ],
+    "name": "GameCreatorUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "by",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "gid",
+        "type": "uint256"
+      },
+      {
         "indexed": false,
         "internalType": "string",
         "name": "gameName",
         "type": "string"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "gameCreator",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "baseGameCreatorFee",
+        "type": "uint256"
       }
     ],
     "name": "GameRemoved",
@@ -143,11 +235,58 @@
     "type": "event"
   },
   {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "by",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "gid",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "tid",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "appliedGameCreatorFee",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "tournamentCreatorFee",
+        "type": "uint256"
+      }
+    ],
+    "name": "TournamentCreated",
+    "type": "event"
+  },
+  {
     "inputs": [
       {
         "internalType": "string",
         "name": "_gameName",
         "type": "string"
+      },
+      {
+        "internalType": "address",
+        "name": "_gameCreator",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_baseGameCreatorFee",
+        "type": "uint256"
       }
     ],
     "name": "addGame",
@@ -155,6 +294,130 @@
       {
         "internalType": "uint256",
         "name": "gid",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "addressRegistry",
+    "outputs": [
+      {
+        "internalType": "contract IAddressRegistry",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "appliedGameCreatorFees",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "baseGameCreatorFees",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_gid",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_proposedGameCreatorFee",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_tournamentCreatorFee",
+        "type": "uint256"
+      }
+    ],
+    "name": "createTournamentByOP",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "tid",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_gid",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_proposedGameCreatorFee",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_tournamentCreatorFee",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_depositTokenAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_depositTokenAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "createTournamentByUser",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "tid",
         "type": "uint256"
       }
     ],
@@ -263,6 +526,25 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "gameCreators",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "gameLength",
     "outputs": [
@@ -333,7 +615,13 @@
     "type": "function"
   },
   {
-    "inputs": [],
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_addressRegistry",
+        "type": "address"
+      }
+    ],
     "name": "initialize",
     "outputs": [],
     "stateMutability": "nonpayable",
@@ -394,12 +682,78 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "tournamentCreatorFees",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "tournamentCreators",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "newOwner",
         "type": "address"
       }
     ],
     "name": "transferOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_gid",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_baseGameCreatorFee",
+        "type": "uint256"
+      }
+    ],
+    "name": "updateBaseGameCreatorFee",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -451,6 +805,24 @@
       }
     ],
     "name": "updateDistributableTokenAddress",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_gid",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_gameCreator",
+        "type": "address"
+      }
+    ],
+    "name": "updateGameCreator",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

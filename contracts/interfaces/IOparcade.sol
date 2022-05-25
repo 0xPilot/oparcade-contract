@@ -13,4 +13,11 @@ interface IOparcade {
    * @return uint256 Oparcade platform fee
    */
   function platformFee() external view returns (uint256);
+
+  function depositPrize(
+    uint256 _gid,
+    uint256 _tid,
+    address _token,
+    uint256 _amount
+  ) external;
 }

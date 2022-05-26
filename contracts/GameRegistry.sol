@@ -2,6 +2,8 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import "./interfaces/IAddressRegistry.sol";
 import "./interfaces/IOparcade.sol";
 
@@ -11,6 +13,8 @@ import "./interfaces/IOparcade.sol";
  * @author David Lee
  */
 contract GameRegistry is OwnableUpgradeable {
+  using SafeERC20Upgradeable for IERC20Upgradeable;
+
   event GameAdded(
     address indexed by,
     uint256 indexed gid,
@@ -59,6 +63,20 @@ contract GameRegistry is OwnableUpgradeable {
     bool oldStatus,
     bool newStatus
   );
+  event PlatformFeeUpdated(
+    address indexed by,
+    address indexed oldFeeRecipient,
+    uint256 oldPlatformFee,
+    address indexed newFeeRecipient,
+    uint256 newPlatformFee
+  );
+  event TournamentCreationFeeUpdated (
+    address indexed by,
+    address indexed oldTournamentCreationFeeToken,
+    uint256 oldTournamentCreationFeeAmount,
+    address indexed newTournamentCreationFeeToken,
+    uint256 newTournamentCreationFeeAmount
+  );
 
   /// @dev Game name array
   string[] public games;
@@ -96,6 +114,19 @@ contract GameRegistry is OwnableUpgradeable {
   /// @dev AddressRegistry
   IAddressRegistry public addressRegistry;
 
+  /// @dev Platform fee recipient
+  address public feeRecipient;
+
+  /// @dev Platform fee
+  uint256 public platformFee;
+
+  /// @dev Tournament creation fee token address
+  address public tournamentCreationFeeToken;
+
+  /// @dev Tournament creation fee token amount
+  uint256 public tournamentCreationFeeAmount;
+
+
   modifier onlyValidGID(uint256 _gid) {
     require(_gid < games.length && isDeprecatedGame[_gid] == false, "Invalid game index");
     _;
@@ -106,11 +137,25 @@ contract GameRegistry is OwnableUpgradeable {
     _;
   }
 
-  function initialize(address _addressRegistry) public initializer {
+  function initialize(address _addressRegistry,
+    address _feeRecipient,
+    uint256 _platformFee,
+    address _tournamentCreationFeeToken,
+    uint256 _tournamentCreationFeeAmount
+  ) public initializer {
     __Ownable_init();
+
+    require(_feeRecipient != address(0) || _platformFee == 0, "Fee recipient not set");
+    require(_platformFee <= 1000, "Platform fee exceeded");
 
     // initialize AddressRegistery
     addressRegistry = IAddressRegistry(_addressRegistry);
+
+    // initialize fee and recipient
+    feeRecipient = _feeRecipient;
+    platformFee = _platformFee;
+    tournamentCreationFeeToken = _tournamentCreationFeeToken;
+    tournamentCreationFeeAmount = _tournamentCreationFeeAmount;
   }
 
   /**
@@ -126,7 +171,7 @@ contract GameRegistry is OwnableUpgradeable {
     require(bytes(_gameName).length != 0, "Empty game name");
     require(_gameCreator != address(0), "Zero game creator");
     require(
-      IOparcade(addressRegistry.oparcade()).platformFee() + _baseGameCreatorFee < 1000,
+      platformFee + _baseGameCreatorFee < 1000,
       "Exceeded game creator fee"
     );
 
@@ -167,7 +212,7 @@ contract GameRegistry is OwnableUpgradeable {
 
   function updateBaseGameCreatorFee(uint256 _gid, uint256 _baseGameCreatorFee) external onlyOwner onlyValidGID(_gid) {
     require(
-      IOparcade(addressRegistry.oparcade()).platformFee() + _baseGameCreatorFee < 1000,
+      platformFee + _baseGameCreatorFee < 1000,
       "Exceeded game creator fee"
     );
 
@@ -201,7 +246,7 @@ contract GameRegistry is OwnableUpgradeable {
     // check fees
     require(baseGameCreatorFees[_gid] <= appliedGameCreatorFee, "Low game creator fee applied");
     require(
-      IOparcade(addressRegistry.oparcade()).platformFee() + appliedGameCreatorFee + _tournamentCreatorFee < 1000,
+      platformFee + appliedGameCreatorFee + _tournamentCreatorFee < 1000,
       "Exceeded fees"
     );
 
@@ -225,6 +270,9 @@ contract GameRegistry is OwnableUpgradeable {
     address _tokenToAddPrizePool,
     uint256 _amountToAddPrizePool
   ) external onlyValidGID(_gid) returns (uint256 tid) {
+    // pay the tournament creation fee
+    IERC20Upgradeable(tournamentCreationFeeToken).safeTransferFrom(msg.sender, feeRecipient, tournamentCreationFeeAmount);
+
     // create new tournament
     tid = _createTournament(_gid, _proposedGameCreatorFee, _tournamentCreatorFee);
 
@@ -347,5 +395,31 @@ contract GameRegistry is OwnableUpgradeable {
    */
   function gameLength() external view returns (uint256) {
     return games.length;
+  }
+
+  /**
+   * @notice Update platform fee
+   * @dev Only owner
+   * @dev Allow zero recipient address only of fee is also zero
+   * @param _feeRecipient Platform fee recipient address
+   * @param _platformFee platform fee
+   */
+  function updatePlatformFee(address _feeRecipient, uint256 _platformFee) external onlyOwner {
+    require(_feeRecipient != address(0) || _platformFee == 0, "Fee recipient not set");
+    require(_platformFee <= 1000, "Platform fee exceeded");
+
+    emit PlatformFeeUpdated(msg.sender, feeRecipient, platformFee, _feeRecipient, _platformFee);
+
+    feeRecipient = _feeRecipient;
+    platformFee = _platformFee;
+  }
+  
+  function updateTournamentCreationFee(address _tournamentCreationFeeToken, uint256 _tournamentCreationFeeAmount) external onlyOwner {
+    require(_tournamentCreationFeeAmount > 0, "Zero tournament creation fee");
+
+    emit TournamentCreationFeeUpdated(msg.sender, tournamentCreationFeeToken, tournamentCreationFeeAmount, _tournamentCreationFeeToken, _tournamentCreationFeeAmount);
+
+    tournamentCreationFeeToken = _tournamentCreationFeeToken;
+    tournamentCreationFeeAmount = _tournamentCreationFeeAmount;
   }
 }

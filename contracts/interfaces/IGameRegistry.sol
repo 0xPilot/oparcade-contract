@@ -47,4 +47,13 @@ interface IGameRegistry {
    * @notice Returns the number of games added in games array
    */
   function gameLength() external view returns (uint256);
+
+  /**
+   * @notice Provide the Oparcade platform fee
+   * @dev Max value is 1000 (100%)
+   * @return uint256 Oparcade platform fee
+   */
+  function platformFee() external view returns (uint256);
+
+  function feeRecipient() external view returns (address);
 }

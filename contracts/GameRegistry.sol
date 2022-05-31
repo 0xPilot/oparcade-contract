@@ -259,7 +259,11 @@ contract GameRegistry is OwnableUpgradeable {
     address _depositTokenAddress,
     uint256 _depositTokenAmount,
     address _tokenToAddPrizePool,
-    uint256 _amountToAddPrizePool
+    uint256 _amountToAddPrizePool,
+    address _nftAddressToAddPrizePool,
+    uint256 _nftTypeToAddPrizePool,
+    uint256[] calldata _tokenIdsToAddPrizePool,
+    uint256[] calldata _amountsToAddPrizePool
   ) external onlyValidGID(_gid) returns (uint256 tid) {
     // pay the tournament creation fee
     IERC20Upgradeable(tournamentCreationFeeToken).safeTransferFrom(
@@ -274,9 +278,22 @@ contract GameRegistry is OwnableUpgradeable {
     // set the deposit token amount
     _updateDepositTokenAmount(_gid, tid, _depositTokenAddress, _depositTokenAmount);
 
-    // initialize the prize pool
+    // initialize the prize pool with tokens
     if (_amountToAddPrizePool > 0) {
       IOparcade(addressRegistry.oparcade()).depositPrize(_gid, tid, _tokenToAddPrizePool, _amountToAddPrizePool);
+    }
+
+    // initialize the prize pool with NFTs
+    if (_nftAddressToAddPrizePool != address(0)) {
+      IOparcade(addressRegistry.oparcade()).depositNFTPrize(
+        msg.sender,
+        _gid,
+        tid,
+        _nftAddressToAddPrizePool,
+        _nftTypeToAddPrizePool,
+        _tokenIdsToAddPrizePool,
+        _amountsToAddPrizePool
+      );
     }
   }
 

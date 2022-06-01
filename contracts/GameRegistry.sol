@@ -162,9 +162,10 @@ contract GameRegistry is OwnableUpgradeable {
    * @notice Add the new game
    * @param _gameName Game name to add
    * @param _gameCreator Game creator address
+   * @param _baseGameCreatorFee Base game creator fee
    */
   function addGame(
-    string memory _gameName,
+    string calldata _gameName,
     address _gameCreator,
     uint256 _baseGameCreatorFee
   ) external onlyOwner returns (uint256 gid) {
@@ -197,6 +198,11 @@ contract GameRegistry is OwnableUpgradeable {
     emit GameRemoved(msg.sender, _gid, games[_gid], gameCreators[_gid], baseGameCreatorFees[_gid]);
   }
 
+  /**
+   * @notice Update the game creator
+   * @param _gid Game ID
+   * @param _gameCreator Game creator address
+   */
   function updateGameCreator(uint256 _gid, address _gameCreator) external onlyValidGID(_gid) {
     require(msg.sender == gameCreators[_gid], "Only game creator");
     require(_gameCreator != address(0), "Zero game creator address");
@@ -207,6 +213,14 @@ contract GameRegistry is OwnableUpgradeable {
     gameCreators[_gid] = _gameCreator;
   }
 
+  /**
+   * @notice Update the base game creator fee
+   * @dev Tournament creator fee is the royality that will be transferred to the tournament creator address
+   * @dev Tournament creator can propose the game creator fee when creating the tournament
+   * @dev but it can't be less than the base game creator fee
+   * @param _gid Game ID
+   * @param _baseGameCreatorFee Base game creator fee
+   */
   function updateBaseGameCreatorFee(uint256 _gid, uint256 _baseGameCreatorFee) external onlyOwner onlyValidGID(_gid) {
     require(platformFee + _baseGameCreatorFee < 1000, "Exceeded game creator fee");
 
@@ -216,6 +230,16 @@ contract GameRegistry is OwnableUpgradeable {
     baseGameCreatorFees[_gid] = _baseGameCreatorFee;
   }
 
+  /**
+   * @notice Create the tournament
+   * @dev Only owner
+   * @dev If the proposed game creaetor fee is 0, the base game creator fee is applied
+   * @dev The prize pool for the tournament that the owner created is initialized on Oparcade contract
+   * @param _gid Game ID
+   * @param _proposedGameCreatorFee Proposed game creator fee
+   * @param _tournamentCreatorFee Tournament creator fee
+   * @return tid Tournament ID created
+   */
   function createTournamentByDAO(
     uint256 _gid,
     uint256 _proposedGameCreatorFee,
@@ -224,6 +248,14 @@ contract GameRegistry is OwnableUpgradeable {
     tid = _createTournament(_gid, _proposedGameCreatorFee, _tournamentCreatorFee);
   }
 
+  /**
+   * @notice Create the tournament
+   * @dev If the proposed game creaetor fee is 0, the base game creator fee is applied
+   * @param _gid Game ID
+   * @param _proposedGameCreatorFee Proposed game creator fee
+   * @param _tournamentCreatorFee Tournament creator fee
+   * @return tid Tournament ID created
+   */
   function _createTournament(
     uint256 _gid,
     uint256 _proposedGameCreatorFee,
@@ -252,6 +284,28 @@ contract GameRegistry is OwnableUpgradeable {
     emit TournamentCreated(msg.sender, _gid, tid, appliedGameCreatorFee, _tournamentCreatorFee);
   }
 
+  /**
+   * @notice Create the tournament
+   * @dev Anyone can create the tournament and initialize the prize pool with tokens and NFTs
+   * @dev Tournament creator should set all params necessary for the tournament in 1 tx and 
+   * @dev the params set is immutable
+   * @dev Tournament creator should pay fees to create the tournament
+   * @dev and the fee token address and fee token amount are set by the owner
+   * @dev If the proposed game creaetor fee is 0, the base game creator fee is applied
+   * @dev NFT type to initialize the prize pool should be either 721 or 1155
+   * @param _gid Game ID
+   * @param _proposedGameCreatorFee Proposed game creator fee
+   * @param _proposedGameCreatorFee Tournament creator fee
+   * @param _depositTokenAddress Deposit token address for playing the tournament
+   * @param _depositTokenAmount Deposit token amount for playing the tournament
+   * @param _tokenToAddPrizePool Token address to initialize the prize pool
+   * @param _amountToAddPrizePool Token amount to initialize the prize pool
+   * @param _nftAddressToAddPrizePool NFT address to initialize the prize pool
+   * @param _nftTypeToAddPrizePool NFT type to initialize the prize pool
+   * @param _tokenIdsToAddPrizePool NFT token Id list to initialize the prize pool
+   * @param _amountsToAddPrizePool NFT token amount list to initialize the prize pool
+   * @return tid Tournament ID created
+   */
   function createTournamentByUser(
     uint256 _gid,
     uint256 _proposedGameCreatorFee,
@@ -262,8 +316,8 @@ contract GameRegistry is OwnableUpgradeable {
     uint256 _amountToAddPrizePool,
     address _nftAddressToAddPrizePool,
     uint256 _nftTypeToAddPrizePool,
-    uint256[] calldata _tokenIdsToAddPrizePool,
-    uint256[] calldata _amountsToAddPrizePool
+    uint256[] memory _tokenIdsToAddPrizePool,
+    uint256[] memory _amountsToAddPrizePool
   ) external onlyValidGID(_gid) returns (uint256 tid) {
     // pay the tournament creation fee
     IERC20Upgradeable(tournamentCreationFeeToken).safeTransferFrom(
@@ -315,6 +369,14 @@ contract GameRegistry is OwnableUpgradeable {
     _updateDepositTokenAmount(_gid, _tid, _token, _amount);
   }
 
+  /**
+   * @notice Update deposit token amount
+   * @dev Only tokens with an amount greater than zero is valid for the deposit
+   * @param _gid Game ID
+   * @param _tid Tournament ID
+   * @param _token Token address to allow/disallow the deposit
+   * @param _amount Token amount
+   */
   function _updateDepositTokenAmount(
     uint256 _gid,
     uint256 _tid,
@@ -359,6 +421,13 @@ contract GameRegistry is OwnableUpgradeable {
     _updateDistributableTokenAddress(_gid, _token, _isDistributable);
   }
 
+  /**
+   * @notice Update distributable token address
+   * @dev Only owner
+   * @param _gid Game ID
+   * @param _token Token address to allow/disallow the deposit
+   * @param _isDistributable true: distributable false: not distributable
+   */
   function _updateDistributableTokenAddress(
     uint256 _gid,
     address _token,
@@ -389,6 +458,7 @@ contract GameRegistry is OwnableUpgradeable {
   /**
    * @notice Returns the deposit token list of the game
    * @param _gid Game ID
+   * @return (address[]) Deposit token list of the game
    */
   function getDepositTokenList(uint256 _gid) external view returns (address[] memory) {
     return depositTokenList[_gid];
@@ -397,6 +467,7 @@ contract GameRegistry is OwnableUpgradeable {
   /**
    * @notice Returns the distributable token list of the game
    * @param _gid Game ID
+   * @param (address[]) Distributable token list of the game
    */
   function getDistributableTokenList(uint256 _gid) external view returns (address[] memory) {
     return distributableTokenList[_gid];
@@ -404,13 +475,14 @@ contract GameRegistry is OwnableUpgradeable {
 
   /**
    * @notice Returns the number of games added in games array
+   * @return (uint256) Game count created
    */
   function gameLength() external view returns (uint256) {
     return games.length;
   }
 
   /**
-   * @notice Update platform fee
+   * @notice Update the platform fee
    * @dev Only owner
    * @dev Allow zero recipient address only of fee is also zero
    * @param _feeRecipient Platform fee recipient address
@@ -426,6 +498,13 @@ contract GameRegistry is OwnableUpgradeable {
     platformFee = _platformFee;
   }
 
+  /**
+   * @notice Update the tournament creation fee
+   * @dev Only owner
+   * @dev Tournament creator should pay this fee when creating the tournament
+   * @param _tournamentCreationFeeToken Fee token address
+   * @param _tournamentCreationFeeAmount Fee token amount
+   */
   function updateTournamentCreationFee(address _tournamentCreationFeeToken, uint256 _tournamentCreationFeeAmount)
     external
     onlyOwner

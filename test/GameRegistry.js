@@ -8,7 +8,7 @@ describe("GameRegistry", () => {
     game2 = "Game2";
 
   before(async () => {
-    [deployer, token1, token2, token3] = await ethers.getSigners();
+    [deployer, alice, bob, token1, token2, token3] = await ethers.getSigners();
 
     // Initialize GameRegistry contract
     const GameRegistry = await ethers.getContractFactory("GameRegistry");
@@ -17,13 +17,13 @@ describe("GameRegistry", () => {
 
   it("Should be able to add a new game...", async () => {
     /// add the first game
-    await gameRegistry.addGame(game1);
+    await gameRegistry.addGame(game1, alice.address);
     expect(await gameRegistry.games(0)).to.equal(game1);
     expect(await gameRegistry.isDeprecatedGame(0)).to.be.false;
     expect(await gameRegistry.gameLength()).to.equal(1);
 
     // add the second game
-    await gameRegistry.addGame(game2);
+    await gameRegistry.addGame(game2, bob.address);
     expect(await gameRegistry.games(1)).to.equal(game2);
     expect(await gameRegistry.isDeprecatedGame(1)).to.be.false;
     expect(await gameRegistry.gameLength()).to.equal(2);

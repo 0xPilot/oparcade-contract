@@ -287,7 +287,7 @@ contract GameRegistry is OwnableUpgradeable {
   /**
    * @notice Create the tournament
    * @dev Anyone can create the tournament and initialize the prize pool with tokens and NFTs
-   * @dev Tournament creator should set all params necessary for the tournament in 1 tx and 
+   * @dev Tournament creator should set all params necessary for the tournament in 1 tx and
    * @dev the params set is immutable
    * @dev Tournament creator should pay fees to create the tournament
    * @dev and the fee token address and fee token amount are set by the owner

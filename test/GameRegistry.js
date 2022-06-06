@@ -10,7 +10,7 @@ describe("GameRegistry", () => {
   // const ONE_ETHER = ethers.utils.parseEther("1");
   const tournamentCreationFeeAmount = 100;
   const platformFee = 10; // 1%
-  const baseGameCreatorFee = 100;  // 10%
+  const baseGameCreatorFee = 100; // 10%
 
   before(async () => {
     [deployer, alice, bob, feeRecipient, token1, token2, token3] = await ethers.getSigners();

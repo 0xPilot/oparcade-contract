@@ -2,34 +2,53 @@ const { expect } = require("chai");
 const { ethers, upgrades } = require("hardhat");
 
 describe("GameRegistry", () => {
-  let gameRegistry;
+  let addressRegistry, gameRegistry, tournamentCreationFeeToken;
 
   let game1 = "Game1",
     game2 = "Game2";
 
+  // const ONE_ETHER = ethers.utils.parseEther("1");
+  const tournamentCreationFeeAmount = 100;
+  const platformFee = 10; // 1%
+  const baseGameCreatorFee = 100;  // 10%
+
   before(async () => {
-    [deployer, alice, bob, token1, token2, token3] = await ethers.getSigners();
+    [deployer, alice, bob, feeRecipient, token1, token2, token3] = await ethers.getSigners();
+
+    // deploy mock token
+    const ERC20Mock = await ethers.getContractFactory("ERC20Mock");
+    tournamentCreationFeeToken = await ERC20Mock.deploy("mockFeeToken", "mockFeeToken");
+
+    // Initialize AddressRegistry contract
+    const AddressRegistry = await ethers.getContractFactory("AddressRegistry");
+    addressRegistry = await upgrades.deployProxy(AddressRegistry);
 
     // Initialize GameRegistry contract
     const GameRegistry = await ethers.getContractFactory("GameRegistry");
-    gameRegistry = await upgrades.deployProxy(GameRegistry);
+    gameRegistry = await upgrades.deployProxy(GameRegistry, [
+      addressRegistry.address,
+      feeRecipient.address,
+      platformFee,
+      tournamentCreationFeeToken.address,
+      tournamentCreationFeeAmount,
+    ]);
   });
 
   it("Should be able to add a new game...", async () => {
     /// add the first game
-    await gameRegistry.addGame(game1, alice.address);
+    await gameRegistry.addGame(game1, alice.address, baseGameCreatorFee);
     expect(await gameRegistry.games(0)).to.equal(game1);
     expect(await gameRegistry.isDeprecatedGame(0)).to.be.false;
-    expect(await gameRegistry.gameLength()).to.equal(1);
+    expect(await gameRegistry.gameCount()).to.equal(1);
 
     // add the second game
-    await gameRegistry.addGame(game2, bob.address);
+    await gameRegistry.addGame(game2, bob.address, baseGameCreatorFee);
     expect(await gameRegistry.games(1)).to.equal(game2);
     expect(await gameRegistry.isDeprecatedGame(1)).to.be.false;
-    expect(await gameRegistry.gameLength()).to.equal(2);
+    expect(await gameRegistry.gameCount()).to.equal(2);
   });
 
-  it("Should revert if trying to remve a non-existing game...", async () => {
+  it("Should revert if trying to remove a non-existing game...", async () => {
     const gid = 2;
 
     // remove the game

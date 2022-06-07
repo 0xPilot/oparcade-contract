@@ -170,8 +170,8 @@ contract GameRegistry is OwnableUpgradeable {
     uint256 _baseGameCreatorFee
   ) external onlyOwner returns (uint256 gid) {
     require(bytes(_gameName).length != 0, "Empty game name");
-    require(_gameCreator != address(0), "Zero game creator");
-    require(platformFee + _baseGameCreatorFee < 1000, "Exceeded game creator fee");
+    require(_gameCreator != address(0), "Zero game creator address");
+    require(platformFee + _baseGameCreatorFee < 1000, "Exceeded base game creator fee");
 
     // add the game
     games.push(_gameName);
@@ -270,7 +270,7 @@ contract GameRegistry is OwnableUpgradeable {
     }
 
     // check fees
-    require(baseGameCreatorFees[_gid] <= appliedGameCreatorFee, "Low game creator fee applied");
+    require(baseGameCreatorFees[_gid] <= appliedGameCreatorFee, "Low game creator fee proposed");
     require(platformFee + appliedGameCreatorFee + _tournamentCreatorFee < 1000, "Exceeded fees");
 
     // get the new tournament ID
@@ -332,23 +332,38 @@ contract GameRegistry is OwnableUpgradeable {
     // set the deposit token amount
     _updateDepositTokenAmount(_gid, tid, _depositTokenAddress, _depositTokenAmount);
 
-    // initialize the prize pool with tokens
-    if (_amountToAddPrizePool > 0) {
-      IOparcade(addressRegistry.oparcade()).depositPrize(_gid, tid, _tokenToAddPrizePool, _amountToAddPrizePool);
+    // set the distributable token
+    if (distributable[_gid][_depositTokenAddress] == false && _depositTokenAmount > 0) {
+      _updateDistributableTokenAddress(_gid, _depositTokenAddress, true);
+    }
+    if (distributable[_gid][_tokenToAddPrizePool] == false && _amountToAddPrizePool > 0) {
+      _updateDistributableTokenAddress(_gid, _tokenToAddPrizePool, true);
+    }
+    if (distributable[_gid][_nftAddressToAddPrizePool] == false && _amountsToAddPrizePool.length > 0) {
+      _updateDistributableTokenAddress(_gid, _nftAddressToAddPrizePool, true);
     }
 
-    // initialize the prize pool with NFTs
-    if (_nftAddressToAddPrizePool != address(0)) {
-      IOparcade(addressRegistry.oparcade()).depositNFTPrize(
+    // initialize the prize pool with tokens
+    if (_amountToAddPrizePool > 0) {
+      IOparcade(addressRegistry.oparcade()).depositPrize(
         msg.sender,
         _gid,
         tid,
-        _nftAddressToAddPrizePool,
-        _nftTypeToAddPrizePool,
-        _tokenIdsToAddPrizePool,
-        _amountsToAddPrizePool
+        _tokenToAddPrizePool,
+        _amountToAddPrizePool
       );
     }
+
+    // initialize the prize pool with NFTs
+    IOparcade(addressRegistry.oparcade()).depositNFTPrize(
+      msg.sender,
+      _gid,
+      tid,
+      _nftAddressToAddPrizePool,
+      _nftTypeToAddPrizePool,
+      _tokenIdsToAddPrizePool,
+      _amountsToAddPrizePool
+    );
   }
 
   /**
@@ -477,8 +492,33 @@ contract GameRegistry is OwnableUpgradeable {
    * @notice Returns the number of games added in games array
    * @return (uint256) Game count created
    */
-  function gameLength() external view returns (uint256) {
+  function gameCount() external view returns (uint256) {
     return games.length;
+  }
+
+  /**
+   * @notice Returns the number of the tournaments of the specific game
+   * @param _gid Game ID
+   * @return (uint256) Number of the tournament
+   */
+  function getTournamentCount(uint256 _gid) external view onlyValidGID(_gid) returns (uint256) {
+    return tournamentCreators[_gid].length;
+  }
+
+  /**
+   * @notice Returns the tournament creator address of the specific game/tournament
+   * @param _gid Game ID
+   * @param _tid Tournament ID
+   * @return (address) Tournament creator address
+   */
+  function getTournamentCreator(uint256 _gid, uint256 _tid)
+    external
+    view
+    onlyValidGID(_gid)
+    onlyValidTID(_gid, _tid)
+    returns (address)
+  {
+    return tournamentCreators[_gid][_tid];
   }
 
   /**

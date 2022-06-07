@@ -25,13 +25,6 @@ interface IGameRegistry {
   function appliedGameCreatorFees(uint256 _gid, uint256 _tid) external view returns (uint256);
 
   /**
-   * @notice Returns the tournament creator addresses of the specific game
-   * @param _gid Game ID
-   * @return (address[]) Tournament creator address list
-   */
-  function tournamentCreators(uint256 _gid) external view returns (address[] memory);
-
-  /**
    * @notice Returns the tournament creator fee percentage of the specific game/tournament
    * @dev Max value is 1000 (100%)
    * @param _gid Game ID
@@ -72,7 +65,15 @@ interface IGameRegistry {
    * @notice Returns the number of games added in games array
    * @return (uint256) Game count
    */
-  function gameLength() external view returns (uint256);
+  function gameCount() external view returns (uint256);
+
+  /**
+   * @notice Returns the tournament creator addresses of the specific game
+   * @param _gid Game ID
+   * @param _tid Tournament ID
+   * @return (address) Tournament creator address
+   */
+  function getTournamentCreator(uint256 _gid, uint256 _tid) external view returns (address);
 
   /**
    * @notice Provide the Oparcade platform fee

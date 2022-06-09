@@ -9,11 +9,15 @@ describe("GameRegistry", () => {
 
   // const ONE_ETHER = ethers.utils.parseEther("1");
   const tournamentCreationFeeAmount = 100;
-  const platformFee = 10; // 1%
-  const baseGameCreatorFee = 100; // 10%
+  const platformFee = 100; // 10%
+  const baseGameCreatorFee = 100;  // 10%
+  const proposedGameCreatorFee = 150; // 15%
+  const tournamentCreatorFee = 250; // 25%
 
-  before(async () => {
-    [deployer, alice, bob, feeRecipient, token1, token2, token3] = await ethers.getSigners();
+  const ZERO_ADDRESS = ethers.constants.AddressZero;
+
+  beforeEach(async () => {
+    [deployer, alice, bob, carol, feeRecipient, token1, token2, token3] = await ethers.getSigners();
 
     // deploy mock token
     const ERC20Mock = await ethers.getContractFactory("ERC20Mock");
@@ -34,106 +38,296 @@ describe("GameRegistry", () => {
     ]);
   });
 
-  it("Should be able to add a new game...", async () => {
-    /// add the first game
-    await gameRegistry.addGame(game1, alice.address, baseGameCreatorFee);
-    expect(await gameRegistry.games(0)).to.equal(game1);
-    expect(await gameRegistry.isDeprecatedGame(0)).to.be.false;
-    expect(await gameRegistry.gameCount()).to.equal(1);
-
-    // add the second game
-    await gameRegistry.addGame(game2, bob.address, baseGameCreatorFee);
-    expect(await gameRegistry.games(1)).to.equal(game2);
-    expect(await gameRegistry.isDeprecatedGame(1)).to.be.false;
-    expect(await gameRegistry.gameCount()).to.equal(2);
+  describe("addGame", async () => {
+    it("Should be able to add a new game...", async () => {
+      // add the first game
+      await gameRegistry.addGame(game1, alice.address, baseGameCreatorFee);
+      expect(await gameRegistry.games(0)).to.equal(game1);
+      expect(await gameRegistry.isDeprecatedGame(0)).to.be.false;
+      expect(await gameRegistry.gameCount()).to.equal(1);
+  
+      // add the second game
+      await gameRegistry.addGame(game2, bob.address, baseGameCreatorFee);
+      expect(await gameRegistry.games(1)).to.equal(game2);
+      expect(await gameRegistry.isDeprecatedGame(1)).to.be.false;
+      expect(await gameRegistry.gameCount()).to.equal(2);
+    });
+  
+    it("Should revert if the game name is empty...", async () => {
+      await expect(gameRegistry.addGame("", alice.address, baseGameCreatorFee)).to.be.revertedWith("Empty game name");
+    });
+  
+    it("Should revert if the game creator address is zero address...", async () => {
+      await expect(gameRegistry.addGame(game1, ZERO_ADDRESS, baseGameCreatorFee)).to.be.revertedWith("Zero game creator address");
+    });
+  
+    it("Should revert if the base game creator fee is exceeded...", async () => {
+      await expect(gameRegistry.addGame(game1, alice.address, 1000)).to.be.revertedWith("Exceeded base game creator fee");
+    });
   });
 
-  it("Should revert if trying to remove a non-existing game...", async () => {
-    const gid = 2;
+  describe("removeGame", async () => {
+    beforeEach(async () => {
+      // add the first game
+      await gameRegistry.addGame(game1, alice.address, baseGameCreatorFee);
 
-    // remove the game
-    await expect(gameRegistry.removeGame(gid)).to.be.revertedWith("Invalid game index");
+      // add the second game
+      await gameRegistry.addGame(game2, bob.address, baseGameCreatorFee);
+    });
+
+    it("Should revert if trying to remove a non-existing game...", async () => {
+      const gid = 2;
+  
+      // remove the game
+      await expect(gameRegistry.removeGame(gid)).to.be.revertedWith("Invalid game index");
+    });
+  
+    it("Should be able to remove the game...", async () => {
+      const gid = 0;
+  
+      // remove the first game
+      await gameRegistry.removeGame(gid);
+      expect(await gameRegistry.games(0)).to.equal(game1);
+      expect(await gameRegistry.isDeprecatedGame(gid)).to.be.true;
+    });
   });
 
-  it("Should be able to remove a game...", async () => {
-    const gid = 0;
+  describe("updateGameCreator", async () => {
+    beforeEach(async () => {
+      // add the first game
+      await gameRegistry.addGame(game1, alice.address, baseGameCreatorFee);
 
-    // remove the first game
-    await gameRegistry.removeGame(gid);
-    expect(await gameRegistry.games(0)).to.equal(game1);
-    expect(await gameRegistry.isDeprecatedGame(gid)).to.be.true;
+      // add the second game
+      await gameRegistry.addGame(game2, bob.address, baseGameCreatorFee);
+    });
+  
+    it("Should be able to update the game creator address...", async () => {
+      const gid = 0;
+
+      expect(await gameRegistry.gameCreators(gid)).to.equal(alice.address);
+
+      // update the game creator address
+      await gameRegistry.connect(alice).updateGameCreator(gid, carol.address);
+      
+      // check the game creator address updated
+      expect(await gameRegistry.gameCreators(gid)).to.equal(carol.address);
+    });
+
+    it("Should revert if trying to update the game creator address of the non-existing game...", async () => {
+      const gid = 2;
+  
+      // update the game creator address
+      await expect(gameRegistry.connect(alice).updateGameCreator(gid, carol.address)).to.be.revertedWith("Invalid game index");
+    });
+
+    it("Should revert if msg.sender is not the game creator...", async () => {
+      const gid = 0;
+  
+      // update the game creator address
+      await expect(gameRegistry.connect(bob).updateGameCreator(gid, carol.address)).to.be.revertedWith("Only game creator");
+    });
+
+    it("Should revert if the new game creator address is zero...", async () => {
+      const gid = 0;
+  
+      // update the game creator address
+      await expect(gameRegistry.connect(alice).updateGameCreator(gid, ZERO_ADDRESS)).to.be.revertedWith("Zero game creator address");
+    });
   });
 
-  it("Should be able to update the deposit token...", async () => {
-    const gid = 1;
-    const tid0 = 0;
-    const tid1 = 1;
-    let depositTokenList = [];
-    const token1_amount = 100;
-    const token2_amount = 200;
+  describe("updateBaseGameCreatorFee", async () => {
+    beforeEach(async () => {
+      // add the first game
+      await gameRegistry.addGame(game1, alice.address, baseGameCreatorFee);
 
-    // add token1
-    await gameRegistry.updateDepositTokenAmount(gid, tid0, token1.address, token1_amount);
+      // add the second game
+      await gameRegistry.addGame(game2, bob.address, baseGameCreatorFee);
+    });
+  
+    it("Should be able to update the base game creator fee...", async () => {
+      const gid = 0;
+      const newGameCreatorFee = 200;
 
-    expect(await gameRegistry.depositTokenAmount(gid, tid0, token1.address)).to.equal(token1_amount);
-    expect((await gameRegistry.getDepositTokenList(gid)).length).to.equal(1);
-    expect(await gameRegistry.depositTokenList(gid, 0)).to.equal(token1.address);
+      expect(await gameRegistry.baseGameCreatorFees(gid)).to.equal(baseGameCreatorFee);
 
-    // update token1
-    const new_token1_amount = 300;
-    await gameRegistry.updateDepositTokenAmount(gid, tid0, token1.address, new_token1_amount);
+      // update the game creator address
+      await gameRegistry.updateBaseGameCreatorFee(gid, newGameCreatorFee);
+      
+      // check the game creator address updated
+      expect(await gameRegistry.baseGameCreatorFees(gid)).to.equal(newGameCreatorFee);
+    });
 
-    expect(await gameRegistry.depositTokenAmount(gid, tid0, token1.address)).to.equal(new_token1_amount);
-    expect((await gameRegistry.getDepositTokenList(gid)).length).to.equal(1);
-    expect(await gameRegistry.depositTokenList(gid, 0)).to.equal(token1.address);
+    it("Should revert if trying to update the base game creator fee of the non-existing game...", async () => {
+      const gid = 2;
+      const newGameCreatorFee = 200;
+  
+      // remove the game
+      await expect(gameRegistry.updateBaseGameCreatorFee(gid, newGameCreatorFee)).to.be.revertedWith("Invalid game index");
+    });
 
-    // add token2
-    await gameRegistry.updateDepositTokenAmount(gid, tid1, token2.address, token2_amount);
+    it("Should revert if msg.sender is not the owner...", async () => {
+      const gid = 0;
+      const newGameCreatorFee = 200;
+  
+      // remove the game
+      await expect(gameRegistry.connect(alice).updateBaseGameCreatorFee(gid, newGameCreatorFee)).to.be.revertedWith("Ownable: caller is not the owner");
+    });
 
-    expect(await gameRegistry.depositTokenAmount(gid, tid1, token2.address)).to.equal(token2_amount);
-    expect((await gameRegistry.getDepositTokenList(gid)).length).to.equal(2);
-    expect(await gameRegistry.depositTokenList(gid, 1)).to.equal(token2.address);
-
-    // remove token1
-    await gameRegistry.updateDepositTokenAmount(gid, tid1, token1.address, 0);
-
-    expect(await gameRegistry.depositTokenAmount(gid, tid1, token1.address)).to.equal(0);
-    expect((await gameRegistry.getDepositTokenList(gid)).length).to.equal(1);
-    expect(await gameRegistry.depositTokenList(gid, 0)).to.equal(token2.address);
-
-    // remove token3 (unavailable token)
-    await gameRegistry.updateDepositTokenAmount(gid, tid1, token3.address, 0);
-
-    expect(await gameRegistry.depositTokenAmount(gid, tid1, token3.address)).to.equal(0);
-    expect((await gameRegistry.getDepositTokenList(gid)).length).to.equal(1);
-    expect(await gameRegistry.depositTokenList(gid, 0)).to.equal(token2.address);
+    it("Should revert if trying to update the base game creator fee is exceeded...", async () => {
+      const gid = 0;
+      const newGameCreatorFee = 1000;
+  
+      // remove the game
+      await expect(gameRegistry.updateBaseGameCreatorFee(gid, newGameCreatorFee)).to.be.revertedWith("Exceeded game creator fee");
+    });
   });
 
-  it("Should be able to update the distributable token...", async () => {
-    const gid = 1;
+  describe("createTournamentByDAO", async () => {
+    beforeEach(async () => {
+      // add the first game
+      await gameRegistry.addGame(game1, alice.address, baseGameCreatorFee);
 
-    // add token1
-    await gameRegistry.updateDistributableTokenAddress(gid, token1.address, true);
+      // add the second game
+      await gameRegistry.addGame(game2, bob.address, baseGameCreatorFee);
+    });
 
-    expect((await gameRegistry.getDistributableTokenList(gid)).length).to.equal(1);
-    expect(await gameRegistry.distributable(gid, token1.address)).to.be.true;
+    it("Should be able to creator the tournament...", async () => {
+      const gid = 0;
 
-    // update token1
-    await gameRegistry.updateDistributableTokenAddress(gid, token1.address, true);
+      expect(await gameRegistry.getTournamentCount(gid)).to.equal(0);
 
-    expect((await gameRegistry.getDistributableTokenList(gid)).length).to.equal(1);
-    expect(await gameRegistry.distributable(gid, token1.address)).to.be.true;
+      // create the first tournament
+      let tid = await gameRegistry.callStatic.createTournamentByDAO(gid, proposedGameCreatorFee, tournamentCreatorFee);
+      await gameRegistry.createTournamentByDAO(gid, proposedGameCreatorFee, tournamentCreatorFee);
+      
+      // check the created tournament info
+      expect(await gameRegistry.getTournamentCount(gid)).to.equal(1);
+      expect(await gameRegistry.getTournamentCreator(gid, tid)).to.equal(deployer.address);
+      expect(await gameRegistry.appliedGameCreatorFees(gid, tid)).to.equal(proposedGameCreatorFee);
+      expect(await gameRegistry.tournamentCreatorFees(gid, tid)).to.equal(tournamentCreatorFee);
 
-    // add token2
-    await gameRegistry.updateDistributableTokenAddress(gid, token2.address, true);
+      // create the second tournament with the zero proposedGameCreatorFee
+      tid = await gameRegistry.callStatic.createTournamentByDAO(gid, 0, tournamentCreatorFee);
+      await gameRegistry.createTournamentByDAO(gid, 0, tournamentCreatorFee + 1);
+      
+      // check the created tournament info
+      expect(await gameRegistry.getTournamentCount(gid)).to.equal(2);
+      expect(await gameRegistry.getTournamentCreator(gid, tid)).to.equal(deployer.address);
+      expect(await gameRegistry.appliedGameCreatorFees(gid, tid)).to.equal(baseGameCreatorFee);
+      expect(await gameRegistry.tournamentCreatorFees(gid, tid)).to.equal(tournamentCreatorFee + 1);
+    });
 
-    expect((await gameRegistry.getDistributableTokenList(gid)).length).to.equal(2);
-    expect(await gameRegistry.distributable(gid, token2.address)).to.be.true;
+    it("Revert if msg.sender is not the owner...", async () => {
+      const gid = 2;
 
-    // remove token2
-    await gameRegistry.updateDistributableTokenAddress(gid, token2.address, false);
+      // create the tournament
+      await expect(gameRegistry.connect(alice).createTournamentByDAO(gid, proposedGameCreatorFee, tournamentCreatorFee)).to.be.revertedWith("Ownable: caller is not the owner");
+    });
 
-    expect((await gameRegistry.getDistributableTokenList(gid)).length).to.equal(1);
-    expect(await gameRegistry.distributable(gid, token2.address)).to.be.false;
+    it("Revert if the game doesn't exist...", async () => {
+      const gid = 2;
+
+      // create the tournament
+      await expect(gameRegistry.createTournamentByDAO(gid, proposedGameCreatorFee, tournamentCreatorFee)).to.be.revertedWith("Invalid game index");
+    });
+
+    it("Revert if the proposed game creator fee is less than the base one...", async () => {
+      const gid = 0;
+
+      // create the tournament
+      await expect(gameRegistry.createTournamentByDAO(gid, baseGameCreatorFee - 1, tournamentCreatorFee)).to.be.revertedWith("Low game creator fee proposed");
+    });
+
+    it("Revert if total fee is equal to or greater than 100%...", async () => {
+      const gid = 0;
+
+      // create the tournament
+      await expect(gameRegistry.createTournamentByDAO(gid, 1000, tournamentCreatorFee)).to.be.revertedWith("Exceeded fees");
+    });
   });
+
+  // describe("updateDepositTokenAmount", async () => {
+  //   beforeEach(async () => {
+  //     // add the first game
+  //     await gameRegistry.addGame(game1, alice.address, baseGameCreatorFee);
+
+  //     // add the second game
+  //     await gameRegistry.addGame(game2, bob.address, baseGameCreatorFee);
+  //   });
+
+  //   it("Should be able to update the deposit token...", async () => {
+  //     const gid = 1;
+  //     const tid0 = 0;
+  //     const tid1 = 1;
+  //     let depositTokenList = [];
+  //     const token1_amount = 100;
+  //     const token2_amount = 200;
+  
+  //     // add token1
+  //     await gameRegistry.updateDepositTokenAmount(gid, tid0, token1.address, token1_amount);
+  
+  //     expect(await gameRegistry.depositTokenAmount(gid, tid0, token1.address)).to.equal(token1_amount);
+  //     expect((await gameRegistry.getDepositTokenList(gid)).length).to.equal(1);
+  //     expect(await gameRegistry.depositTokenList(gid, 0)).to.equal(token1.address);
+  
+  //     // update token1
+  //     const new_token1_amount = 300;
+  //     await gameRegistry.updateDepositTokenAmount(gid, tid0, token1.address, new_token1_amount);
+  
+  //     expect(await gameRegistry.depositTokenAmount(gid, tid0, token1.address)).to.equal(new_token1_amount);
+  //     expect((await gameRegistry.getDepositTokenList(gid)).length).to.equal(1);
+  //     expect(await gameRegistry.depositTokenList(gid, 0)).to.equal(token1.address);
+  
+  //     // add token2
+  //     await gameRegistry.updateDepositTokenAmount(gid, tid1, token2.address, token2_amount);
+  
+  //     expect(await gameRegistry.depositTokenAmount(gid, tid1, token2.address)).to.equal(token2_amount);
+  //     expect((await gameRegistry.getDepositTokenList(gid)).length).to.equal(2);
+  //     expect(await gameRegistry.depositTokenList(gid, 1)).to.equal(token2.address);
+  
+  //     // remove token1
+  //     await gameRegistry.updateDepositTokenAmount(gid, tid1, token1.address, 0);
+  
+  //     expect(await gameRegistry.depositTokenAmount(gid, tid1, token1.address)).to.equal(0);
+  //     expect((await gameRegistry.getDepositTokenList(gid)).length).to.equal(1);
+  //     expect(await gameRegistry.depositTokenList(gid, 0)).to.equal(token2.address);
+  
+  //     // remove token3 (unavailable token)
+  //     await gameRegistry.updateDepositTokenAmount(gid, tid1, token3.address, 0);
+  
+  //     expect(await gameRegistry.depositTokenAmount(gid, tid1, token3.address)).to.equal(0);
+  //     expect((await gameRegistry.getDepositTokenList(gid)).length).to.equal(1);
+  //     expect(await gameRegistry.depositTokenList(gid, 0)).to.equal(token2.address);
+  //   });
+  // });
+
+  // describe("updateDistributableTokenAddress", async () => {
+  //   it("Should be able to update the distributable token...", async () => {
+  //     const gid = 1;
+  
+  //     // add token1
+  //     await gameRegistry.updateDistributableTokenAddress(gid, token1.address, true);
+  
+  //     expect((await gameRegistry.getDistributableTokenList(gid)).length).to.equal(1);
+  //     expect(await gameRegistry.distributable(gid, token1.address)).to.be.true;
+  
+  //     // update token1
+  //     await gameRegistry.updateDistributableTokenAddress(gid, token1.address, true);
+  
+  //     expect((await gameRegistry.getDistributableTokenList(gid)).length).to.equal(1);
+  //     expect(await gameRegistry.distributable(gid, token1.address)).to.be.true;
+  
+  //     // add token2
+  //     await gameRegistry.updateDistributableTokenAddress(gid, token2.address, true);
+  
+  //     expect((await gameRegistry.getDistributableTokenList(gid)).length).to.equal(2);
+  //     expect(await gameRegistry.distributable(gid, token2.address)).to.be.true;
+  
+  //     // remove token2
+  //     await gameRegistry.updateDistributableTokenAddress(gid, token2.address, false);
+  
+  //     expect((await gameRegistry.getDistributableTokenList(gid)).length).to.equal(1);
+  //     expect(await gameRegistry.distributable(gid, token2.address)).to.be.false;
+  //   });
+  // });
 });

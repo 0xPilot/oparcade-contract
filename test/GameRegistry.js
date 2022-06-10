@@ -2,7 +2,7 @@ const { expect } = require("chai");
 const { ethers, upgrades } = require("hardhat");
 
 describe("GameRegistry", () => {
-  let addressRegistry, gameRegistry, tournamentCreationFeeToken;
+  let addressRegistry, gameRegistry, tournamentCreationFeeToken, USDC, ARCD, Arcadian721, Arcadian1155;
 
   let game1 = "Game1",
     game2 = "Game2";
@@ -19,9 +19,19 @@ describe("GameRegistry", () => {
   beforeEach(async () => {
     [deployer, alice, bob, carol, feeRecipient, token1, token2, token3] = await ethers.getSigners();
 
-    // deploy mock token
+    // deploy mock ERC20 tokens
     const ERC20Mock = await ethers.getContractFactory("ERC20Mock");
     tournamentCreationFeeToken = await ERC20Mock.deploy("mockFeeToken", "mockFeeToken");
+    USDC = await ERC20Mock.deploy("USDC", "USDC");
+    ARCD = await ERC20Mock.deploy("ARCD", "ARCD");
+
+    // deploy mock ERC721 tokens
+    const mockERC721 = await ethers.getContractFactory("MockERC721");
+    Arcadian721 = await mockERC721.deploy();
+
+    // deploy mock ERC1155 tokens
+    const mockERC1155 = await ethers.getContractFactory("MockERC1155");
+    Arcadian1155 = await mockERC1155.deploy();
 
     // Initialize AddressRegistry contract
     const AddressRegistry = await ethers.getContractFactory("AddressRegistry");
@@ -36,6 +46,36 @@ describe("GameRegistry", () => {
       tournamentCreationFeeToken.address,
       tournamentCreationFeeAmount,
     ]);
+    
+    // Initialize Oparcade contract
+    const Oparcade = await ethers.getContractFactory("Oparcade");
+    oparcade = await upgrades.deployProxy(Oparcade, [addressRegistry.address]);
+
+    // Register the contracts to AddressRegistry
+    await addressRegistry.updateGameRegistry(gameRegistry.address);
+    await addressRegistry.updateOparcade(oparcade.address);
+
+    // transfer mock ERC20 tokens to the users
+    await tournamentCreationFeeToken.transfer(alice.address, 10000000);
+    await USDC.transfer(alice.address, 10000000);
+    await ARCD.transfer(alice.address, 10000000);
+
+    await tournamentCreationFeeToken.transfer(bob.address, 10000000);
+    await USDC.transfer(bob.address, 10000000);
+    await ARCD.transfer(bob.address, 10000000);
+
+    // transfer mock ERC721 tokens to the users
+    await Arcadian721.mint(alice.address, 0);
+    await Arcadian721.mint(alice.address, 1);
+    await Arcadian721.mint(alice.address, 2);
+
+    await Arcadian721.mint(bob.address, 4);
+    await Arcadian721.mint(bob.address, 5);
+    await Arcadian721.mint(bob.address, 6);
+
+    // transfer mock ERC1155 tokens to the users
+    await Arcadian1155.mint(alice.address, [0, 1, 2], [10, 10, 10]);
+    await Arcadian1155.mint(bob.address, [0, 1, 2], [10, 10, 10]);
   });
 
   describe("addGame", async () => {
@@ -243,6 +283,47 @@ describe("GameRegistry", () => {
 
       // create the tournament
       await expect(gameRegistry.createTournamentByDAO(gid, 1000, tournamentCreatorFee)).to.be.revertedWith("Exceeded fees");
+    });
+  });
+
+  describe("createTournamentByUser", async () => {
+    beforeEach(async () => {
+      // add the first game
+      await gameRegistry.addGame(game1, alice.address, baseGameCreatorFee);
+
+      // add the second game
+      await gameRegistry.addGame(game2, bob.address, baseGameCreatorFee);
+    });
+
+    it("Should be able to creator the tournament with ERC20 and ERC721 prize pools...", async () => {
+      const gid = 0;
+      const depositTokenAddress = USDC;
+      const depositTokenAmount = 100;
+      const tokenToAddPrizePool = ARCD;
+      const amountToAddPrizePool = 10000;
+      const nftAddressToAddPrizePool = Arcadian721;
+      const nftTypeToAddPrizePool = 721;
+      const tokenIdsToAddPrizePool = [0, 1, 2];
+      const amountsToAddPrizePool = [1, 1, 1];
+
+      expect(await gameRegistry.getTournamentCount(gid)).to.equal(0);
+
+      // approve tournamentCreationFeeToken and prize tokens to GameRegistry
+      await tournamentCreationFeeToken.connect(alice).approve(gameRegistry.address, tournamentCreationFeeAmount);
+      await tokenToAddPrizePool.connect(alice).approve(oparcade.address, amountToAddPrizePool);
+      await nftAddressToAddPrizePool.connect(alice).approve(oparcade.address, tokenIdsToAddPrizePool[0]);
+      await nftAddressToAddPrizePool.connect(alice).approve(oparcade.address, tokenIdsToAddPrizePool[1]);
+      await nftAddressToAddPrizePool.connect(alice).approve(oparcade.address, tokenIdsToAddPrizePool[2]);
+
+      // create the first tournament with ERC721
+      let tid = await gameRegistry.connect(alice).callStatic.createTournamentByUser(gid, proposedGameCreatorFee, tournamentCreatorFee, depositTokenAddress.address, depositTokenAmount, tokenToAddPrizePool.address, amountToAddPrizePool, nftAddressToAddPrizePool.address, nftTypeToAddPrizePool, tokenIdsToAddPrizePool, amountsToAddPrizePool);
+      await gameRegistry.connect(alice).createTournamentByUser(gid, proposedGameCreatorFee, tournamentCreatorFee, depositTokenAddress.address, depositTokenAmount, tokenToAddPrizePool.address, amountToAddPrizePool, nftAddressToAddPrizePool.address, nftTypeToAddPrizePool, tokenIdsToAddPrizePool, amountsToAddPrizePool);
+      
+      // check the created tournament info
+      expect(await gameRegistry.getTournamentCount(gid)).to.equal(1);
+      expect(await gameRegistry.getTournamentCreator(gid, tid)).to.equal(alice.address);
+      expect(await gameRegistry.appliedGameCreatorFees(gid, tid)).to.equal(proposedGameCreatorFee);
+      expect(await gameRegistry.tournamentCreatorFees(gid, tid)).to.equal(tournamentCreatorFee);
     });
   });
 

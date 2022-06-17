@@ -8,6 +8,7 @@ pragma solidity ^0.8.0;
  */
 interface IOparcade {
   function depositPrize(
+    address _depositor,
     uint256 _gid,
     uint256 _tid,
     address _token,
@@ -20,7 +21,7 @@ interface IOparcade {
     uint256 _tid,
     address _nftAddress,
     uint256 _nftType,
-    uint256[] memory _tokenIds,
-    uint256[] memory _amounts
+    uint256[] calldata _tokenIds,
+    uint256[] calldata _amounts
   ) external;
 }

@@ -16,7 +16,7 @@ import "./interfaces/IGameRegistry.sol";
 
 /**
  * @title Oparcade
- * @notice This manages the token deposit/distribution from/to the users
+ * @notice This contract manages token deposit/distribution from/to the users playing the game/tournament
  * @author David Lee
  */
 contract Oparcade is
@@ -47,7 +47,14 @@ contract Oparcade is
     uint256[] tokenIds,
     uint256[] amounts
   );
-  event PrizeDeposited(address by, uint256 indexed gid, uint256 indexed tid, address indexed token, uint256 amount);
+  event PrizeDeposited(
+    address by,
+    address depositor,
+    uint256 indexed gid,
+    uint256 indexed tid,
+    address indexed token,
+    uint256 amount
+  );
   event PrizeWithdrawn(address by, uint256 indexed gid, uint256 indexed tid, address indexed token, uint256 amount);
   event NFTPrizeDeposited(
     address by,
@@ -70,13 +77,6 @@ contract Oparcade is
     uint256[] amounts
   );
   event Withdrawn(address indexed by, address indexed beneficiary, address indexed token, uint256 amount);
-  event PlatformFeeUpdated(
-    address indexed by,
-    address indexed oldFeeRecipient,
-    uint256 oldPlatformFee,
-    address indexed newFeeRecipient,
-    uint256 newPlatformFee
-  );
 
   bytes4 private constant INTERFACE_ID_ERC721 = 0x80ac58cd;
 
@@ -107,12 +107,6 @@ contract Oparcade is
   /// @dev AddressRegistry
   IAddressRegistry public addressRegistry;
 
-  /// @dev Platform fee
-  uint16 public platformFee;
-
-  /// @dev Platform fee recipient
-  address public feeRecipient;
-
   modifier onlyMaintainer() {
     require(msg.sender == addressRegistry.maintainer(), "Only maintainer");
     _;
@@ -120,11 +114,7 @@ contract Oparcade is
 
   receive() external payable {}
 
-  function initialize(
-    address _addressRegistry,
-    address _feeRecipient,
-    uint16 _platformFee
-  ) public initializer {
+  function initialize(address _addressRegistry) public initializer {
     __Ownable_init();
     __ReentrancyGuard_init();
     __Pausable_init();
@@ -132,15 +122,9 @@ contract Oparcade is
     __ERC1155Holder_init();
 
     require(_addressRegistry != address(0), "Invalid AddressRegistry");
-    require(_feeRecipient != address(0) || _platformFee == 0, "Fee recipient not set");
-    require(_platformFee <= 1000, "Platform fee exceeded");
 
     // initialize AddressRegistery
     addressRegistry = IAddressRegistry(_addressRegistry);
-
-    // initialize fee and recipient
-    feeRecipient = _feeRecipient;
-    platformFee = _platformFee;
   }
 
   /**
@@ -181,27 +165,19 @@ contract Oparcade is
   function distributePrize(
     uint256 _gid,
     uint256 _tid,
-    address[] memory _winners,
+    address[] calldata _winners,
     address _token,
-    uint256[] memory _amounts
+    uint256[] calldata _amounts
   ) external whenNotPaused onlyMaintainer {
     require(_winners.length == _amounts.length, "Mismatched winners and amounts");
 
+    // get gameRegistry
+    IGameRegistry gameRegistry = IGameRegistry(addressRegistry.gameRegistry());
+
     // check if token is allowed to distribute
-    require(IGameRegistry(addressRegistry.gameRegistry()).distributable(_gid, _token), "Disallowed distribution token");
+    require(gameRegistry.distributable(_gid, _token), "Disallowed distribution token");
 
-    // transfer the payment
-    for (uint256 i; i < _winners.length; i++) {
-      // calculate the fee
-      uint256 feeAmount = (_amounts[i] * platformFee) / 1000;
-      uint256 userAmount = _amounts[i] - feeAmount;
-
-      // transfer the prize and fee
-      totalPrizeFee[_gid][_tid][_token] += feeAmount;
-      totalPrizeDistribution[_gid][_tid][_token] += userAmount;
-      IERC20Upgradeable(_token).safeTransfer(feeRecipient, feeAmount);
-      IERC20Upgradeable(_token).safeTransfer(_winners[i], userAmount);
-    }
+    _transferPayment(_gid, _tid, _winners, _token, _amounts);
 
     // check if the prize amount is not exceeded
     require(
@@ -211,6 +187,71 @@ contract Oparcade is
     );
 
     emit PrizeDistributed(msg.sender, _winners, _gid, _tid, _token, _amounts);
+  }
+
+  function _transferPayment(
+    uint256 _gid,
+    uint256 _tid,
+    address[] calldata _winners,
+    address _token,
+    uint256[] calldata _amounts
+  ) internal {
+    // get gameRegistry
+    IGameRegistry gameRegistry = IGameRegistry(addressRegistry.gameRegistry());
+
+    // transfer the winners their prizes
+    uint256 totalPlatformFeeAmount;
+    uint256 totalGameCreatorFeeAmount;
+    uint256 totalTournamentCreatorFeeAmount;
+    for (uint256 i; i < _winners.length; i++) {
+      // get userAmount
+      uint256 userAmount = _amounts[i];
+
+      {
+        // calculate the platform fee
+        uint256 platformFeeAmount = (_amounts[i] * IGameRegistry(addressRegistry.gameRegistry()).platformFee()) / 1000;
+        totalPlatformFeeAmount += platformFeeAmount;
+
+        // update userAmount
+        userAmount -= platformFeeAmount;
+      }
+
+      {
+        // calculate gameCreatorFee
+        uint256 gameCreatorFee = gameRegistry.appliedGameCreatorFees(_gid, _tid);
+        uint256 gameCreatorFeeAmount = (_amounts[i] * gameCreatorFee) / 1000;
+        totalGameCreatorFeeAmount += gameCreatorFeeAmount;
+
+        // update userAmount
+        userAmount -= gameCreatorFeeAmount;
+      }
+
+      {
+        // calculate tournamentCreatorFee
+        uint256 tournamentCreatorFee = gameRegistry.tournamentCreatorFees(_gid, _tid);
+        uint256 tournamentCreatorFeeAmount = (_amounts[i] * tournamentCreatorFee) / 1000;
+        totalTournamentCreatorFeeAmount += tournamentCreatorFeeAmount;
+
+        // update userAmount
+        userAmount -= tournamentCreatorFee;
+      }
+
+      // transfer the prize
+      totalPrizeDistribution[_gid][_tid][_token] += userAmount;
+      IERC20Upgradeable(_token).safeTransfer(_winners[i], userAmount);
+    }
+
+    // transfer the fees
+    totalPrizeFee[_gid][_tid][_token] +=
+      totalPlatformFeeAmount +
+      totalGameCreatorFeeAmount +
+      totalTournamentCreatorFeeAmount;
+    IERC20Upgradeable(_token).safeTransfer(
+      IGameRegistry(addressRegistry.gameRegistry()).feeRecipient(),
+      totalPlatformFeeAmount
+    );
+    IERC20Upgradeable(_token).safeTransfer(gameRegistry.gameCreators(_gid), totalPlatformFeeAmount);
+    IERC20Upgradeable(_token).safeTransfer(gameRegistry.getTournamentCreator(_gid, _tid), totalPlatformFeeAmount);
   }
 
   /**
@@ -228,11 +269,11 @@ contract Oparcade is
   function distributeNFTPrize(
     uint256 _gid,
     uint256 _tid,
-    address[] memory _winners,
+    address[] calldata _winners,
     address _nftAddress,
     uint256 _nftType,
-    uint256[] memory _tokenIds,
-    uint256[] memory _amounts
+    uint256[] calldata _tokenIds,
+    uint256[] calldata _amounts
   ) external whenNotPaused nonReentrant onlyMaintainer {
     // check if token is allowed to distribute
     require(
@@ -295,25 +336,30 @@ contract Oparcade is
   /**
    * @notice Deposit the prize tokens for the specific game/tournament
    * @dev Only tokens which are allowed as a distributable token can be deposited
+   * @param _depositor Depositor address
    * @param _gid Game ID
    * @param _tid Tournament ID
    * @param _token Prize token address
    * @param _amount Prize amount to deposit
    */
   function depositPrize(
+    address _depositor,
     uint256 _gid,
     uint256 _tid,
     address _token,
     uint256 _amount
   ) external {
+    require(msg.sender == owner() || msg.sender == addressRegistry.gameRegistry(), "Only owner or GameRegistry");
+    require(_token != address(0), "Unexpected token address");
+
     // check if tokens are allowed to claim as a prize
     require(IGameRegistry(addressRegistry.gameRegistry()).distributable(_gid, _token), "Disallowed distribution token");
 
     // deposit prize tokens
-    IERC20Upgradeable(_token).safeTransferFrom(msg.sender, address(this), _amount);
+    IERC20Upgradeable(_token).safeTransferFrom(_depositor, address(this), _amount);
     totalPrizeDeposit[_gid][_tid][_token] += _amount;
 
-    emit PrizeDeposited(msg.sender, _gid, _tid, _token, _amount);
+    emit PrizeDeposited(msg.sender, _depositor, _gid, _tid, _token, _amount);
   }
 
   /**
@@ -342,7 +388,6 @@ contract Oparcade is
 
   /**
    * @notice Deposit NFT prize for the specific game/tournament
-   * @dev Only owner
    * @dev NFT type should be either 721 or 1155
    * @param _from NFT owner address
    * @param _gid Game ID
@@ -358,15 +403,18 @@ contract Oparcade is
     uint256 _tid,
     address _nftAddress,
     uint256 _nftType,
-    uint256[] memory _tokenIds,
-    uint256[] memory _amounts
-  ) external onlyOwner {
+    uint256[] calldata _tokenIds,
+    uint256[] calldata _amounts
+  ) external {
+    require(msg.sender == owner() || msg.sender == addressRegistry.gameRegistry(), "Only owner or GameRegistry");
+
     // check if NFT is allowed to distribute
     require(
       IGameRegistry(addressRegistry.gameRegistry()).distributable(_gid, _nftAddress),
       "Disallowed distribution token"
     );
 
+    require(_nftAddress != address(0), "Unexpected NFT address");
     require(_nftType == 721 || _nftType == 1155, "Unexpected NFT type");
     require(_tokenIds.length == _amounts.length, "Mismatched deposit data");
 
@@ -414,8 +462,8 @@ contract Oparcade is
     uint256 _tid,
     address _nftAddress,
     uint256 _nftType,
-    uint256[] memory _tokenIds,
-    uint256[] memory _amounts
+    uint256[] calldata _tokenIds,
+    uint256[] calldata _amounts
   ) external nonReentrant onlyOwner {
     require(_nftType == 721 || _nftType == 1155, "Unexpected NFT type");
     require(_tokenIds.length == _amounts.length, "Mismatched deposit data");
@@ -468,8 +516,8 @@ contract Oparcade is
    * @param _beneficiary Beneficiary address
    */
   function withdraw(
-    address[] memory _tokens,
-    uint256[] memory _amounts,
+    address[] calldata _tokens,
+    uint256[] calldata _amounts,
     address _beneficiary
   ) external onlyOwner {
     require(_tokens.length == _amounts.length, "Mismatched withdrawal data");
@@ -480,22 +528,6 @@ contract Oparcade is
 
       emit Withdrawn(msg.sender, _beneficiary, _tokens[i], _amounts[i]);
     }
-  }
-
-  /**
-   * @notice Update platform fee
-   * @dev Only owner
-   * @dev Allow zero recipient address only of fee is also zero
-   * @param _platformFee platform fee
-   */
-  function updatePlatformFee(address _feeRecipient, uint16 _platformFee) external onlyOwner {
-    require(_feeRecipient != address(0) || _platformFee == 0, "Fee recipient not set");
-    require(_platformFee <= 1000, "Platform fee exceeded");
-
-    emit PlatformFeeUpdated(msg.sender, feeRecipient, platformFee, _feeRecipient, _platformFee);
-
-    feeRecipient = _feeRecipient;
-    platformFee = _platformFee;
   }
 
   /**

@@ -355,15 +355,17 @@ contract GameRegistry is OwnableUpgradeable {
     }
 
     // initialize the prize pool with NFTs
-    IOparcade(addressRegistry.oparcade()).depositNFTPrize(
-      msg.sender,
-      _gid,
-      tid,
-      _nftAddressToAddPrizePool,
-      _nftTypeToAddPrizePool,
-      _tokenIdsToAddPrizePool,
-      _amountsToAddPrizePool
-    );
+    if (_nftTypeToAddPrizePool == 721 || _nftTypeToAddPrizePool == 1155) {
+      IOparcade(addressRegistry.oparcade()).depositNFTPrize(
+        msg.sender,
+        _gid,
+        tid,
+        _nftAddressToAddPrizePool,
+        _nftTypeToAddPrizePool,
+        _tokenIdsToAddPrizePool,
+        _amountsToAddPrizePool
+      );
+    }
   }
 
   /**
@@ -549,6 +551,7 @@ contract GameRegistry is OwnableUpgradeable {
     external
     onlyOwner
   {
+    require(_tournamentCreationFeeToken != address(0), "Zero tournament creation fee token");
     require(_tournamentCreationFeeAmount > 0, "Zero tournament creation fee");
 
     emit TournamentCreationFeeUpdated(

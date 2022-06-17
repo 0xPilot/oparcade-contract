@@ -5,7 +5,7 @@ dotenvConfig({ path: path.resolve(__dirname, "../.env") });
 
 const deployOparcade = async (hre) => {
   const { deploy } = hre.deployments;
-  const { deployer, feeRecipient } = await getNamedAccounts();
+  const { deployer } = await getNamedAccounts();
 
   // get contracts
   const addressRegistry = await hre.deployments.get('AddressRegistry');
@@ -20,7 +20,7 @@ const deployOparcade = async (hre) => {
       execute: {
         init: {
           methodName: "initialize",
-          args: [addressRegistry.address, feeRecipient, process.env.PLATFORM_FEE],
+          args: [addressRegistry.address],
         },
       },
     },

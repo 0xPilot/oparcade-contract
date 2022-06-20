@@ -5,6 +5,7 @@ require("@openzeppelin/hardhat-upgrades");
 require('hardhat-deploy');
 require("hardhat-gas-reporter");
 require("hardhat-abi-exporter");
+require("hardhat-contract-sizer");
 require("solidity-coverage");
 require('dotenv').config();
 

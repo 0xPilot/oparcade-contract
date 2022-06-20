@@ -55,7 +55,14 @@ contract Oparcade is
     address indexed token,
     uint256 amount
   );
-  event PrizeWithdrawn(address by, uint256 indexed gid, uint256 indexed tid, address indexed token, uint256 amount);
+  event PrizeWithdrawn(
+    address by,
+    address to,
+    uint256 indexed gid,
+    uint256 indexed tid,
+    address indexed token,
+    uint256 amount
+  );
   event NFTPrizeDeposited(
     address by,
     address from,
@@ -189,6 +196,14 @@ contract Oparcade is
     emit PrizeDistributed(msg.sender, _winners, _gid, _tid, _token, _amounts);
   }
 
+  /**
+   * @notice Transfer the winners' ERC20 token prizes and relevant fees
+   * @param _gid Game ID
+   * @param _tid Tournament ID
+   * @param _winners Winners list
+   * @param _token Prize token address
+   * @param _amounts Prize list
+   */
   function _transferPayment(
     uint256 _gid,
     uint256 _tid,
@@ -233,7 +248,7 @@ contract Oparcade is
         totalTournamentCreatorFeeAmount += tournamentCreatorFeeAmount;
 
         // update userAmount
-        userAmount -= tournamentCreatorFee;
+        userAmount -= tournamentCreatorFeeAmount;
       }
 
       // transfer the prize
@@ -250,12 +265,15 @@ contract Oparcade is
       IGameRegistry(addressRegistry.gameRegistry()).feeRecipient(),
       totalPlatformFeeAmount
     );
-    IERC20Upgradeable(_token).safeTransfer(gameRegistry.gameCreators(_gid), totalPlatformFeeAmount);
-    IERC20Upgradeable(_token).safeTransfer(gameRegistry.getTournamentCreator(_gid, _tid), totalPlatformFeeAmount);
+    IERC20Upgradeable(_token).safeTransfer(gameRegistry.gameCreators(_gid), totalGameCreatorFeeAmount);
+    IERC20Upgradeable(_token).safeTransfer(
+      gameRegistry.getTournamentCreator(_gid, _tid),
+      totalTournamentCreatorFeeAmount
+    );
   }
 
   /**
-   * @notice Distribute winners NFT prizes
+   * @notice Distribute winners' NFT prizes
    * @dev Only maintainer
    * @dev NFT type should be either 721 or 1155
    * @param _gid Game ID
@@ -336,6 +354,7 @@ contract Oparcade is
   /**
    * @notice Deposit the prize tokens for the specific game/tournament
    * @dev Only tokens which are allowed as a distributable token can be deposited
+   * @dev Prize is transferred from _depositor address to this contract
    * @param _depositor Depositor address
    * @param _gid Game ID
    * @param _tid Tournament ID
@@ -365,12 +384,14 @@ contract Oparcade is
   /**
    * @notice Withdraw the prize tokens from the specific game/tournament
    * @dev Only owner
+   * @param _to Beneficiary address
    * @param _gid Game ID
    * @param _tid Tournament ID
    * @param _token Prize token address
    * @param _amount Prize amount to withdraw
    */
   function withdrawPrize(
+    address _to,
     uint256 _gid,
     uint256 _tid,
     address _token,
@@ -381,9 +402,9 @@ contract Oparcade is
 
     // withdraw the prize
     totalPrizeDeposit[_gid][_tid][_token] -= _amount;
-    IERC20Upgradeable(_token).safeTransfer(msg.sender, _amount);
+    IERC20Upgradeable(_token).safeTransfer(_to, _amount);
 
-    emit PrizeWithdrawn(msg.sender, _gid, _tid, _token, _amount);
+    emit PrizeWithdrawn(msg.sender, _to, _gid, _tid, _token, _amount);
   }
 
   /**

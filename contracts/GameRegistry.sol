@@ -160,6 +160,10 @@ contract GameRegistry is OwnableUpgradeable {
 
   /**
    * @notice Add the new game
+   * @dev Base game creator fee is the minimum fee vaule that the game creator should be rewarded from the tournamnet of the game
+   * @dev When creating the tournament of the game, the game creator fee can be proposed by the tournament creator
+   * @dev but the proposed value can't be less than the base one
+   * @dev If the proposed game creator fee is 0, the base game creator fee will be applied
    * @param _gameName Game name to add
    * @param _gameCreator Game creator address
    * @param _baseGameCreatorFee Base game creator fee
@@ -288,14 +292,14 @@ contract GameRegistry is OwnableUpgradeable {
    * @notice Create the tournament
    * @dev Anyone can create the tournament and initialize the prize pool with tokens and NFTs
    * @dev Tournament creator should set all params necessary for the tournament in 1 tx and
-   * @dev the params set is immutable
+   * @dev the params set is immutable. It will be prevent the fraud tournament is created
    * @dev Tournament creator should pay fees to create the tournament
    * @dev and the fee token address and fee token amount are set by the owner
    * @dev If the proposed game creaetor fee is 0, the base game creator fee is applied
    * @dev NFT type to initialize the prize pool should be either 721 or 1155
    * @param _gid Game ID
    * @param _proposedGameCreatorFee Proposed game creator fee
-   * @param _proposedGameCreatorFee Tournament creator fee
+   * @param _tournamentCreatorFee Tournament creator fee
    * @param _depositTokenAddress Deposit token address for playing the tournament
    * @param _depositTokenAmount Deposit token amount for playing the tournament
    * @param _tokenToAddPrizePool Token address to initialize the prize pool

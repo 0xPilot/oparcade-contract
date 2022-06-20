@@ -1,6 +1,15 @@
+const { config: dotenvConfig } = require("dotenv");
+const { getNamedAccounts } = require("hardhat");
+const path = require("path");
+
+dotenvConfig({ path: path.resolve(__dirname, "../.env") });
+
 const deployGameRegistry = async (hre) => {
   const { deploy } = hre.deployments;
-  const { deployer } = await getNamedAccounts();
+  const { deployer, feeRecipient } = await getNamedAccounts();
+
+  // get contracts
+  const addressRegistry = await hre.deployments.get('AddressRegistry');
 
   await deploy("GameRegistry", {
     from: deployer,
@@ -12,7 +21,7 @@ const deployGameRegistry = async (hre) => {
       execute: {
         init: {
           methodName: "initialize",
-          args: [],
+          args: [addressRegistry.address, feeRecipient, process.env.PLATFORM_FEE, process.env.TOURMANET_CREATION_FEE_TOKEN_ADDRESS, process.env.TOURMANET_CREATION_FEE_TOKEN_AMOUNT],
         },
       },
     },

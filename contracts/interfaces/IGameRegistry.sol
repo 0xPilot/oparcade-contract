@@ -34,11 +34,11 @@ interface IGameRegistry {
   function tournamentCreatorFees(uint256 _gid, uint256 _tid) external view returns (uint256);
 
   /**
-   * @notice Provide the deposit amount of the token given
+   * @notice Returns the deposit amount of the token given
    * @param _gid Game ID
    * @param _tid Tournament ID
    * @param _token Token address
-   * @return uint256 Deposit amount
+   * @return (uint256) Deposit amount
    */
   function depositTokenAmount(
     uint256 _gid,
@@ -47,7 +47,7 @@ interface IGameRegistry {
   ) external view returns (uint256);
 
   /**
-   * @notice Provide the claimability of the token given
+   * @notice Returns the claimability of the token given
    * @param _gid Game ID
    * @param _token Token address
    * @return (bool) true: distributable, false: not distributable
@@ -55,7 +55,7 @@ interface IGameRegistry {
   function distributable(uint256 _gid, address _token) external view returns (bool);
 
   /**
-   * @notice Provide whether the game is deprecated or not
+   * @notice Returns whether the game is deprecated or not
    * @param _gid Game ID
    * @return (bool) true: deprecated, false: not deprecated
    */
@@ -76,14 +76,14 @@ interface IGameRegistry {
   function getTournamentCreator(uint256 _gid, uint256 _tid) external view returns (address);
 
   /**
-   * @notice Provide the Oparcade platform fee
+   * @notice Returns the Oparcade platform fee
    * @dev Max value is 1000 (100%)
    * @return (uint256) Oparcade platform fee
    */
   function platformFee() external view returns (uint256);
 
   /**
-   * @notice Reteurns the fee recipient address
+   * @notice Returns the fee recipient address
    * @return (address) Fee recipient address
    */
   function feeRecipient() external view returns (address);

@@ -9,7 +9,7 @@ import "./interfaces/IOparcade.sol";
 
 /**
  * @title GameRegistry
- * @notice This contract stores all info related to the game and tournament
+ * @notice This contract stores all info related to the game and tournament creation
  * @author David Lee
  */
 contract GameRegistry is OwnableUpgradeable {

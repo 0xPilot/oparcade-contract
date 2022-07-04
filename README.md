@@ -79,12 +79,15 @@ function updateDistributableTokenAddress(
 
 After the game is added, the next step is to create the tournament.
 
+````solidity
 function createTournamentByDAO(
     uint256 _gid,
     uint256 _proposedGameCreatorFee,
     uint256 _tournamentCreatorFee
 ) external onlyOwner returns (uint256 tid);
+````
 
+````solidity
 function createTournamentByUser(
     uint256 _gid,
     uint256 _proposedGameCreatorFee,
@@ -98,6 +101,7 @@ function createTournamentByUser(
     uint256[] memory _tokenIdsToAddPrizePool,
     uint256[] memory _amountsToAddPrizePool
 ) external returns (uint256 tid);
+````
 
 #### Deposit tokens
 

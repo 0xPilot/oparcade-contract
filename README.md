@@ -19,10 +19,10 @@ TOURMANET_CREATION_FEE_TOKEN_AMOUNT = TOURNAMENT_CREATION_FEE_TOKEN_AMOUNT
 
 #### Compile code
 - `npx hardhat clean` (Clears the cache and deletes all artifacts)
-- `yarn compile compile` (Compiles the entire project, building all artifacts)
+- `yarn compile` (Compiles the entire project, building all artifacts)
 
 #### Run tests
-- `yarn test test/{desired_test_script}`
+- `yarn test ./test/{desired_test_script}`
 
 #### Deploy code 
 - `npx hardhat node` (Starts a JSON-RPC server on top of Hardhat Network)

@@ -45,6 +45,7 @@ contract GameRegistry is OwnableUpgradeable {
     address indexed by,
     uint256 indexed gid,
     uint256 indexed tid,
+    string tournamentName,
     uint256 appliedGameCreatorFee,
     uint256 tournamentCreatorFee
   );
@@ -95,6 +96,9 @@ contract GameRegistry is OwnableUpgradeable {
 
   /// @dev Game ID -> Tournament ID -> Tournament creator fee
   mapping(uint256 => mapping(uint256 => uint256)) public tournamentCreatorFees;
+
+  /// @dev Game ID -> Tournament ID -> Tournament name
+  mapping(uint256 => mapping(uint256 => string)) public tournamentNames;
 
   /// @dev Game ID -> Deposit token list
   mapping(uint256 => address[]) public depositTokenList;
@@ -246,10 +250,11 @@ contract GameRegistry is OwnableUpgradeable {
    */
   function createTournamentByDAO(
     uint256 _gid,
+    string memory tournamentName,
     uint256 _proposedGameCreatorFee,
     uint256 _tournamentCreatorFee
   ) external onlyOwner onlyValidGID(_gid) returns (uint256 tid) {
-    tid = _createTournament(_gid, _proposedGameCreatorFee, _tournamentCreatorFee);
+    tid = _createTournament(_gid, tournamentName, _proposedGameCreatorFee, _tournamentCreatorFee);
   }
 
   /**
@@ -262,6 +267,7 @@ contract GameRegistry is OwnableUpgradeable {
    */
   function _createTournament(
     uint256 _gid,
+    string memory tournamentName,
     uint256 _proposedGameCreatorFee,
     uint256 _tournamentCreatorFee
   ) internal returns (uint256 tid) {
@@ -280,12 +286,15 @@ contract GameRegistry is OwnableUpgradeable {
     // get the new tournament ID
     tid = tournamentCreators[_gid].length;
 
+    // add the tournament name
+    tournamentNames[_gid][tid] = tournamentName;
+
     // add the tournament creator address and fee
     tournamentCreators[_gid].push(msg.sender);
     appliedGameCreatorFees[_gid][tid] = appliedGameCreatorFee;
     tournamentCreatorFees[_gid][tid] = _tournamentCreatorFee;
 
-    emit TournamentCreated(msg.sender, _gid, tid, appliedGameCreatorFee, _tournamentCreatorFee);
+    emit TournamentCreated(msg.sender, _gid, tid, tournamentName, appliedGameCreatorFee, _tournamentCreatorFee);
   }
 
   /**
@@ -312,6 +321,7 @@ contract GameRegistry is OwnableUpgradeable {
    */
   function createTournamentByUser(
     uint256 _gid,
+    string memory tournamentName,
     uint256 _proposedGameCreatorFee,
     uint256 _tournamentCreatorFee,
     address _depositTokenAddress,
@@ -331,7 +341,7 @@ contract GameRegistry is OwnableUpgradeable {
     );
 
     // create new tournament
-    tid = _createTournament(_gid, _proposedGameCreatorFee, _tournamentCreatorFee);
+    tid = _createTournament(_gid, tournamentName, _proposedGameCreatorFee, _tournamentCreatorFee);
 
     // set the deposit token amount
     _updateDepositTokenAmount(_gid, tid, _depositTokenAddress, _depositTokenAmount);

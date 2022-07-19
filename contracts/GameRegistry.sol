@@ -15,6 +15,11 @@ import "./interfaces/IOparcade.sol";
 contract GameRegistry is OwnableUpgradeable {
   using SafeERC20Upgradeable for IERC20Upgradeable;
 
+  struct Token {
+    address _address;
+    uint256 _amount;
+  }
+
   event GameAdded(
     address indexed by,
     uint256 indexed gid,
@@ -45,7 +50,7 @@ contract GameRegistry is OwnableUpgradeable {
     address indexed by,
     uint256 indexed gid,
     uint256 indexed tid,
-    string tournamentName,
+    string _tournamentName,
     uint256 appliedGameCreatorFee,
     uint256 tournamentCreatorFee
   );
@@ -250,11 +255,11 @@ contract GameRegistry is OwnableUpgradeable {
    */
   function createTournamentByDAO(
     uint256 _gid,
-    string memory tournamentName,
+    string memory _tournamentName,
     uint256 _proposedGameCreatorFee,
     uint256 _tournamentCreatorFee
   ) external onlyOwner onlyValidGID(_gid) returns (uint256 tid) {
-    tid = _createTournament(_gid, tournamentName, _proposedGameCreatorFee, _tournamentCreatorFee);
+    tid = _createTournament(_gid, _tournamentName, _proposedGameCreatorFee, _tournamentCreatorFee);
   }
 
   /**
@@ -267,7 +272,7 @@ contract GameRegistry is OwnableUpgradeable {
    */
   function _createTournament(
     uint256 _gid,
-    string memory tournamentName,
+    string memory _tournamentName,
     uint256 _proposedGameCreatorFee,
     uint256 _tournamentCreatorFee
   ) internal returns (uint256 tid) {
@@ -287,14 +292,14 @@ contract GameRegistry is OwnableUpgradeable {
     tid = tournamentCreators[_gid].length;
 
     // add the tournament name
-    tournamentNames[_gid][tid] = tournamentName;
+    tournamentNames[_gid][tid] = _tournamentName;
 
     // add the tournament creator address and fee
     tournamentCreators[_gid].push(msg.sender);
     appliedGameCreatorFees[_gid][tid] = appliedGameCreatorFee;
     tournamentCreatorFees[_gid][tid] = _tournamentCreatorFee;
 
-    emit TournamentCreated(msg.sender, _gid, tid, tournamentName, appliedGameCreatorFee, _tournamentCreatorFee);
+    emit TournamentCreated(msg.sender, _gid, tid, _tournamentName, appliedGameCreatorFee, _tournamentCreatorFee);
   }
 
   /**
@@ -309,10 +314,8 @@ contract GameRegistry is OwnableUpgradeable {
    * @param _gid Game ID
    * @param _proposedGameCreatorFee Proposed game creator fee
    * @param _tournamentCreatorFee Tournament creator fee
-   * @param _depositTokenAddress Deposit token address for playing the tournament
-   * @param _depositTokenAmount Deposit token amount for playing the tournament
-   * @param _tokenToAddPrizePool Token address to initialize the prize pool
-   * @param _amountToAddPrizePool Token amount to initialize the prize pool
+   * @param _depositToken Deposit token (address and amount) for playing the tournament
+   * @param _tokenToAddPrizePool Token (address and amount) to initialize the prize pool
    * @param _nftAddressToAddPrizePool NFT address to initialize the prize pool
    * @param _nftTypeToAddPrizePool NFT type to initialize the prize pool
    * @param _tokenIdsToAddPrizePool NFT token Id list to initialize the prize pool
@@ -321,13 +324,11 @@ contract GameRegistry is OwnableUpgradeable {
    */
   function createTournamentByUser(
     uint256 _gid,
-    string memory tournamentName,
+    string memory _tournamentName,
     uint256 _proposedGameCreatorFee,
     uint256 _tournamentCreatorFee,
-    address _depositTokenAddress,
-    uint256 _depositTokenAmount,
-    address _tokenToAddPrizePool,
-    uint256 _amountToAddPrizePool,
+    Token calldata _depositToken,
+    Token calldata _tokenToAddPrizePool,
     address _nftAddressToAddPrizePool,
     uint256 _nftTypeToAddPrizePool,
     uint256[] memory _tokenIdsToAddPrizePool,
@@ -341,30 +342,30 @@ contract GameRegistry is OwnableUpgradeable {
     );
 
     // create new tournament
-    tid = _createTournament(_gid, tournamentName, _proposedGameCreatorFee, _tournamentCreatorFee);
+    tid = _createTournament(_gid, _tournamentName, _proposedGameCreatorFee, _tournamentCreatorFee);
 
     // set the deposit token amount
-    _updateDepositTokenAmount(_gid, tid, _depositTokenAddress, _depositTokenAmount);
+    _updateDepositTokenAmount(_gid, tid, _depositToken._address, _depositToken._amount);
 
     // set the distributable token
-    if (distributable[_gid][_depositTokenAddress] == false && _depositTokenAmount > 0) {
-      _updateDistributableTokenAddress(_gid, _depositTokenAddress, true);
+    if (distributable[_gid][_depositToken._address] == false && _depositToken._amount > 0) {
+      _updateDistributableTokenAddress(_gid, _depositToken._address, true);
     }
-    if (distributable[_gid][_tokenToAddPrizePool] == false && _amountToAddPrizePool > 0) {
-      _updateDistributableTokenAddress(_gid, _tokenToAddPrizePool, true);
+    if (distributable[_gid][_tokenToAddPrizePool._address] == false && _tokenToAddPrizePool._amount > 0) {
+      _updateDistributableTokenAddress(_gid, _tokenToAddPrizePool._address, true);
     }
     if (distributable[_gid][_nftAddressToAddPrizePool] == false && _amountsToAddPrizePool.length > 0) {
       _updateDistributableTokenAddress(_gid, _nftAddressToAddPrizePool, true);
     }
 
     // initialize the prize pool with tokens
-    if (_amountToAddPrizePool > 0) {
+    if (_tokenToAddPrizePool._amount > 0) {
       IOparcade(addressRegistry.oparcade()).depositPrize(
         msg.sender,
         _gid,
         tid,
-        _tokenToAddPrizePool,
-        _amountToAddPrizePool
+        _tokenToAddPrizePool._address,
+        _tokenToAddPrizePool._amount
       );
     }
 

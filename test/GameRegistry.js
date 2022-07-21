@@ -266,6 +266,93 @@ describe("GameRegistry", () => {
     });
   });
 
+  describe("createTournamentByDAOWithTokens", () => {
+    beforeEach(async () => {
+      // add the first game
+      await gameRegistry.addGame(game1, alice.address, baseGameCreatorFee);
+
+      // add the second game
+      await gameRegistry.addGame(game2, bob.address, baseGameCreatorFee);
+    });
+
+    it("Should be able to creator the tournament and set tokens...", async () => {
+      const gid = 0;
+      const depositToken = USDC;
+      const depositTokenAmount = 100;
+      const distributionToken = USDC;
+      const depositToken2 = ARCD;
+      const depositTokenAmount2 = 30;
+
+      expect(await gameRegistry.getTournamentCount(gid)).to.equal(0);
+      expect((await gameRegistry.getDistributableTokenList(gid)).length).to.equal(0);
+      expect(await gameRegistry.distributable(gid, distributionToken.address)).to.be.false;
+
+      // create the first tournament
+      let tid = await gameRegistry.callStatic.createTournamentByDAOWithTokens(
+        gid,
+        tournamentName,
+        proposedGameCreatorFee,
+        tournamentCreatorFee,
+        [depositToken.address, depositTokenAmount],
+        distributionToken.address,
+      );
+      await gameRegistry.createTournamentByDAOWithTokens(
+        gid,
+        tournamentName,
+        proposedGameCreatorFee,
+        tournamentCreatorFee,
+        [depositToken.address, depositTokenAmount],
+        distributionToken.address,
+      );
+
+      // check the created tournament info
+      expect(await gameRegistry.getTournamentCount(gid)).to.equal(1);
+      expect(await gameRegistry.tournamentNames(gid, tid)).to.equal(tournamentName);
+      expect(await gameRegistry.getTournamentCreator(gid, tid)).to.equal(deployer.address);
+      expect(await gameRegistry.appliedGameCreatorFees(gid, tid)).to.equal(proposedGameCreatorFee);
+      expect(await gameRegistry.tournamentCreatorFees(gid, tid)).to.equal(tournamentCreatorFee);
+      expect(await gameRegistry.tournamentCreatorFees(gid, tid)).to.equal(tournamentCreatorFee);
+
+      expect(await gameRegistry.depositTokenAmount(gid, tid, depositToken.address)).to.equal(depositTokenAmount);
+      expect((await gameRegistry.getDepositTokenList(gid)).length).to.equal(1);
+      expect(await gameRegistry.depositTokenList(gid, 0)).to.equal(depositToken.address);
+
+      expect((await gameRegistry.getDistributableTokenList(gid)).length).to.equal(1);
+      expect(await gameRegistry.distributable(gid, distributionToken.address)).to.be.true;
+
+      // create the second tournament with the zero proposedGameCreatorFee
+      tid = await gameRegistry.callStatic.createTournamentByDAOWithTokens(
+        gid,
+        tournamentName,
+        0,
+        tournamentCreatorFee,
+        [depositToken2.address, depositTokenAmount2],
+        distributionToken.address,
+      );
+      await gameRegistry.createTournamentByDAOWithTokens(
+        gid,
+        tournamentName,
+        0,
+        tournamentCreatorFee + 1,
+        [depositToken2.address, depositTokenAmount2],
+        distributionToken.address,
+      );
+
+      // check the created tournament info
+      expect(await gameRegistry.getTournamentCount(gid)).to.equal(2);
+      expect(await gameRegistry.tournamentNames(gid, tid)).to.equal(tournamentName);
+      expect(await gameRegistry.getTournamentCreator(gid, tid)).to.equal(deployer.address);
+      expect(await gameRegistry.appliedGameCreatorFees(gid, tid)).to.equal(baseGameCreatorFee);
+      expect(await gameRegistry.tournamentCreatorFees(gid, tid)).to.equal(tournamentCreatorFee + 1);
+
+      expect(await gameRegistry.depositTokenAmount(gid, tid, depositToken2.address)).to.equal(depositTokenAmount2);
+      expect((await gameRegistry.getDepositTokenList(gid)).length).to.equal(2);
+      expect(await gameRegistry.depositTokenList(gid, 1)).to.equal(depositToken2.address);
+
+      expect((await gameRegistry.getDistributableTokenList(gid)).length).to.equal(1);
+    });
+  });
+
   describe("createTournamentByDAO", () => {
     beforeEach(async () => {
       // add the first game

@@ -50,7 +50,7 @@ contract GameRegistry is OwnableUpgradeable {
     address indexed by,
     uint256 indexed gid,
     uint256 indexed tid,
-    string _tournamentName,
+    string tournamentName,
     uint256 appliedGameCreatorFee,
     uint256 tournamentCreatorFee
   );
@@ -263,12 +263,17 @@ contract GameRegistry is OwnableUpgradeable {
     Token calldata _depositToken,
     address _distributionTokenAddress
   ) external onlyOwner onlyValidGID(_gid) returns (uint256 tid) {
+    // create the tournament
     tid = _createTournament(_gid, _tournamentName, _proposedGameCreatorFee, _tournamentCreatorFee);
-    // Update
-    _updateDepositTokenAmount(_gid, tid, _depositToken._address, _depositToken._amount);
+
+    // set the deposit token address and amount
+    _updateDepositTokenAmount(_gid, tid, _depositToken.tokenAddress, _depositToken.tokenAmount);
+
+    // set the distributable token address
     if (distributable[_gid][_distributionTokenAddress] == false) {
       _updateDistributableTokenAddress(_gid, _distributionTokenAddress, true);
     }
+
     return tid;
   }
 

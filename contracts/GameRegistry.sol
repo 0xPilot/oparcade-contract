@@ -244,6 +244,35 @@ contract GameRegistry is OwnableUpgradeable {
   }
 
   /**
+   * @notice Create the tournament and set tokens
+   * @dev Only owner
+   * @dev If the proposed game creaetor fee is 0, the base game creator fee is applied
+   * @dev The prize pool for the tournament that the owner created is initialized on Oparcade contract
+   * @param _gid Game ID
+   * @param _proposedGameCreatorFee Proposed game creator fee
+   * @param _tournamentCreatorFee Tournament creator fee
+   * @param _depositToken Token to allow/disallow the deposit
+   * @param _distributionTokenAddress Distribution token address to be set to active
+   * @return tid Tournament ID created
+   */
+  function createTournamentByDAOWithTokens(
+    uint256 _gid,
+    string memory _tournamentName,
+    uint256 _proposedGameCreatorFee,
+    uint256 _tournamentCreatorFee,
+    Token calldata _depositToken,
+    address _distributionTokenAddress
+  ) external onlyOwner onlyValidGID(_gid) returns (uint256 tid) {
+    tid = _createTournament(_gid, _tournamentName, _proposedGameCreatorFee, _tournamentCreatorFee);
+    // Update
+    _updateDepositTokenAmount(_gid, tid, _depositToken._address, _depositToken._amount);
+    if (distributable[_gid][_distributionTokenAddress] == false) {
+      _updateDistributableTokenAddress(_gid, _distributionTokenAddress, true);
+    }
+    return tid;
+  }
+
+  /**
    * @notice Create the tournament
    * @dev Only owner
    * @dev If the proposed game creaetor fee is 0, the base game creator fee is applied

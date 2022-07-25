@@ -16,8 +16,8 @@ contract GameRegistry is OwnableUpgradeable {
   using SafeERC20Upgradeable for IERC20Upgradeable;
 
   struct Token {
-    address _address;
-    uint256 _amount;
+    address tokenAddress;
+    uint256 tokenAmount;
   }
 
   event GameAdded(
@@ -255,7 +255,7 @@ contract GameRegistry is OwnableUpgradeable {
    */
   function createTournamentByDAO(
     uint256 _gid,
-    string memory _tournamentName,
+    string calldata _tournamentName,
     uint256 _proposedGameCreatorFee,
     uint256 _tournamentCreatorFee
   ) external onlyOwner onlyValidGID(_gid) returns (uint256 tid) {
@@ -324,7 +324,7 @@ contract GameRegistry is OwnableUpgradeable {
    */
   function createTournamentByUser(
     uint256 _gid,
-    string memory _tournamentName,
+    string calldata _tournamentName,
     uint256 _proposedGameCreatorFee,
     uint256 _tournamentCreatorFee,
     Token calldata _depositToken,
@@ -345,27 +345,27 @@ contract GameRegistry is OwnableUpgradeable {
     tid = _createTournament(_gid, _tournamentName, _proposedGameCreatorFee, _tournamentCreatorFee);
 
     // set the deposit token amount
-    _updateDepositTokenAmount(_gid, tid, _depositToken._address, _depositToken._amount);
+    _updateDepositTokenAmount(_gid, tid, _depositToken.tokenAddress, _depositToken.tokenAmount);
 
     // set the distributable token
-    if (distributable[_gid][_depositToken._address] == false && _depositToken._amount > 0) {
-      _updateDistributableTokenAddress(_gid, _depositToken._address, true);
+    if (distributable[_gid][_depositToken.tokenAddress] == false && _depositToken.tokenAmount > 0) {
+      _updateDistributableTokenAddress(_gid, _depositToken.tokenAddress, true);
     }
-    if (distributable[_gid][_tokenToAddPrizePool._address] == false && _tokenToAddPrizePool._amount > 0) {
-      _updateDistributableTokenAddress(_gid, _tokenToAddPrizePool._address, true);
+    if (distributable[_gid][_tokenToAddPrizePool.tokenAddress] == false && _tokenToAddPrizePool.tokenAmount > 0) {
+      _updateDistributableTokenAddress(_gid, _tokenToAddPrizePool.tokenAddress, true);
     }
     if (distributable[_gid][_nftAddressToAddPrizePool] == false && _amountsToAddPrizePool.length > 0) {
       _updateDistributableTokenAddress(_gid, _nftAddressToAddPrizePool, true);
     }
 
     // initialize the prize pool with tokens
-    if (_tokenToAddPrizePool._amount > 0) {
+    if (_tokenToAddPrizePool.tokenAmount > 0) {
       IOparcade(addressRegistry.oparcade()).depositPrize(
         msg.sender,
         _gid,
         tid,
-        _tokenToAddPrizePool._address,
-        _tokenToAddPrizePool._amount
+        _tokenToAddPrizePool.tokenAddress,
+        _tokenToAddPrizePool.tokenAmount
       );
     }
 

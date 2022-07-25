@@ -16,6 +16,7 @@ describe("Oparcade", () => {
   let game1 = "Game1",
     game2 = "Game2";
 
+  const tournamentName = "mock tournament name";
   const tournamentCreationFeeAmount = 100;
   const platformFee = 100; // 10%
   const baseGameCreatorFee = 100; // 10%
@@ -68,13 +69,23 @@ describe("Oparcade", () => {
 
     // create tournaments, Set deposit token amount and distributable tokens for games/tournaments
     let gid = 0;
-    let tid = await gameRegistry.callStatic.createTournamentByDAO(gid, proposedGameCreatorFee, tournamentCreatorFee);
-    await gameRegistry.createTournamentByDAO(gid, proposedGameCreatorFee, tournamentCreatorFee); // tid = 0
+    let tid = await gameRegistry.callStatic.createTournamentByDAO(
+      gid,
+      tournamentName,
+      proposedGameCreatorFee,
+      tournamentCreatorFee,
+    );
+    await gameRegistry.createTournamentByDAO(gid, tournamentName, proposedGameCreatorFee, tournamentCreatorFee); // tid = 0
     await gameRegistry.updateDepositTokenAmount(gid, tid, mockUSDT.address, MockUSDTDepositAmount);
     await gameRegistry.updateDistributableTokenAddress(gid, mockUSDT.address, true);
     gid = 1;
-    tid = await gameRegistry.callStatic.createTournamentByDAO(gid, proposedGameCreatorFee, tournamentCreatorFee); // tid = 0
-    await gameRegistry.createTournamentByDAO(gid, proposedGameCreatorFee, tournamentCreatorFee);
+    tid = await gameRegistry.callStatic.createTournamentByDAO(
+      gid,
+      tournamentName,
+      proposedGameCreatorFee,
+      tournamentCreatorFee,
+    ); // tid = 0
+    await gameRegistry.createTournamentByDAO(gid, tournamentName, proposedGameCreatorFee, tournamentCreatorFee);
     await gameRegistry.updateDepositTokenAmount(gid, tid, mockOPC.address, mockOPCDepositAmount);
     await gameRegistry.updateDistributableTokenAddress(gid, mockOPC.address, true);
 

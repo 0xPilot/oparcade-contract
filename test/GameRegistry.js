@@ -7,6 +7,7 @@ describe("GameRegistry", () => {
   let game1 = "Game1",
     game2 = "Game2";
 
+  const tournamentName = "mock tournament name";
   const tournamentCreationFeeAmount = 100;
   const platformFee = 100; // 10%
   const baseGameCreatorFee = 100; // 10%
@@ -265,6 +266,93 @@ describe("GameRegistry", () => {
     });
   });
 
+  describe("createTournamentByDAOWithTokens", () => {
+    beforeEach(async () => {
+      // add the first game
+      await gameRegistry.addGame(game1, alice.address, baseGameCreatorFee);
+
+      // add the second game
+      await gameRegistry.addGame(game2, bob.address, baseGameCreatorFee);
+    });
+
+    it("Should be able to creator the tournament and set tokens...", async () => {
+      const gid = 0;
+      const depositToken = USDC;
+      const depositTokenAmount = 100;
+      const distributionToken = USDC;
+      const depositToken2 = ARCD;
+      const depositTokenAmount2 = 30;
+
+      expect(await gameRegistry.getTournamentCount(gid)).to.equal(0);
+      expect((await gameRegistry.getDistributableTokenList(gid)).length).to.equal(0);
+      expect(await gameRegistry.distributable(gid, distributionToken.address)).to.be.false;
+
+      // create the first tournament
+      let tid = await gameRegistry.callStatic.createTournamentByDAOWithTokens(
+        gid,
+        tournamentName,
+        proposedGameCreatorFee,
+        tournamentCreatorFee,
+        [depositToken.address, depositTokenAmount],
+        distributionToken.address,
+      );
+      await gameRegistry.createTournamentByDAOWithTokens(
+        gid,
+        tournamentName,
+        proposedGameCreatorFee,
+        tournamentCreatorFee,
+        [depositToken.address, depositTokenAmount],
+        distributionToken.address,
+      );
+
+      // check the created tournament info
+      expect(await gameRegistry.getTournamentCount(gid)).to.equal(1);
+      expect(await gameRegistry.tournamentNames(gid, tid)).to.equal(tournamentName);
+      expect(await gameRegistry.getTournamentCreator(gid, tid)).to.equal(deployer.address);
+      expect(await gameRegistry.appliedGameCreatorFees(gid, tid)).to.equal(proposedGameCreatorFee);
+      expect(await gameRegistry.tournamentCreatorFees(gid, tid)).to.equal(tournamentCreatorFee);
+      expect(await gameRegistry.tournamentCreatorFees(gid, tid)).to.equal(tournamentCreatorFee);
+
+      expect(await gameRegistry.depositTokenAmount(gid, tid, depositToken.address)).to.equal(depositTokenAmount);
+      expect((await gameRegistry.getDepositTokenList(gid)).length).to.equal(1);
+      expect(await gameRegistry.depositTokenList(gid, 0)).to.equal(depositToken.address);
+
+      expect((await gameRegistry.getDistributableTokenList(gid)).length).to.equal(1);
+      expect(await gameRegistry.distributable(gid, distributionToken.address)).to.be.true;
+
+      // create the second tournament with the zero proposedGameCreatorFee
+      tid = await gameRegistry.callStatic.createTournamentByDAOWithTokens(
+        gid,
+        tournamentName,
+        0,
+        tournamentCreatorFee,
+        [depositToken2.address, depositTokenAmount2],
+        distributionToken.address,
+      );
+      await gameRegistry.createTournamentByDAOWithTokens(
+        gid,
+        tournamentName,
+        0,
+        tournamentCreatorFee + 1,
+        [depositToken2.address, depositTokenAmount2],
+        distributionToken.address,
+      );
+
+      // check the created tournament info
+      expect(await gameRegistry.getTournamentCount(gid)).to.equal(2);
+      expect(await gameRegistry.tournamentNames(gid, tid)).to.equal(tournamentName);
+      expect(await gameRegistry.getTournamentCreator(gid, tid)).to.equal(deployer.address);
+      expect(await gameRegistry.appliedGameCreatorFees(gid, tid)).to.equal(baseGameCreatorFee);
+      expect(await gameRegistry.tournamentCreatorFees(gid, tid)).to.equal(tournamentCreatorFee + 1);
+
+      expect(await gameRegistry.depositTokenAmount(gid, tid, depositToken2.address)).to.equal(depositTokenAmount2);
+      expect((await gameRegistry.getDepositTokenList(gid)).length).to.equal(2);
+      expect(await gameRegistry.depositTokenList(gid, 1)).to.equal(depositToken2.address);
+
+      expect((await gameRegistry.getDistributableTokenList(gid)).length).to.equal(1);
+    });
+  });
+
   describe("createTournamentByDAO", () => {
     beforeEach(async () => {
       // add the first game
@@ -280,21 +368,28 @@ describe("GameRegistry", () => {
       expect(await gameRegistry.getTournamentCount(gid)).to.equal(0);
 
       // create the first tournament
-      let tid = await gameRegistry.callStatic.createTournamentByDAO(gid, proposedGameCreatorFee, tournamentCreatorFee);
-      await gameRegistry.createTournamentByDAO(gid, proposedGameCreatorFee, tournamentCreatorFee);
+      let tid = await gameRegistry.callStatic.createTournamentByDAO(
+        gid,
+        tournamentName,
+        proposedGameCreatorFee,
+        tournamentCreatorFee,
+      );
+      await gameRegistry.createTournamentByDAO(gid, tournamentName, proposedGameCreatorFee, tournamentCreatorFee);
 
       // check the created tournament info
       expect(await gameRegistry.getTournamentCount(gid)).to.equal(1);
+      expect(await gameRegistry.tournamentNames(gid, tid)).to.equal(tournamentName);
       expect(await gameRegistry.getTournamentCreator(gid, tid)).to.equal(deployer.address);
       expect(await gameRegistry.appliedGameCreatorFees(gid, tid)).to.equal(proposedGameCreatorFee);
       expect(await gameRegistry.tournamentCreatorFees(gid, tid)).to.equal(tournamentCreatorFee);
 
       // create the second tournament with the zero proposedGameCreatorFee
-      tid = await gameRegistry.callStatic.createTournamentByDAO(gid, 0, tournamentCreatorFee);
-      await gameRegistry.createTournamentByDAO(gid, 0, tournamentCreatorFee + 1);
+      tid = await gameRegistry.callStatic.createTournamentByDAO(gid, tournamentName, 0, tournamentCreatorFee);
+      await gameRegistry.createTournamentByDAO(gid, tournamentName, 0, tournamentCreatorFee + 1);
 
       // check the created tournament info
       expect(await gameRegistry.getTournamentCount(gid)).to.equal(2);
+      expect(await gameRegistry.tournamentNames(gid, tid)).to.equal(tournamentName);
       expect(await gameRegistry.getTournamentCreator(gid, tid)).to.equal(deployer.address);
       expect(await gameRegistry.appliedGameCreatorFees(gid, tid)).to.equal(baseGameCreatorFee);
       expect(await gameRegistry.tournamentCreatorFees(gid, tid)).to.equal(tournamentCreatorFee + 1);
@@ -305,7 +400,9 @@ describe("GameRegistry", () => {
 
       // create the tournament
       await expect(
-        gameRegistry.connect(alice).createTournamentByDAO(gid, proposedGameCreatorFee, tournamentCreatorFee),
+        gameRegistry
+          .connect(alice)
+          .createTournamentByDAO(gid, tournamentName, proposedGameCreatorFee, tournamentCreatorFee),
       ).to.be.revertedWith("Ownable: caller is not the owner");
     });
 
@@ -314,7 +411,7 @@ describe("GameRegistry", () => {
 
       // create the tournament
       await expect(
-        gameRegistry.createTournamentByDAO(gid, proposedGameCreatorFee, tournamentCreatorFee),
+        gameRegistry.createTournamentByDAO(gid, tournamentName, proposedGameCreatorFee, tournamentCreatorFee),
       ).to.be.revertedWith("Invalid game index");
     });
 
@@ -323,7 +420,7 @@ describe("GameRegistry", () => {
 
       // create the tournament
       await expect(
-        gameRegistry.createTournamentByDAO(gid, baseGameCreatorFee - 1, tournamentCreatorFee),
+        gameRegistry.createTournamentByDAO(gid, tournamentName, baseGameCreatorFee - 1, tournamentCreatorFee),
       ).to.be.revertedWith("Low game creator fee proposed");
     });
 
@@ -331,9 +428,9 @@ describe("GameRegistry", () => {
       const gid = 0;
 
       // create the tournament
-      await expect(gameRegistry.createTournamentByDAO(gid, 1000, tournamentCreatorFee)).to.be.revertedWith(
-        "Exceeded fees",
-      );
+      await expect(
+        gameRegistry.createTournamentByDAO(gid, tournamentName, 1000, tournamentCreatorFee),
+      ).to.be.revertedWith("Exceeded fees");
     });
   });
 
@@ -368,12 +465,11 @@ describe("GameRegistry", () => {
         .connect(alice)
         .callStatic.createTournamentByUser(
           gid,
+          tournamentName,
           proposedGameCreatorFee,
           tournamentCreatorFee,
-          depositTokenAddress.address,
-          depositTokenAmount,
-          tokenToAddPrizePool.address,
-          amountToAddPrizePool,
+          [depositTokenAddress.address, depositTokenAmount],
+          [tokenToAddPrizePool.address, amountToAddPrizePool],
           nftAddressToAddPrizePool,
           nftTypeToAddPrizePool,
           tokenIdsToAddPrizePool,
@@ -383,12 +479,11 @@ describe("GameRegistry", () => {
         .connect(alice)
         .createTournamentByUser(
           gid,
+          tournamentName,
           proposedGameCreatorFee,
           tournamentCreatorFee,
-          depositTokenAddress.address,
-          depositTokenAmount,
-          tokenToAddPrizePool.address,
-          amountToAddPrizePool,
+          [depositTokenAddress.address, depositTokenAmount],
+          [tokenToAddPrizePool.address, amountToAddPrizePool],
           nftAddressToAddPrizePool,
           nftTypeToAddPrizePool,
           tokenIdsToAddPrizePool,
@@ -397,6 +492,7 @@ describe("GameRegistry", () => {
 
       // check the created tournament info
       expect(await gameRegistry.getTournamentCount(gid)).to.equal(1);
+      expect(await gameRegistry.tournamentNames(gid, tid)).to.equal(tournamentName);
       expect(await gameRegistry.getTournamentCreator(gid, tid)).to.equal(alice.address);
       expect(await gameRegistry.appliedGameCreatorFees(gid, tid)).to.equal(proposedGameCreatorFee);
       expect(await gameRegistry.tournamentCreatorFees(gid, tid)).to.equal(tournamentCreatorFee);
@@ -423,18 +519,16 @@ describe("GameRegistry", () => {
       await nftAddressToAddPrizePool.connect(alice).approve(oparcade.address, tokenIdsToAddPrizePool[0]);
       await nftAddressToAddPrizePool.connect(alice).approve(oparcade.address, tokenIdsToAddPrizePool[1]);
       await nftAddressToAddPrizePool.connect(alice).approve(oparcade.address, tokenIdsToAddPrizePool[2]);
-
       // // create the first tournament with ERC721
       let tid = await gameRegistry
         .connect(alice)
         .callStatic.createTournamentByUser(
           gid,
+          tournamentName,
           proposedGameCreatorFee,
           tournamentCreatorFee,
-          depositTokenAddress.address,
-          depositTokenAmount,
-          tokenToAddPrizePool,
-          amountToAddPrizePool,
+          [depositTokenAddress.address, depositTokenAmount],
+          [tokenToAddPrizePool, amountToAddPrizePool],
           nftAddressToAddPrizePool.address,
           nftTypeToAddPrizePool,
           tokenIdsToAddPrizePool,
@@ -444,12 +538,11 @@ describe("GameRegistry", () => {
         .connect(alice)
         .createTournamentByUser(
           gid,
+          tournamentName,
           proposedGameCreatorFee,
           tournamentCreatorFee,
-          depositTokenAddress.address,
-          depositTokenAmount,
-          tokenToAddPrizePool,
-          amountToAddPrizePool,
+          [depositTokenAddress.address, depositTokenAmount],
+          [tokenToAddPrizePool, amountToAddPrizePool],
           nftAddressToAddPrizePool.address,
           nftTypeToAddPrizePool,
           tokenIdsToAddPrizePool,
@@ -458,6 +551,7 @@ describe("GameRegistry", () => {
 
       // check the created tournament info
       expect(await gameRegistry.getTournamentCount(gid)).to.equal(1);
+      expect(await gameRegistry.tournamentNames(gid, tid)).to.equal(tournamentName);
       expect(await gameRegistry.getTournamentCreator(gid, tid)).to.equal(alice.address);
       expect(await gameRegistry.appliedGameCreatorFees(gid, tid)).to.equal(proposedGameCreatorFee);
       expect(await gameRegistry.tournamentCreatorFees(gid, tid)).to.equal(tournamentCreatorFee);
@@ -494,12 +588,11 @@ describe("GameRegistry", () => {
         .connect(alice)
         .callStatic.createTournamentByUser(
           gid,
+          tournamentName,
           proposedGameCreatorFee,
           tournamentCreatorFee,
-          depositTokenAddress.address,
-          depositTokenAmount,
-          tokenToAddPrizePool.address,
-          amountToAddPrizePool,
+          [depositTokenAddress.address, depositTokenAmount],
+          [tokenToAddPrizePool.address, amountToAddPrizePool],
           nftAddressToAddPrizePool.address,
           nftTypeToAddPrizePool,
           tokenIdsToAddPrizePool,
@@ -509,12 +602,11 @@ describe("GameRegistry", () => {
         .connect(alice)
         .createTournamentByUser(
           gid,
+          tournamentName,
           proposedGameCreatorFee,
           tournamentCreatorFee,
-          depositTokenAddress.address,
-          depositTokenAmount,
-          tokenToAddPrizePool.address,
-          amountToAddPrizePool,
+          [depositTokenAddress.address, depositTokenAmount],
+          [tokenToAddPrizePool.address, amountToAddPrizePool],
           nftAddressToAddPrizePool.address,
           nftTypeToAddPrizePool,
           tokenIdsToAddPrizePool,
@@ -523,6 +615,7 @@ describe("GameRegistry", () => {
 
       // check the created tournament info
       expect(await gameRegistry.getTournamentCount(gid)).to.equal(1);
+      expect(await gameRegistry.tournamentNames(gid, tid)).to.equal(tournamentName);
       expect(await gameRegistry.getTournamentCreator(gid, tid)).to.equal(alice.address);
       expect(await gameRegistry.appliedGameCreatorFees(gid, tid)).to.equal(proposedGameCreatorFee);
       expect(await gameRegistry.tournamentCreatorFees(gid, tid)).to.equal(tournamentCreatorFee);
@@ -557,12 +650,11 @@ describe("GameRegistry", () => {
         .connect(alice)
         .callStatic.createTournamentByUser(
           gid,
+          tournamentName,
           proposedGameCreatorFee,
           tournamentCreatorFee,
-          depositTokenAddress.address,
-          depositTokenAmount,
-          tokenToAddPrizePool.address,
-          amountToAddPrizePool,
+          [depositTokenAddress.address, depositTokenAmount],
+          [tokenToAddPrizePool.address, amountToAddPrizePool],
           nftAddressToAddPrizePool.address,
           nftTypeToAddPrizePool,
           tokenIdsToAddPrizePool,
@@ -572,12 +664,11 @@ describe("GameRegistry", () => {
         .connect(alice)
         .createTournamentByUser(
           gid,
+          tournamentName,
           proposedGameCreatorFee,
           tournamentCreatorFee,
-          depositTokenAddress.address,
-          depositTokenAmount,
-          tokenToAddPrizePool.address,
-          amountToAddPrizePool,
+          [depositTokenAddress.address, depositTokenAmount],
+          [tokenToAddPrizePool.address, amountToAddPrizePool],
           nftAddressToAddPrizePool.address,
           nftTypeToAddPrizePool,
           tokenIdsToAddPrizePool,
@@ -588,6 +679,7 @@ describe("GameRegistry", () => {
       const initialNFTBalance = 10;
 
       expect(await gameRegistry.getTournamentCount(gid)).to.equal(1);
+      expect(await gameRegistry.tournamentNames(gid, tid)).to.equal(tournamentName);
       expect(await gameRegistry.getTournamentCreator(gid, tid)).to.equal(alice.address);
       expect(await gameRegistry.appliedGameCreatorFees(gid, tid)).to.equal(proposedGameCreatorFee);
       expect(await gameRegistry.tournamentCreatorFees(gid, tid)).to.equal(tournamentCreatorFee);
@@ -636,12 +728,11 @@ describe("GameRegistry", () => {
         .connect(alice)
         .callStatic.createTournamentByUser(
           gid,
+          tournamentName,
           proposedGameCreatorFee,
           tournamentCreatorFee,
-          depositTokenAddress.address,
-          depositTokenAmount,
-          tokenToAddPrizePool.address,
-          amountToAddPrizePool,
+          [depositTokenAddress.address, depositTokenAmount],
+          [tokenToAddPrizePool.address, amountToAddPrizePool],
           nftAddressToAddPrizePool,
           nftTypeToAddPrizePool,
           tokenIdsToAddPrizePool,
@@ -651,12 +742,11 @@ describe("GameRegistry", () => {
         .connect(alice)
         .createTournamentByUser(
           gid,
+          tournamentName,
           proposedGameCreatorFee,
           tournamentCreatorFee,
-          depositTokenAddress.address,
-          depositTokenAmount,
-          tokenToAddPrizePool.address,
-          amountToAddPrizePool,
+          [depositTokenAddress.address, depositTokenAmount],
+          [tokenToAddPrizePool.address, amountToAddPrizePool],
           nftAddressToAddPrizePool,
           nftTypeToAddPrizePool,
           tokenIdsToAddPrizePool,
@@ -665,6 +755,7 @@ describe("GameRegistry", () => {
 
       // check the created tournament info
       expect(await gameRegistry.getTournamentCount(gid)).to.equal(1);
+      expect(await gameRegistry.tournamentNames(gid, tid)).to.equal(tournamentName);
       expect(await gameRegistry.getTournamentCreator(gid, tid)).to.equal(alice.address);
       expect(await gameRegistry.appliedGameCreatorFees(gid, tid)).to.equal(proposedGameCreatorFee);
       expect(await gameRegistry.tournamentCreatorFees(gid, tid)).to.equal(tournamentCreatorFee);
@@ -679,8 +770,8 @@ describe("GameRegistry", () => {
       await gameRegistry.addGame(game1, alice.address, baseGameCreatorFee);
 
       // create the 2 tournaments
-      await gameRegistry.createTournamentByDAO(gid, proposedGameCreatorFee, tournamentCreatorFee);
-      await gameRegistry.createTournamentByDAO(gid, proposedGameCreatorFee, tournamentCreatorFee);
+      await gameRegistry.createTournamentByDAO(gid, tournamentName, proposedGameCreatorFee, tournamentCreatorFee);
+      await gameRegistry.createTournamentByDAO(gid, tournamentName, proposedGameCreatorFee, tournamentCreatorFee);
     });
 
     it("Should be able to update the deposit token...", async () => {
@@ -748,8 +839,8 @@ describe("GameRegistry", () => {
       await gameRegistry.addGame(game1, alice.address, baseGameCreatorFee);
 
       // create the 2 tournaments
-      await gameRegistry.createTournamentByDAO(gid, proposedGameCreatorFee, tournamentCreatorFee);
-      await gameRegistry.createTournamentByDAO(gid, proposedGameCreatorFee, tournamentCreatorFee);
+      await gameRegistry.createTournamentByDAO(gid, tournamentName, proposedGameCreatorFee, tournamentCreatorFee);
+      await gameRegistry.createTournamentByDAO(gid, tournamentName, proposedGameCreatorFee, tournamentCreatorFee);
     });
 
     it("Should be able to update the distributable token...", async () => {

@@ -58,6 +58,7 @@ contract GameRegistry is OwnableUpgradeable {
     address indexed by,
     uint256 indexed gid,
     uint256 indexed tid,
+    string tournamentName,
     address token,
     uint256 oldAmount,
     uint256 newAmount
@@ -449,7 +450,15 @@ contract GameRegistry is OwnableUpgradeable {
     address _token,
     uint256 _amount
   ) internal {
-    emit DepositAmountUpdated(msg.sender, _gid, _tid, _token, depositTokenAmount[_gid][_tid][_token], _amount);
+    emit DepositAmountUpdated(
+      msg.sender,
+      _gid,
+      _tid,
+      tournamentNames[_gid][_tid],
+      _token,
+      depositTokenAmount[_gid][_tid][_token],
+      _amount
+    );
 
     // update deposit token list
     if (_amount > 0) {

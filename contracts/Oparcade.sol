@@ -372,9 +372,17 @@ contract Oparcade is
     require(IGameRegistry(addressRegistry.gameRegistry()).distributable(_gid, _token), "Disallowed distribution token");
 
     // deposit prize tokens
+    bool supportsERC721Interface;
+    // Try-catch approach ensures that a non-implementer of EIP-165 standard still can still be deposited
+    try IERC165Upgradeable(_token).supportsInterface(INTERFACE_ID_ERC721) {
+      supportsERC721Interface = IERC165Upgradeable(_token).supportsInterface(INTERFACE_ID_ERC721);
+    } catch {
+      supportsERC721Interface = false;
+    }
+    require(!supportsERC721Interface, "ERC721 token not allowed");
+
     IERC20Upgradeable(_token).safeTransferFrom(_depositor, address(this), _amount);
     totalPrizeDeposit[_gid][_tid][_token] += _amount;
-
     emit PrizeDeposited(msg.sender, _depositor, _gid, _tid, _token, _amount);
   }
 

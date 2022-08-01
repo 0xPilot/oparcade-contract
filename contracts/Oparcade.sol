@@ -310,9 +310,8 @@ contract Oparcade is
       // update totalNFTPrizeDeposit and transfer NFTs to the winners
       for (uint256 i; i < _winners.length; i++) {
         require(
-          totalNFTPrizeDeposit[_gid][_tid][_nftAddress][_tokenIds[i]] -
-            totalNFTPrizeDistribution[_gid][_tid][_nftAddress][_tokenIds[i]] ==
-            1,
+          totalNFTPrizeDeposit[_gid][_tid][_nftAddress][_tokenIds[i]] == 1 &&
+          totalNFTPrizeDistribution[_gid][_tid][_nftAddress][_tokenIds[i]] == 0,
           "NFT prize distribution amount exceeded"
         );
 

@@ -224,7 +224,7 @@ contract Oparcade is
 
       {
         // calculate the platform fee
-        uint256 platformFeeAmount = (_amounts[i] * IGameRegistry(addressRegistry.gameRegistry()).platformFee()) / 1000;
+        uint256 platformFeeAmount = (_amounts[i] * IGameRegistry(addressRegistry.gameRegistry()).platformFee()) / 100_0;
         totalPlatformFeeAmount += platformFeeAmount;
 
         // update userAmount
@@ -234,7 +234,7 @@ contract Oparcade is
       {
         // calculate gameCreatorFee
         uint256 gameCreatorFee = gameRegistry.appliedGameCreatorFees(_gid, _tid);
-        uint256 gameCreatorFeeAmount = (_amounts[i] * gameCreatorFee) / 1000;
+        uint256 gameCreatorFeeAmount = (_amounts[i] * gameCreatorFee) / 100_0;
         totalGameCreatorFeeAmount += gameCreatorFeeAmount;
 
         // update userAmount
@@ -244,7 +244,7 @@ contract Oparcade is
       {
         // calculate tournamentCreatorFee
         uint256 tournamentCreatorFee = gameRegistry.tournamentCreatorFees(_gid, _tid);
-        uint256 tournamentCreatorFeeAmount = (_amounts[i] * tournamentCreatorFee) / 1000;
+        uint256 tournamentCreatorFeeAmount = (_amounts[i] * tournamentCreatorFee) / 100_0;
         totalTournamentCreatorFeeAmount += tournamentCreatorFeeAmount;
 
         // update userAmount

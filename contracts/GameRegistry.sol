@@ -136,7 +136,7 @@ contract GameRegistry is OwnableUpgradeable {
   uint256 public tournamentCreationFeeAmount;
 
   modifier onlyValidGID(uint256 _gid) {
-    require(_gid < games.length && isDeprecatedGame[_gid] == false, "Invalid game index");
+    require(_gid < games.length && !isDeprecatedGame[_gid], "Invalid game index");
     _;
   }
 
@@ -270,7 +270,7 @@ contract GameRegistry is OwnableUpgradeable {
     _updateDepositTokenAmount(_gid, tid, _depositToken.tokenAddress, _depositToken.tokenAmount);
 
     // set the distributable token address
-    if (distributable[_gid][_distributionTokenAddress] == false) {
+    if (!distributable[_gid][_distributionTokenAddress]) {
       _updateDistributableTokenAddress(_gid, _distributionTokenAddress, true);
     }
 
@@ -382,13 +382,13 @@ contract GameRegistry is OwnableUpgradeable {
     _updateDepositTokenAmount(_gid, tid, _depositToken.tokenAddress, _depositToken.tokenAmount);
 
     // set the distributable token
-    if (distributable[_gid][_depositToken.tokenAddress] == false && _depositToken.tokenAmount > 0) {
+    if (!distributable[_gid][_depositToken.tokenAddress] && _depositToken.tokenAmount > 0) {
       _updateDistributableTokenAddress(_gid, _depositToken.tokenAddress, true);
     }
-    if (distributable[_gid][_tokenToAddPrizePool.tokenAddress] == false && _tokenToAddPrizePool.tokenAmount > 0) {
+    if (!distributable[_gid][_tokenToAddPrizePool.tokenAddress] && _tokenToAddPrizePool.tokenAmount > 0) {
       _updateDistributableTokenAddress(_gid, _tokenToAddPrizePool.tokenAddress, true);
     }
-    if (distributable[_gid][_nftAddressToAddPrizePool] == false && _amountsToAddPrizePool.length > 0) {
+    if (!distributable[_gid][_nftAddressToAddPrizePool] && _amountsToAddPrizePool.length > 0) {
       _updateDistributableTokenAddress(_gid, _nftAddressToAddPrizePool, true);
     }
 

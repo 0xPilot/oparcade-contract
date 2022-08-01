@@ -145,13 +145,18 @@ contract GameRegistry is OwnableUpgradeable {
     _;
   }
 
+  modifier onlyNonZeroAddress(address _address) {
+    require(_address != address(0x0), "Undefined address given");
+    _;
+  }
+
   function initialize(
     address _addressRegistry,
     address _feeRecipient,
     uint256 _platformFee,
     address _tournamentCreationFeeToken,
     uint256 _tournamentCreationFeeAmount
-  ) public initializer {
+  ) public initializer onlyNonZeroAddress(_addressRegistry) onlyNonZeroAddress(_tournamentCreationFeeToken) {
     __Ownable_init();
 
     require(_feeRecipient != address(0) || _platformFee == 0, "Fee recipient not set");

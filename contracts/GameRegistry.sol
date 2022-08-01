@@ -393,9 +393,6 @@ contract GameRegistry is OwnableUpgradeable {
     if (!distributable[_gid][_tokenToAddPrizePool.tokenAddress] && _tokenToAddPrizePool.tokenAmount > 0) {
       _updateDistributableTokenAddress(_gid, _tokenToAddPrizePool.tokenAddress, true);
     }
-    if (!distributable[_gid][_nftAddressToAddPrizePool] && _amountsToAddPrizePool.length > 0) {
-      _updateDistributableTokenAddress(_gid, _nftAddressToAddPrizePool, true);
-    }
 
     // initialize the prize pool with tokens
     if (_tokenToAddPrizePool.tokenAmount > 0) {
@@ -419,6 +416,11 @@ contract GameRegistry is OwnableUpgradeable {
         _tokenIdsToAddPrizePool,
         _amountsToAddPrizePool
       );
+
+      // set the distributable token
+      if (!distributable[_gid][_nftAddressToAddPrizePool] && _amountsToAddPrizePool.length > 0) {
+        _updateDistributableTokenAddress(_gid, _nftAddressToAddPrizePool, true);
+      }
     }
   }
 

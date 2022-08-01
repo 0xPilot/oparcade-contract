@@ -217,6 +217,8 @@ contract Oparcade is
     uint256 totalGameCreatorFeeAmount;
     uint256 totalTournamentCreatorFeeAmount;
     for (uint256 i; i < _winners.length; i++) {
+      require(_winners[i] != address(0x0), "Winner address should be defined");
+      require(_amounts[i] != 0, "Winner amount should be greater than zero");
       // get userAmount
       uint256 userAmount = _amounts[i];
 

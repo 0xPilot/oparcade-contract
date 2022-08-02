@@ -319,7 +319,8 @@ contract Oparcade is
 
         totalNFTPrizeDistribution[_gid][_tid][_nftAddress][_tokenIds[i]] = 1;
         totalAmounts += _amounts[i];
-        IERC721Upgradeable(_nftAddress).safeTransferFrom(address(this), _winners[i], _tokenIds[i]);
+        try IERC721Upgradeable(_nftAddress).safeTransferFrom(address(this), _winners[i], _tokenIds[i]) {
+        } catch {}
       }
 
       // check if all amount value is 1
@@ -337,13 +338,13 @@ contract Oparcade is
         );
 
         totalNFTPrizeDistribution[_gid][_tid][_nftAddress][_tokenIds[i]] += _amounts[i];
-        IERC1155Upgradeable(_nftAddress).safeTransferFrom(
+        try IERC1155Upgradeable(_nftAddress).safeTransferFrom(
           address(this),
           _winners[i],
           _tokenIds[i],
           _amounts[i],
           bytes("")
-        );
+        ) {} catch {}
       }
     }
 

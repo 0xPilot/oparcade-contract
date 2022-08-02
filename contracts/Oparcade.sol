@@ -83,7 +83,6 @@ contract Oparcade is
     uint256[] tokenIds,
     uint256[] amounts
   );
-  event Withdrawn(address indexed by, address indexed beneficiary, address indexed token, uint256 amount);
 
   bytes4 private constant INTERFACE_ID_ERC721 = 0x80ac58cd;
 
@@ -527,28 +526,6 @@ contract Oparcade is
     }
 
     emit NFTPrizeWithdrawn(msg.sender, _to, _gid, _tid, _nftAddress, _nftType, _tokenIds, _amounts);
-  }
-
-  /**
-   * @notice Withdraw tokens
-   * @dev Only owner
-   * @param _tokens Token addresses
-   * @param _amounts Token amounts
-   * @param _beneficiary Beneficiary address
-   */
-  function withdraw(
-    address[] calldata _tokens,
-    uint256[] calldata _amounts,
-    address _beneficiary
-  ) external onlyOwner {
-    require(_tokens.length == _amounts.length, "Mismatched withdrawal data");
-
-    for (uint256 i; i < _tokens.length; i++) {
-      totalWithdrawAmount[_tokens[i]] += _amounts[i];
-      IERC20Upgradeable(_tokens[i]).safeTransfer(_beneficiary, _amounts[i]);
-
-      emit Withdrawn(msg.sender, _beneficiary, _tokens[i], _amounts[i]);
-    }
   }
 
   /**

@@ -119,8 +119,6 @@ contract Oparcade is
     _;
   }
 
-  receive() external payable {}
-
   function initialize(address _addressRegistry) public initializer {
     __Ownable_init();
     __ReentrancyGuard_init();

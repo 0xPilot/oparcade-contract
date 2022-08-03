@@ -15,11 +15,6 @@ import "./interfaces/IOparcade.sol";
 contract GameRegistry is OwnableUpgradeable {
   using SafeERC20Upgradeable for IERC20Upgradeable;
 
-  struct Token {
-    address tokenAddress;
-    uint256 tokenAmount;
-  }
-
   event GameAdded(
     address indexed by,
     uint256 indexed gid,
@@ -84,41 +79,39 @@ contract GameRegistry is OwnableUpgradeable {
     uint256 newTournamentCreationFeeAmount
   );
 
+  struct Token {
+    address tokenAddress;
+    uint256 tokenAmount;
+  }
+
+  struct DistributableToken {
+    address tokenAddress;
+    bool isDistributable;
+  }
+
+  struct Tournament {
+    string name;
+    address creator;
+    uint256 creatorFee;
+    uint256 appliedGameCreatorFee;
+    /// @dev Token address -> amount
+    mapping(address => uint256) depositTokenAmount;
+  }
+
+  struct Game {
+    string name;
+    address creator;
+    uint256 baseCreatorFee;
+    bool isDeprecated;
+    address[] distributableTokenList;
+    address[] depositTokenList;
+    Tournament[] tournaments;
+    /// @dev Token address -> Bool
+    mapping(address => bool) distributable;
+  }
+
   /// @dev Game name array
-  string[] public games;
-
-  /// @dev Game ID -> Game creator
-  mapping(uint256 => address) public gameCreators;
-
-  /// @dev Game ID -> Base game creator fee
-  mapping(uint256 => uint256) public baseGameCreatorFees;
-
-  /// @dev Game ID -> Tournament ID -> Game creator fee applied to the tournament
-  mapping(uint256 => mapping(uint256 => uint256)) public appliedGameCreatorFees;
-
-  /// @dev Game ID -> Tournament creator list
-  mapping(uint256 => address[]) public tournamentCreators;
-
-  /// @dev Game ID -> Tournament ID -> Tournament creator fee
-  mapping(uint256 => mapping(uint256 => uint256)) public tournamentCreatorFees;
-
-  /// @dev Game ID -> Tournament ID -> Tournament name
-  mapping(uint256 => mapping(uint256 => string)) public tournamentNames;
-
-  /// @dev Game ID -> Deposit token list
-  mapping(uint256 => address[]) public depositTokenList;
-
-  /// @dev Game ID -> Tournament ID -> Token address -> Deposit amount
-  mapping(uint256 => mapping(uint256 => mapping(address => uint256))) public depositTokenAmount;
-
-  /// @dev Game ID -> Distributable token list
-  mapping(uint256 => address[]) public distributableTokenList;
-
-  /// @dev Game ID -> Token address -> Bool
-  mapping(uint256 => mapping(address => bool)) public distributable;
-
-  /// @dev Game ID -> Bool
-  mapping(uint256 => bool) public isDeprecatedGame;
+  Game[] public games;
 
   /// @dev AddressRegistry
   IAddressRegistry public addressRegistry;
@@ -136,12 +129,12 @@ contract GameRegistry is OwnableUpgradeable {
   uint256 public tournamentCreationFeeAmount;
 
   modifier onlyValidGID(uint256 _gid) {
-    require(_gid < games.length && !isDeprecatedGame[_gid], "Invalid game index");
+    require(_gid < games.length && !games[_gid].isDeprecated, "Invalid game index");
     _;
   }
 
   modifier onlyValidTID(uint256 _gid, uint256 _tid) {
-    require(_tid < tournamentCreators[_gid].length, "Invalid tournament index");
+    require(_tid < games[_gid].tournaments.length, "Invalid tournament index");
     _;
   }
 
@@ -191,15 +184,12 @@ contract GameRegistry is OwnableUpgradeable {
     require(_gameCreator != address(0), "Zero game creator address");
     require(platformFee + _baseGameCreatorFee <= 100_0, "Exceeded base game creator fee");
 
-    // add the game
-    games.push(_gameName);
-
-    // set the gid
-    gid = games.length - 1;
-
-    // set the game creator address and fee
-    gameCreators[gid] = _gameCreator;
-    baseGameCreatorFees[gid] = _baseGameCreatorFee;
+    // Create game and set properties
+    gid = games.length;
+    games.push();
+    games[gid].name = _gameName;
+    games[gid].creator = _gameCreator;
+    games[gid].baseCreatorFee = _baseGameCreatorFee;
 
     emit GameAdded(msg.sender, gid, _gameName, _gameCreator, _baseGameCreatorFee);
   }
@@ -211,9 +201,9 @@ contract GameRegistry is OwnableUpgradeable {
    */
   function removeGame(uint256 _gid) external onlyOwner onlyValidGID(_gid) {
     // remove game
-    isDeprecatedGame[_gid] = true;
+    games[_gid].isDeprecated = true;
 
-    emit GameRemoved(msg.sender, _gid, games[_gid], gameCreators[_gid], baseGameCreatorFees[_gid]);
+    emit GameRemoved(msg.sender, _gid, games[_gid].name, games[_gid].creator, games[_gid].baseCreatorFee);
   }
 
   /**
@@ -222,13 +212,13 @@ contract GameRegistry is OwnableUpgradeable {
    * @param _gameCreator Game creator address
    */
   function updateGameCreator(uint256 _gid, address _gameCreator) external onlyValidGID(_gid) {
-    require(msg.sender == gameCreators[_gid], "Only game creator");
+    require(msg.sender == games[_gid].creator, "Only game creator");
     require(_gameCreator != address(0), "Zero game creator address");
 
-    emit GameCreatorUpdated(msg.sender, _gid, gameCreators[_gid], _gameCreator);
+    emit GameCreatorUpdated(msg.sender, _gid, games[_gid].creator, _gameCreator);
 
     // update the game creator address
-    gameCreators[_gid] = _gameCreator;
+    games[_gid].creator = _gameCreator;
   }
 
   /**
@@ -242,10 +232,10 @@ contract GameRegistry is OwnableUpgradeable {
   function updateBaseGameCreatorFee(uint256 _gid, uint256 _baseGameCreatorFee) external onlyOwner onlyValidGID(_gid) {
     require(platformFee + _baseGameCreatorFee <= 100_0, "Exceeded game creator fee");
 
-    emit BaseGameCreatorFeeUpdated(msg.sender, _gid, baseGameCreatorFees[_gid], _baseGameCreatorFee);
+    emit BaseGameCreatorFeeUpdated(msg.sender, _gid, games[_gid].baseCreatorFee, _baseGameCreatorFee);
 
     // update the game creator fee
-    baseGameCreatorFees[_gid] = _baseGameCreatorFee;
+    games[_gid].baseCreatorFee = _baseGameCreatorFee;
   }
 
   /**
@@ -268,6 +258,9 @@ contract GameRegistry is OwnableUpgradeable {
     Token calldata _depositToken,
     address _distributionTokenAddress
   ) external onlyOwner onlyValidGID(_gid) returns (uint256 tid) {
+
+    games.push();
+    games[0].distributable[address(0)] = true;
     // create the tournament
     tid = _createTournament(_gid, _tournamentName, _proposedGameCreatorFee, _tournamentCreatorFee);
 
@@ -275,7 +268,7 @@ contract GameRegistry is OwnableUpgradeable {
     _updateDepositTokenAmount(_gid, tid, _depositToken.tokenAddress, _depositToken.tokenAmount);
 
     // set the distributable token address
-    if (!distributable[_gid][_distributionTokenAddress]) {
+    if (!games[_gid].distributable[_distributionTokenAddress]) {
       _updateDistributableTokenAddress(_gid, _distributionTokenAddress, true);
     }
 
@@ -318,25 +311,27 @@ contract GameRegistry is OwnableUpgradeable {
     // use baseCreatorFee if _proposedGameCreatorFee is zero
     uint256 appliedGameCreatorFee;
     if (_proposedGameCreatorFee == 0) {
-      appliedGameCreatorFee = baseGameCreatorFees[_gid];
+      appliedGameCreatorFee = games[_gid].baseCreatorFee;
     } else {
       appliedGameCreatorFee = _proposedGameCreatorFee;
     }
 
     // check fees
-    require(baseGameCreatorFees[_gid] <= appliedGameCreatorFee, "Low game creator fee proposed");
+    require(games[_gid].baseCreatorFee <= appliedGameCreatorFee, "Low game creator fee proposed");
     require(platformFee + appliedGameCreatorFee + _tournamentCreatorFee <= 100_0, "Exceeded fees");
 
     // get the new tournament ID
-    tid = tournamentCreators[_gid].length;
+    tid = games[_gid].tournaments.length;
+
+    games[_gid].tournaments.push();
 
     // add the tournament name
-    tournamentNames[_gid][tid] = _tournamentName;
+    games[_gid].tournaments[tid].name = _tournamentName;
 
     // add the tournament creator address and fee
-    tournamentCreators[_gid].push(msg.sender);
-    appliedGameCreatorFees[_gid][tid] = appliedGameCreatorFee;
-    tournamentCreatorFees[_gid][tid] = _tournamentCreatorFee;
+    games[_gid].tournaments[tid].creator = msg.sender;
+    games[_gid].tournaments[tid].appliedGameCreatorFee = appliedGameCreatorFee;
+    games[_gid].tournaments[tid].creatorFee = _tournamentCreatorFee;
 
     emit TournamentCreated(msg.sender, _gid, tid, _tournamentName, appliedGameCreatorFee, _tournamentCreatorFee);
   }
@@ -387,10 +382,10 @@ contract GameRegistry is OwnableUpgradeable {
     _updateDepositTokenAmount(_gid, tid, _depositToken.tokenAddress, _depositToken.tokenAmount);
 
     // set the distributable token
-    if (!distributable[_gid][_depositToken.tokenAddress] && _depositToken.tokenAmount > 0) {
+    if (!games[_gid].distributable[_depositToken.tokenAddress] && _depositToken.tokenAmount > 0) {
       _updateDistributableTokenAddress(_gid, _depositToken.tokenAddress, true);
     }
-    if (!distributable[_gid][_tokenToAddPrizePool.tokenAddress] && _tokenToAddPrizePool.tokenAmount > 0) {
+    if (!games[_gid].distributable[_tokenToAddPrizePool.tokenAddress] && _tokenToAddPrizePool.tokenAmount > 0) {
       _updateDistributableTokenAddress(_gid, _tokenToAddPrizePool.tokenAddress, true);
     }
 
@@ -418,7 +413,7 @@ contract GameRegistry is OwnableUpgradeable {
       );
 
       // set the distributable token
-      if (!distributable[_gid][_nftAddressToAddPrizePool] && _amountsToAddPrizePool.length > 0) {
+      if (!games[_gid].distributable[_tokenToAddPrizePool.tokenAddress] && _amountsToAddPrizePool.length > 0) {
         _updateDistributableTokenAddress(_gid, _nftAddressToAddPrizePool, true);
       }
     }
@@ -456,27 +451,34 @@ contract GameRegistry is OwnableUpgradeable {
     address _token,
     uint256 _amount
   ) internal {
-    emit DepositAmountUpdated(msg.sender, _gid, _tid, _token, depositTokenAmount[_gid][_tid][_token], _amount);
+    emit DepositAmountUpdated(
+      msg.sender,
+      _gid,
+      _tid,
+      _token,
+      games[_gid].tournaments[_tid].depositTokenAmount[_token],
+      _amount
+    );
 
     // update deposit token list
     if (_amount > 0) {
-      if (depositTokenAmount[_gid][_tid][_token] == 0) {
+      if (games[_gid].tournaments[_tid].depositTokenAmount[_token] == 0) {
         // add the token into the list only if it's added newly
-        depositTokenList[_gid].push(_token);
+        games[_gid].depositTokenList.push(_token);
       }
     } else {
-      for (uint256 i; i < depositTokenList[_gid].length; i++) {
-        if (_token == depositTokenList[_gid][i]) {
+      for (uint256 i; i < games[_gid].depositTokenList.length; i++) {
+        if (_token == games[_gid].depositTokenList[i]) {
           // remove the token from the list
-          depositTokenList[_gid][i] = depositTokenList[_gid][depositTokenList[_gid].length - 1];
-          depositTokenList[_gid].pop();
+          games[_gid].depositTokenList[i] = games[_gid].depositTokenList[games[_gid].depositTokenList.length - 1];
+          games[_gid].depositTokenList.pop();
           break;
         }
       }
     }
 
     // update deposit token amount
-    depositTokenAmount[_gid][_tid][_token] = _amount;
+    games[_gid].tournaments[_tid].depositTokenAmount[_token] = _amount;
   }
 
   /**
@@ -506,26 +508,34 @@ contract GameRegistry is OwnableUpgradeable {
     address _token,
     bool _isDistributable
   ) internal {
-    emit DistributableTokenAddressUpdated(msg.sender, _gid, _token, distributable[_gid][_token], _isDistributable);
+    emit DistributableTokenAddressUpdated(
+      msg.sender,
+      _gid,
+      _token,
+      games[_gid].distributable[_token],
+      _isDistributable
+    );
 
     // update distributable token list
     if (_isDistributable) {
-      if (!distributable[_gid][_token]) {
+      if (!games[_gid].distributable[_token]) {
         // add token to the list only if it's added newly
-        distributableTokenList[_gid].push(_token);
+        games[_gid].distributableTokenList.push(_token);
       }
     } else {
-      for (uint256 i; i < distributableTokenList[_gid].length; i++) {
-        if (_token == distributableTokenList[_gid][i]) {
-          distributableTokenList[_gid][i] = distributableTokenList[_gid][distributableTokenList[_gid].length - 1];
-          distributableTokenList[_gid].pop();
+      for (uint256 i; i < games[_gid].distributableTokenList.length; i++) {
+        if (_token == games[_gid].distributableTokenList[i]) {
+          games[_gid].distributableTokenList[i] = games[_gid].distributableTokenList[
+            games[_gid].distributableTokenList.length - 1
+          ];
+          games[_gid].distributableTokenList.pop();
           break;
         }
       }
     }
 
     // update distributable token amount
-    distributable[_gid][_token] = _isDistributable;
+    games[_gid].distributable[_token] = _isDistributable;
   }
 
   /**
@@ -534,7 +544,7 @@ contract GameRegistry is OwnableUpgradeable {
    * @return (address[]) Deposit token list of the game
    */
   function getDepositTokenList(uint256 _gid) external view returns (address[] memory) {
-    return depositTokenList[_gid];
+    return games[_gid].depositTokenList;
   }
 
   /**
@@ -543,7 +553,7 @@ contract GameRegistry is OwnableUpgradeable {
    * @param (address[]) Distributable token list of the game
    */
   function getDistributableTokenList(uint256 _gid) external view returns (address[] memory) {
-    return distributableTokenList[_gid];
+    return games[_gid].distributableTokenList;
   }
 
   /**
@@ -560,7 +570,7 @@ contract GameRegistry is OwnableUpgradeable {
    * @return (uint256) Number of the tournament
    */
   function getTournamentCount(uint256 _gid) external view onlyValidGID(_gid) returns (uint256) {
-    return tournamentCreators[_gid].length;
+    return games[_gid].tournaments.length;
   }
 
   /**
@@ -576,7 +586,7 @@ contract GameRegistry is OwnableUpgradeable {
     onlyValidTID(_gid, _tid)
     returns (address)
   {
-    return tournamentCreators[_gid][_tid];
+    return games[_gid].tournaments[_tid].creator;
   }
 
   /**

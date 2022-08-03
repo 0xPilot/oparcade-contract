@@ -312,14 +312,13 @@ contract Oparcade is
       for (uint256 i; i < _winners.length; i++) {
         require(
           totalNFTPrizeDeposit[_gid][_tid][_nftAddress][_tokenIds[i]] == 1 &&
-          totalNFTPrizeDistribution[_gid][_tid][_nftAddress][_tokenIds[i]] == 0,
+            totalNFTPrizeDistribution[_gid][_tid][_nftAddress][_tokenIds[i]] == 0,
           "NFT prize distribution amount exceeded"
         );
 
         totalNFTPrizeDistribution[_gid][_tid][_nftAddress][_tokenIds[i]] = 1;
         totalAmounts += _amounts[i];
-        try IERC721Upgradeable(_nftAddress).safeTransferFrom(address(this), _winners[i], _tokenIds[i]) {
-        } catch {}
+        try IERC721Upgradeable(_nftAddress).safeTransferFrom(address(this), _winners[i], _tokenIds[i]) {} catch {}
       }
 
       // check if all amount value is 1
@@ -337,13 +336,15 @@ contract Oparcade is
         );
 
         totalNFTPrizeDistribution[_gid][_tid][_nftAddress][_tokenIds[i]] += _amounts[i];
-        try IERC1155Upgradeable(_nftAddress).safeTransferFrom(
-          address(this),
-          _winners[i],
-          _tokenIds[i],
-          _amounts[i],
-          bytes("")
-        ) {} catch {}
+        try
+          IERC1155Upgradeable(_nftAddress).safeTransferFrom(
+            address(this),
+            _winners[i],
+            _tokenIds[i],
+            _amounts[i],
+            bytes("")
+          )
+        {} catch {}
       }
     }
 
@@ -400,7 +401,7 @@ contract Oparcade is
     require(totalPrizeDeposit[_gid][_tid][_token] >= _amount, "Insufficient prize");
 
     // withdraw the prize
-    totalPrizeDeposit[_gid][_tid][_token] -= _amount;
+    unchecked {totalPrizeDeposit[_gid][_tid][_token] -= _amount;}
     IERC20Upgradeable(_token).safeTransfer(_to, _amount);
 
     emit PrizeWithdrawn(msg.sender, _to, _gid, _tid, _token, _amount);
@@ -520,7 +521,7 @@ contract Oparcade is
           "Insufficient NFT prize"
         );
 
-        totalNFTPrizeDeposit[_gid][_tid][_nftAddress][_tokenIds[i]] -= _amounts[i];
+        unchecked {totalNFTPrizeDeposit[_gid][_tid][_nftAddress][_tokenIds[i]] -= _amounts[i];}
       }
       IERC1155Upgradeable(_nftAddress).safeBatchTransferFrom(address(this), _to, _tokenIds, _amounts, bytes(""));
     }

@@ -128,6 +128,9 @@ contract GameRegistry is OwnableUpgradeable {
   /// @dev Tournament creation fee token amount
   uint256 public tournamentCreationFeeAmount;
 
+  /// @dev Max fee constant in permillage (percentage * 10)
+  uint256 MAX_PERMILLAGE;
+
   modifier onlyValidGID(uint256 _gid) {
     require(_gid < games.length && !games[_gid].isDeprecated, "Invalid game index");
     _;
@@ -151,9 +154,10 @@ contract GameRegistry is OwnableUpgradeable {
     uint256 _tournamentCreationFeeAmount
   ) public initializer onlyNonZeroAddress(_addressRegistry) onlyNonZeroAddress(_tournamentCreationFeeToken) {
     __Ownable_init();
+    MAX_PERMILLAGE = 1000;
 
     require(_feeRecipient != address(0) || _platformFee == 0, "Fee recipient not set");
-    require(_platformFee <= 100_0, "Platform fee exceeded");
+    require(_platformFee <= MAX_PERMILLAGE, "Platform fee exceeded");
 
     // initialize AddressRegistery
     addressRegistry = IAddressRegistry(_addressRegistry);
@@ -182,7 +186,7 @@ contract GameRegistry is OwnableUpgradeable {
   ) external onlyOwner returns (uint256 gid) {
     require(bytes(_gameName).length != 0, "Empty game name");
     require(_gameCreator != address(0), "Zero game creator address");
-    require(platformFee + _baseGameCreatorFee <= 100_0, "Exceeded base game creator fee");
+    require(platformFee + _baseGameCreatorFee <= MAX_PERMILLAGE, "Exceeded base game creator fee");
 
     // Create game and set properties
     gid = games.length;
@@ -230,7 +234,7 @@ contract GameRegistry is OwnableUpgradeable {
    * @param _baseGameCreatorFee Base game creator fee
    */
   function updateBaseGameCreatorFee(uint256 _gid, uint256 _baseGameCreatorFee) external onlyOwner onlyValidGID(_gid) {
-    require(platformFee + _baseGameCreatorFee <= 100_0, "Exceeded game creator fee");
+    require(platformFee + _baseGameCreatorFee <= MAX_PERMILLAGE, "Exceeded game creator fee");
 
     emit BaseGameCreatorFeeUpdated(msg.sender, _gid, games[_gid].baseCreatorFee, _baseGameCreatorFee);
 
@@ -318,7 +322,7 @@ contract GameRegistry is OwnableUpgradeable {
 
     // check fees
     require(games[_gid].baseCreatorFee <= appliedGameCreatorFee, "Low game creator fee proposed");
-    require(platformFee + appliedGameCreatorFee + _tournamentCreatorFee <= 100_0, "Exceeded fees");
+    require(platformFee + appliedGameCreatorFee + _tournamentCreatorFee <= MAX_PERMILLAGE, "Exceeded fees");
 
     // get the new tournament ID
     tid = games[_gid].tournaments.length;
@@ -598,7 +602,7 @@ contract GameRegistry is OwnableUpgradeable {
    */
   function updatePlatformFee(address _feeRecipient, uint256 _platformFee) external onlyOwner {
     require(_feeRecipient != address(0) || _platformFee == 0, "Fee recipient not set");
-    require(_platformFee <= 100_0, "Platform fee exceeded");
+    require(_platformFee <= MAX_PERMILLAGE, "Platform fee exceeded");
 
     emit PlatformFeeUpdated(msg.sender, feeRecipient, platformFee, _feeRecipient, _platformFee);
 

@@ -223,7 +223,7 @@ contract Oparcade is
 
       {
         // calculate the platform fee
-        uint256 platformFeeAmount = (_amounts[i] * IGameRegistry(addressRegistry.gameRegistry()).platformFee()) / 100_0;
+        uint256 platformFeeAmount = (_amounts[i] * gameRegistry.platformFee()) / 100_0;
         totalPlatformFeeAmount += platformFeeAmount;
 
         // update userAmount
@@ -261,7 +261,7 @@ contract Oparcade is
       totalGameCreatorFeeAmount +
       totalTournamentCreatorFeeAmount;
     IERC20Upgradeable(_token).safeTransfer(
-      IGameRegistry(addressRegistry.gameRegistry()).feeRecipient(),
+      gameRegistry.feeRecipient(),
       totalPlatformFeeAmount
     );
     IERC20Upgradeable(_token).safeTransfer(gameRegistry.gameCreators(_gid), totalGameCreatorFeeAmount);

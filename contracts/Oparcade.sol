@@ -107,9 +107,6 @@ contract Oparcade is
   /// @dev Game ID -> Tournament ID -> NFT Address -> Token ID -> Deposit Amount
   mapping(uint256 => mapping(uint256 => mapping(address => mapping(uint256 => uint256)))) public totalNFTPrizeDeposit;
 
-  /// @dev Token Address -> Total Withdraw Amount
-  mapping(address => uint256) public totalWithdrawAmount;
-
   /// @dev AddressRegistry
   IAddressRegistry public addressRegistry;
 

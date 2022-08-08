@@ -84,14 +84,9 @@ contract GameRegistry is OwnableUpgradeable {
     uint256 tokenAmount;
   }
 
-  struct DistributableToken {
-    address tokenAddress;
-    bool isDistributable;
-  }
-
   struct Tournament {
     string name;
-    address creator;
+    address creatorAddress;
     uint256 creatorFee;
     uint256 appliedGameCreatorFee;
     /// @dev Token address -> amount
@@ -100,12 +95,13 @@ contract GameRegistry is OwnableUpgradeable {
 
   struct Game {
     string name;
-    address creator;
+    address creatorAddress;
     uint256 baseCreatorFee;
     bool isDeprecated;
-    address[] distributableTokenList;
+    address[] distributableTokenList; // return all array
     address[] depositTokenList;
-    Tournament[] tournaments;
+    mapping(uint256 => Tournament) tournaments;
+    uint256 tournamentsCount;
     /// @dev Token address -> Bool
     mapping(address => bool) distributable;
   }
@@ -137,7 +133,7 @@ contract GameRegistry is OwnableUpgradeable {
   }
 
   modifier onlyValidTID(uint256 _gid, uint256 _tid) {
-    require(_tid < games[_gid].tournaments.length, "Invalid tournament index");
+    require(_tid < games[_gid].tournamentsCount, "Invalid tournament index");
     _;
   }
 
@@ -169,6 +165,178 @@ contract GameRegistry is OwnableUpgradeable {
     tournamentCreationFeeAmount = _tournamentCreationFeeAmount;
   }
 
+  // Getters to access games and tournaments information
+
+  /**
+   * @notice Returns the tournament name of the specific tournament
+   * @param _gid Game ID
+   * @param _tid Tournament ID
+   * @return (string) Tournament name
+   */
+  function getTournamentName(uint256 _gid, uint256 _tid)
+    external
+    view
+    onlyValidGID(_gid)
+    onlyValidTID(_gid, _tid)
+    returns (string memory)
+  {
+    return games[_gid].tournaments[_tid].name;
+  }
+
+  /**
+   * @notice Returns the tournament creator fee of the specific tournament
+   * @param _gid Game ID
+   * @param _tid Tournament ID
+   * @return (uint256) Tournament creator fee
+   */
+  function getTournamentCreatorFee(uint256 _gid, uint256 _tid)
+    external
+    view
+    onlyValidGID(_gid)
+    onlyValidTID(_gid, _tid)
+    returns (uint256)
+  {
+    return games[_gid].tournaments[_tid].creatorFee;
+  }
+
+  /**
+   * @notice Returns the applied game creator fee of the specific tournament
+   * @param _gid Game ID
+   * @param _tid Tournament ID
+   * @return (string) Game applied game creator fee of a tournament
+   */
+  function getAppliedGameCreatorFee(uint256 _gid, uint256 _tid)
+    external
+    view
+    onlyValidGID(_gid)
+    onlyValidTID(_gid, _tid)
+    returns (uint256)
+  {
+    return games[_gid].tournaments[_tid].appliedGameCreatorFee;
+  }
+
+  /**
+   * @notice Returns the deposit token amount of the specific tournament
+   * @param _gid Game ID
+   * @param _tid Tournament ID
+   * @param _tokenAddress token address
+   * @return (uint256) Tournament deposit token amount
+   */
+  function getDepositTokenAmount(
+    uint256 _gid,
+    uint256 _tid,
+    address _tokenAddress
+  ) external view onlyValidGID(_gid) onlyValidTID(_gid, _tid) returns (uint256) {
+    return games[_gid].tournaments[_tid].depositTokenAmount[_tokenAddress];
+  }
+
+  /**
+   * @notice Returns the tournament creator address of the specific tournament
+   * @param _gid Game ID
+   * @param _tid Tournament ID
+   * @return (address) Tournament creator address
+   */
+  function getTournamentCreator(uint256 _gid, uint256 _tid)
+    external
+    view
+    onlyValidGID(_gid)
+    onlyValidTID(_gid, _tid)
+    returns (address)
+  {
+    return games[_gid].tournaments[_tid].creatorAddress;
+  }
+
+  /**
+   * @notice Returns a boolean indicating if a specific game is deprecated
+   * @param _gid Game ID
+   * @return (bool) Is deprecated
+   */
+  function isGameDeprecated(uint256 _gid) external view onlyValidGID(_gid) returns (bool) {
+    return games[_gid].isDeprecated;
+  }
+
+  /**
+   * @notice Returns the game name
+   * @param _gid Game ID
+   * @return (string) Game name
+   */
+  function getGameName(uint256 _gid) external view onlyValidGID(_gid) returns (string memory) {
+    return games[_gid].name;
+  }
+
+  /**
+   * @notice Returns the game creator address
+   * @param _gid Game ID
+   * @return (string) Game creator address
+   */
+  function getGameCreatorAddress(uint256 _gid) external view onlyValidGID(_gid) returns (address) {
+    return games[_gid].creatorAddress;
+  }
+
+  /**
+   * @notice Returns the game creator fee
+   * @param _gid Game ID
+   * @return (uint256) Game creator fee
+   */
+  function getGameBaseCreatorFee(uint256 _gid) external view onlyValidGID(_gid) returns (uint256) {
+    return games[_gid].baseCreatorFee;
+  }
+
+  /**
+   * @notice Returns true if the token of a specific game is distributable, false otherwise
+   * @param _gid Game ID
+   * @param _tokenAddress token address
+   * @return (uint256) Is token distributable
+   */
+  function isDistributable(uint256 _gid, address _tokenAddress) external view onlyValidGID(_gid) returns (bool) {
+    return games[_gid].distributable[_tokenAddress];
+  }
+
+  /**
+   * @notice Returns the deposit token list of the game
+   * @param _gid Game ID
+   * @param (address[]) Deposit token list of the game
+   */
+  function getDepositTokenList(uint256 _gid) external view returns (address[] memory) {
+    uint256 tokensAmount = games[_gid].depositTokenList.length;
+    address[] memory depositTokenList = new address[](tokensAmount);
+    for (uint256 i = 0; i < tokensAmount; i++) {
+      depositTokenList[i] = games[_gid].depositTokenList[i];
+    }
+    return depositTokenList;
+  }
+
+  /**
+   * @notice Returns the distributable token list of the game
+   * @param _gid Game ID
+   * @param (address[]) Distributable token list of the game
+   */
+  function getDistributableTokenList(uint256 _gid) external view returns (address[] memory) {
+    uint256 tokensAmount = games[_gid].distributableTokenList.length;
+    address[] memory distributableTokenList = new address[](tokensAmount);
+    for (uint256 i = 0; i < tokensAmount; i++) {
+      distributableTokenList[i] = games[_gid].distributableTokenList[i];
+    }
+    return distributableTokenList;
+  }
+
+  /**
+   * @notice Returns the number of games created
+   * @return (uint256) Amount of games created
+   */
+  function gameCount() external view returns (uint256) {
+    return games.length;
+  }
+
+  /**
+   * @notice Returns the number of the tournaments of the specific game
+   * @param _gid Game ID
+   * @return (uint256) Number of the tournament
+   */
+  function getTournamentCount(uint256 _gid) external view onlyValidGID(_gid) returns (uint256) {
+    return games[_gid].tournamentsCount;
+  }
+
   /**
    * @notice Add the new game
    * @dev Base game creator fee is the minimum fee vaule that the game creator should be rewarded from the tournamnet of the game
@@ -192,7 +360,7 @@ contract GameRegistry is OwnableUpgradeable {
     gid = games.length;
     games.push();
     games[gid].name = _gameName;
-    games[gid].creator = _gameCreator;
+    games[gid].creatorAddress = _gameCreator;
     games[gid].baseCreatorFee = _baseGameCreatorFee;
 
     emit GameAdded(msg.sender, gid, _gameName, _gameCreator, _baseGameCreatorFee);
@@ -207,7 +375,7 @@ contract GameRegistry is OwnableUpgradeable {
     // remove game
     games[_gid].isDeprecated = true;
 
-    emit GameRemoved(msg.sender, _gid, games[_gid].name, games[_gid].creator, games[_gid].baseCreatorFee);
+    emit GameRemoved(msg.sender, _gid, games[_gid].name, games[_gid].creatorAddress, games[_gid].baseCreatorFee);
   }
 
   /**
@@ -216,13 +384,13 @@ contract GameRegistry is OwnableUpgradeable {
    * @param _gameCreator Game creator address
    */
   function updateGameCreator(uint256 _gid, address _gameCreator) external onlyValidGID(_gid) {
-    require(msg.sender == games[_gid].creator, "Only game creator");
+    require(msg.sender == games[_gid].creatorAddress, "Only game creator");
     require(_gameCreator != address(0), "Zero game creator address");
 
-    emit GameCreatorUpdated(msg.sender, _gid, games[_gid].creator, _gameCreator);
+    emit GameCreatorUpdated(msg.sender, _gid, games[_gid].creatorAddress, _gameCreator);
 
     // update the game creator address
-    games[_gid].creator = _gameCreator;
+    games[_gid].creatorAddress = _gameCreator;
   }
 
   /**
@@ -262,7 +430,6 @@ contract GameRegistry is OwnableUpgradeable {
     Token calldata _depositToken,
     address _distributionTokenAddress
   ) external onlyOwner onlyValidGID(_gid) returns (uint256 tid) {
-
     games.push();
     games[0].distributable[address(0)] = true;
     // create the tournament
@@ -325,15 +492,12 @@ contract GameRegistry is OwnableUpgradeable {
     require(platformFee + appliedGameCreatorFee + _tournamentCreatorFee <= MAX_PERMILLAGE, "Exceeded fees");
 
     // get the new tournament ID
-    tid = games[_gid].tournaments.length;
+    tid = games[_gid].tournamentsCount;
 
-    games[_gid].tournaments.push();
-
-    // add the tournament name
+    // add tournament
+    games[_gid].tournamentsCount += 1;
     games[_gid].tournaments[tid].name = _tournamentName;
-
-    // add the tournament creator address and fee
-    games[_gid].tournaments[tid].creator = msg.sender;
+    games[_gid].tournaments[tid].creatorAddress = msg.sender;
     games[_gid].tournaments[tid].appliedGameCreatorFee = appliedGameCreatorFee;
     games[_gid].tournaments[tid].creatorFee = _tournamentCreatorFee;
 
@@ -540,57 +704,6 @@ contract GameRegistry is OwnableUpgradeable {
 
     // update distributable token amount
     games[_gid].distributable[_token] = _isDistributable;
-  }
-
-  /**
-   * @notice Returns the deposit token list of the game
-   * @param _gid Game ID
-   * @return (address[]) Deposit token list of the game
-   */
-  function getDepositTokenList(uint256 _gid) external view returns (address[] memory) {
-    return games[_gid].depositTokenList;
-  }
-
-  /**
-   * @notice Returns the distributable token list of the game
-   * @param _gid Game ID
-   * @param (address[]) Distributable token list of the game
-   */
-  function getDistributableTokenList(uint256 _gid) external view returns (address[] memory) {
-    return games[_gid].distributableTokenList;
-  }
-
-  /**
-   * @notice Returns the number of games added in games array
-   * @return (uint256) Game count created
-   */
-  function gameCount() external view returns (uint256) {
-    return games.length;
-  }
-
-  /**
-   * @notice Returns the number of the tournaments of the specific game
-   * @param _gid Game ID
-   * @return (uint256) Number of the tournament
-   */
-  function getTournamentCount(uint256 _gid) external view onlyValidGID(_gid) returns (uint256) {
-    return games[_gid].tournaments.length;
-  }
-
-  /**
-   * @notice Returns the tournament creator address of the specific game/tournament
-   * @param _gid Game ID
-   * @param _tid Tournament ID
-   * @return (address) Tournament creator address
-   */
-  function getTournamentCreator(uint256 _gid, uint256 _tid)
-    external
-    view
-    onlyValidGID(_gid)
-    onlyValidTID(_gid, _tid)
-    returns (address)
-  {
-    return games[_gid].tournaments[_tid].creator;
   }
 
   /**

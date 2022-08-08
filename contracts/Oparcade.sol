@@ -174,7 +174,7 @@ contract Oparcade is
     IGameRegistry gameRegistry = IGameRegistry(addressRegistry.gameRegistry());
 
     // check if token is allowed to distribute
-    require(gameRegistry.distributable(_gid, _token), "Disallowed distribution token");
+    require(gameRegistry.isDistributable(_gid, _token), "Disallowed distribution token");
 
     _transferPayment(_gid, _tid, _winners, _token, _amounts);
 
@@ -238,7 +238,7 @@ contract Oparcade is
 
       {
         // calculate tournamentCreatorFee
-        uint256 tournamentCreatorFee = gameRegistry.tournamentCreatorFees(_gid, _tid);
+        uint256 tournamentCreatorFee = gameRegistry.getTournamentCreatorFee(_gid, _tid);
         uint256 tournamentCreatorFeeAmount = (_amounts[i] * tournamentCreatorFee) / 100_0;
         totalTournamentCreatorFeeAmount += tournamentCreatorFeeAmount;
 
@@ -257,7 +257,7 @@ contract Oparcade is
       totalGameCreatorFeeAmount +
       totalTournamentCreatorFeeAmount;
     IERC20Upgradeable(_token).safeTransfer(gameRegistry.feeRecipient(), totalPlatformFeeAmount);
-    IERC20Upgradeable(_token).safeTransfer(gameRegistry.gameCreators(_gid), totalGameCreatorFeeAmount);
+    IERC20Upgradeable(_token).safeTransfer(gameRegistry.getGameCreatorAddress(_gid), totalGameCreatorFeeAmount);
     IERC20Upgradeable(_token).safeTransfer(
       gameRegistry.getTournamentCreator(_gid, _tid),
       totalTournamentCreatorFeeAmount

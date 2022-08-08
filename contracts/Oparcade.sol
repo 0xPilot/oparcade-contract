@@ -88,24 +88,21 @@ contract Oparcade is
 
   bytes4 private constant INTERFACE_ID_ERC1155 = 0xd9b67a26;
 
-  /// @dev Game ID -> Tournament ID -> Token Address -> Total User Deposit Amount
-  mapping(uint256 => mapping(uint256 => mapping(address => uint256))) public totalUserDeposit;
+  struct TournamentToken {
+    uint256 totalUserDeposit;
+    uint256 totalPrizeDistribution;
+    uint256 totalPrizeFee;
+    uint256 totalPrizeDeposit;
+  }
+  /// @dev Game ID -> Tournament ID -> Token Address -> Tournament tokens
+  mapping(uint256 => mapping(uint256 => mapping(address => TournamentToken))) public tournamentTokens;
 
-  /// @dev Game ID -> Tournament ID -> Token Address -> Total Prize Distribution Amount excluding Fee
-  mapping(uint256 => mapping(uint256 => mapping(address => uint256))) public totalPrizeDistribution;
-
-  /// @dev Game ID -> Tournament ID -> Token Address -> Total Prize Fee Amount
-  mapping(uint256 => mapping(uint256 => mapping(address => uint256))) public totalPrizeFee;
-
-  /// @dev Game ID -> Tournament ID -> NFT Address -> Token ID -> Distribution Amount
-  mapping(uint256 => mapping(uint256 => mapping(address => mapping(uint256 => uint256))))
-    public totalNFTPrizeDistribution;
-
-  /// @dev Game ID -> Tournament ID -> Token Address -> Total Prize Deposit Amount
-  mapping(uint256 => mapping(uint256 => mapping(address => uint256))) public totalPrizeDeposit;
-
-  /// @dev Game ID -> Tournament ID -> NFT Address -> Token ID -> Deposit Amount
-  mapping(uint256 => mapping(uint256 => mapping(address => mapping(uint256 => uint256)))) public totalNFTPrizeDeposit;
+  struct TournamentNftPrize {
+    uint256 totalDistribution;
+    uint256 totalDeposit;
+  }
+  /// @dev Game ID -> Tournament ID -> NFT Address -> Token ID -> Tournament NFT prizes
+  mapping(uint256 => mapping(uint256 => mapping(address => mapping(uint256 => TournamentNftPrize)))) tournamentNftPrizes;
 
   /// @dev AddressRegistry
   IAddressRegistry public addressRegistry;
@@ -148,7 +145,8 @@ contract Oparcade is
 
     // transfer the payment
     IERC20Upgradeable(_token).safeTransferFrom(msg.sender, address(this), depositTokenAmount);
-    totalUserDeposit[_gid][_tid][_token] += depositTokenAmount;
+    // totalUserDeposit[_gid][_tid][_token] += depositTokenAmount;
+    tournamentTokens[_gid][_tid][_token].totalUserDeposit += depositTokenAmount;
 
     emit UserDeposited(msg.sender, _gid, _tid, _token, depositTokenAmount);
   }
@@ -182,8 +180,9 @@ contract Oparcade is
 
     // check if the prize amount is not exceeded
     require(
-      totalPrizeDistribution[_gid][_tid][_token] + totalPrizeFee[_gid][_tid][_token] <=
-        totalPrizeDeposit[_gid][_tid][_token] + totalUserDeposit[_gid][_tid][_token],
+      tournamentTokens[_gid][_tid][_token].totalPrizeDistribution +
+        tournamentTokens[_gid][_tid][_token].totalPrizeFee <=
+        tournamentTokens[_gid][_tid][_token].totalPrizeDeposit + tournamentTokens[_gid][_tid][_token].totalUserDeposit,
       "Prize amount exceeded"
     );
 
@@ -248,19 +247,16 @@ contract Oparcade is
       }
 
       // transfer the prize
-      totalPrizeDistribution[_gid][_tid][_token] += userAmount;
+      tournamentTokens[_gid][_tid][_token].totalPrizeDistribution += userAmount;
       IERC20Upgradeable(_token).safeTransfer(_winners[i], userAmount);
     }
 
     // transfer the fees
-    totalPrizeFee[_gid][_tid][_token] +=
+    tournamentTokens[_gid][_tid][_token].totalPrizeFee +=
       totalPlatformFeeAmount +
       totalGameCreatorFeeAmount +
       totalTournamentCreatorFeeAmount;
-    IERC20Upgradeable(_token).safeTransfer(
-      gameRegistry.feeRecipient(),
-      totalPlatformFeeAmount
-    );
+    IERC20Upgradeable(_token).safeTransfer(gameRegistry.feeRecipient(), totalPlatformFeeAmount);
     IERC20Upgradeable(_token).safeTransfer(gameRegistry.gameCreators(_gid), totalGameCreatorFeeAmount);
     IERC20Upgradeable(_token).safeTransfer(
       gameRegistry.getTournamentCreator(_gid, _tid),
@@ -308,12 +304,12 @@ contract Oparcade is
       // update totalNFTPrizeDeposit and transfer NFTs to the winners
       for (uint256 i; i < _winners.length; i++) {
         require(
-          totalNFTPrizeDeposit[_gid][_tid][_nftAddress][_tokenIds[i]] == 1 &&
-            totalNFTPrizeDistribution[_gid][_tid][_nftAddress][_tokenIds[i]] == 0,
+          tournamentNftPrizes[_gid][_tid][_nftAddress][_tokenIds[i]].totalDeposit == 1 &&
+            tournamentNftPrizes[_gid][_tid][_nftAddress][_tokenIds[i]].totalDistribution == 0,
           "NFT prize distribution amount exceeded"
         );
 
-        totalNFTPrizeDistribution[_gid][_tid][_nftAddress][_tokenIds[i]] = 1;
+        tournamentNftPrizes[_gid][_tid][_nftAddress][_tokenIds[i]].totalDistribution = 1;
         totalAmounts += _amounts[i];
         try IERC721Upgradeable(_nftAddress).safeTransferFrom(address(this), _winners[i], _tokenIds[i]) {} catch {}
       }
@@ -326,13 +322,13 @@ contract Oparcade is
       // update totalNFTPrizeDeposit and transfer NFTs to the winners
       for (uint256 i; i < _winners.length; i++) {
         require(
-          totalNFTPrizeDeposit[_gid][_tid][_nftAddress][_tokenIds[i]] -
-            totalNFTPrizeDistribution[_gid][_tid][_nftAddress][_tokenIds[i]] >=
+          tournamentNftPrizes[_gid][_tid][_nftAddress][_tokenIds[i]].totalDeposit -
+            tournamentNftPrizes[_gid][_tid][_nftAddress][_tokenIds[i]].totalDistribution >=
             _amounts[i],
           "NFT prize distribution amount exceeded"
         );
 
-        totalNFTPrizeDistribution[_gid][_tid][_nftAddress][_tokenIds[i]] += _amounts[i];
+        tournamentNftPrizes[_gid][_tid][_nftAddress][_tokenIds[i]].totalDistribution += _amounts[i];
         try
           IERC1155Upgradeable(_nftAddress).safeTransferFrom(
             address(this),
@@ -382,7 +378,7 @@ contract Oparcade is
     require(!supportsERC721Interface, "ERC721 token not allowed");
 
     IERC20Upgradeable(_token).safeTransferFrom(_depositor, address(this), _amount);
-    totalPrizeDeposit[_gid][_tid][_token] += _amount;
+    tournamentTokens[_gid][_tid][_token].totalPrizeDeposit += _amount;
     emit PrizeDeposited(msg.sender, _depositor, _gid, _tid, _token, _amount);
   }
 
@@ -403,10 +399,12 @@ contract Oparcade is
     uint256 _amount
   ) external onlyOwner {
     // check if the prize is sufficient to withdraw
-    require(totalPrizeDeposit[_gid][_tid][_token] >= _amount, "Insufficient prize");
+    require(tournamentTokens[_gid][_tid][_token].totalPrizeDeposit >= _amount, "Insufficient prize");
 
     // withdraw the prize
-    unchecked {totalPrizeDeposit[_gid][_tid][_token] -= _amount;}
+    unchecked {
+      tournamentTokens[_gid][_tid][_token].totalPrizeDeposit -= _amount;
+    }
     IERC20Upgradeable(_token).safeTransfer(_to, _amount);
 
     emit PrizeWithdrawn(msg.sender, _to, _gid, _tid, _token, _amount);
@@ -451,7 +449,7 @@ contract Oparcade is
       // transfer NFTs to the contract and update totalNFTPrizeDeposit
       for (uint256 i; i < _tokenIds.length; i++) {
         IERC721Upgradeable(_nftAddress).safeTransferFrom(_from, address(this), _tokenIds[i]);
-        totalNFTPrizeDeposit[_gid][_tid][_nftAddress][_tokenIds[i]] = 1;
+        tournamentNftPrizes[_gid][_tid][_nftAddress][_tokenIds[i]].totalDeposit = 1;
         totalAmounts += _amounts[i];
       }
 
@@ -463,7 +461,7 @@ contract Oparcade is
       // transfer NFTs to the contract and update totalNFTPrizeDeposit
       IERC1155Upgradeable(_nftAddress).safeBatchTransferFrom(_from, address(this), _tokenIds, _amounts, bytes(""));
       for (uint256 i; i < _tokenIds.length; i++) {
-        totalNFTPrizeDeposit[_gid][_tid][_nftAddress][_tokenIds[i]] += _amounts[i];
+        tournamentNftPrizes[_gid][_tid][_nftAddress][_tokenIds[i]].totalDeposit += _amounts[i];
       }
     }
 
@@ -501,13 +499,13 @@ contract Oparcade is
       // update totalNFTPrizeDeposit and transfer NFTs from the contract
       for (uint256 i; i < _tokenIds.length; i++) {
         require(
-          totalNFTPrizeDeposit[_gid][_tid][_nftAddress][_tokenIds[i]] -
-            totalNFTPrizeDistribution[_gid][_tid][_nftAddress][_tokenIds[i]] ==
+          tournamentNftPrizes[_gid][_tid][_nftAddress][_tokenIds[i]].totalDeposit -
+            tournamentNftPrizes[_gid][_tid][_nftAddress][_tokenIds[i]].totalDistribution ==
             1,
           "Insufficient NFT prize"
         );
 
-        totalNFTPrizeDeposit[_gid][_tid][_nftAddress][_tokenIds[i]] = 0;
+        tournamentNftPrizes[_gid][_tid][_nftAddress][_tokenIds[i]].totalDeposit = 0;
         totalAmounts += _amounts[i];
         IERC721Upgradeable(_nftAddress).safeTransferFrom(address(this), _to, _tokenIds[i]);
       }
@@ -520,13 +518,15 @@ contract Oparcade is
       // update totalNFTPrizeDeposit and transfer NFTs from the contract
       for (uint256 i; i < _tokenIds.length; i++) {
         require(
-          totalNFTPrizeDeposit[_gid][_tid][_nftAddress][_tokenIds[i]] -
-            totalNFTPrizeDistribution[_gid][_tid][_nftAddress][_tokenIds[i]] >=
+          tournamentNftPrizes[_gid][_tid][_nftAddress][_tokenIds[i]].totalDeposit -
+            tournamentNftPrizes[_gid][_tid][_nftAddress][_tokenIds[i]].totalDistribution >=
             _amounts[i],
           "Insufficient NFT prize"
         );
 
-        unchecked {totalNFTPrizeDeposit[_gid][_tid][_nftAddress][_tokenIds[i]] -= _amounts[i];}
+        unchecked {
+          tournamentNftPrizes[_gid][_tid][_nftAddress][_tokenIds[i]].totalDeposit -= _amounts[i];
+        }
       }
       IERC1155Upgradeable(_nftAddress).safeBatchTransferFrom(address(this), _to, _tokenIds, _amounts, bytes(""));
     }

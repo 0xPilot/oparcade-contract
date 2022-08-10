@@ -575,7 +575,12 @@ contract GameRegistry is OwnableUpgradeable {
 
     // initialize the prize pool with NFTs
     if (_nftTypeToAddPrizePool == 721 || _nftTypeToAddPrizePool == 1155) {
-      IOparcade(addressRegistry.oparcade()).depositNFTPrize(
+      // set the distributable token
+      if (!games[_gid].distributable[_nftAddressToAddPrizePool] && _amountsToAddPrizePool.length > 0) {
+        _updateDistributableTokenAddress(_gid, _nftAddressToAddPrizePool, true);
+      }
+
+      Oparcade(addressRegistry.oparcade()).depositNFTPrize(
         msg.sender,
         _gid,
         tid,
@@ -584,11 +589,6 @@ contract GameRegistry is OwnableUpgradeable {
         _tokenIdsToAddPrizePool,
         _amountsToAddPrizePool
       );
-
-      // set the distributable token
-      if (!games[_gid].distributable[_tokenToAddPrizePool.tokenAddress] && _amountsToAddPrizePool.length > 0) {
-        _updateDistributableTokenAddress(_gid, _nftAddressToAddPrizePool, true);
-      }
     }
   }
 

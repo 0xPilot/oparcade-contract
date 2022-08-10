@@ -9,7 +9,7 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
  * @author David Lee
  */
 contract AddressRegistry is OwnableUpgradeable {
-  event OrarcadeUpdated(address indexed oldOparcade, address indexed newOparcade);
+  event OparcadeUpdated(address indexed oldOparcade, address indexed newOparcade);
   event GameRegistryUpdated(address indexed oldGameRegistry, address indexed newGameRegistry);
   event MaintainerUpdated(address indexed oldMaintainer, address indexed newMaintainer);
 
@@ -34,7 +34,7 @@ contract AddressRegistry is OwnableUpgradeable {
   function updateOparcade(address _oparcade) external onlyOwner {
     require(_oparcade != address(0), "!Oparcade");
 
-    emit OrarcadeUpdated(oparcade, _oparcade);
+    emit OparcadeUpdated(oparcade, _oparcade);
 
     oparcade = _oparcade;
   }

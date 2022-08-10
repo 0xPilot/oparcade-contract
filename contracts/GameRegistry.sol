@@ -128,7 +128,12 @@ contract GameRegistry is OwnableUpgradeable {
   uint256 MAX_PERMILLAGE;
 
   modifier onlyValidGID(uint256 _gid) {
-    require(_gid < games.length && !games[_gid].isDeprecated, "Invalid game index");
+    require(_gid < games.length, "Invalid game index");
+    _;
+  }
+
+  modifier onlyActiveGame(uint256 _gid) {
+    require(_gid < games.length && !games[_gid].isDeprecated, "Game not active");
     _;
   }
 

@@ -4,8 +4,8 @@ pragma solidity 0.8.11;
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
-import "./interfaces/IAddressRegistry.sol";
-import "./interfaces/IOparcade.sol";
+import "./AddressRegistry.sol";
+import "./Oparcade.sol";
 
 /**
  * @title GameRegistry
@@ -110,7 +110,7 @@ contract GameRegistry is OwnableUpgradeable {
   Game[] public games;
 
   /// @dev AddressRegistry
-  IAddressRegistry public addressRegistry;
+  AddressRegistry public addressRegistry;
 
   /// @dev Platform fee recipient
   address public feeRecipient;
@@ -156,7 +156,7 @@ contract GameRegistry is OwnableUpgradeable {
     require(_platformFee <= MAX_PERMILLAGE, "Platform fee exceeded");
 
     // initialize AddressRegistery
-    addressRegistry = IAddressRegistry(_addressRegistry);
+    addressRegistry = AddressRegistry(_addressRegistry);
 
     // initialize fee and recipient
     feeRecipient = _feeRecipient;
@@ -559,7 +559,7 @@ contract GameRegistry is OwnableUpgradeable {
 
     // initialize the prize pool with tokens
     if (_tokenToAddPrizePool.tokenAmount > 0) {
-      IOparcade(addressRegistry.oparcade()).depositPrize(
+      Oparcade(addressRegistry.oparcade()).depositPrize(
         msg.sender,
         _gid,
         tid,

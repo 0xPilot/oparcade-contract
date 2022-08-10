@@ -138,7 +138,7 @@ contract Oparcade is
     address _token
   ) external whenNotPaused {
     // get token amount to deposit
-    uint256 depositTokenAmount = IGameRegistry(addressRegistry.gameRegistry()).depositTokenAmount(_gid, _tid, _token);
+    uint256 depositTokenAmount = IGameRegistry(addressRegistry.gameRegistry()).getDepositTokenAmount(_gid, _tid, _token);
 
     // check if the token address is valid
     require(depositTokenAmount > 0, "Invalid deposit token");
@@ -228,7 +228,7 @@ contract Oparcade is
 
       {
         // calculate gameCreatorFee
-        uint256 gameCreatorFee = gameRegistry.appliedGameCreatorFees(_gid, _tid);
+        uint256 gameCreatorFee = gameRegistry.getAppliedGameCreatorFee(_gid, _tid);
         uint256 gameCreatorFeeAmount = (_amounts[i] * gameCreatorFee) / 100_0;
         totalGameCreatorFeeAmount += gameCreatorFeeAmount;
 
@@ -287,7 +287,7 @@ contract Oparcade is
   ) external whenNotPaused nonReentrant onlyMaintainer {
     // check if token is allowed to distribute
     require(
-      IGameRegistry(addressRegistry.gameRegistry()).distributable(_gid, _nftAddress),
+      IGameRegistry(addressRegistry.gameRegistry()).isDistributable(_gid, _nftAddress),
       "Disallowed distribution token"
     );
 
@@ -365,7 +365,7 @@ contract Oparcade is
     require(_token != address(0), "Unexpected token address");
 
     // check if tokens are allowed to claim as a prize
-    require(IGameRegistry(addressRegistry.gameRegistry()).distributable(_gid, _token), "Disallowed distribution token");
+    require(IGameRegistry(addressRegistry.gameRegistry()).isDistributable(_gid, _token), "Disallowed distribution token");
 
     // deposit prize tokens
     bool supportsERC721Interface;
@@ -434,7 +434,7 @@ contract Oparcade is
 
     // check if NFT is allowed to distribute
     require(
-      IGameRegistry(addressRegistry.gameRegistry()).distributable(_gid, _nftAddress),
+      IGameRegistry(addressRegistry.gameRegistry()).isDistributable(_gid, _nftAddress),
       "Disallowed distribution token"
     );
 

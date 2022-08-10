@@ -170,87 +170,6 @@ contract GameRegistry is OwnableUpgradeable {
     tournamentCreationFeeAmount = _tournamentCreationFeeAmount;
   }
 
-  // Getters to access games and tournaments information
-
-  /**
-   * @notice Returns the tournament name of the specific tournament
-   * @param _gid Game ID
-   * @param _tid Tournament ID
-   * @return (string) Tournament name
-   */
-  function getTournamentName(uint256 _gid, uint256 _tid)
-    external
-    view
-    onlyValidGID(_gid)
-    onlyValidTID(_gid, _tid)
-    returns (string memory)
-  {
-    return games[_gid].tournaments[_tid].name;
-  }
-
-  /**
-   * @notice Returns the tournament creator fee of the specific tournament
-   * @param _gid Game ID
-   * @param _tid Tournament ID
-   * @return (uint256) Tournament creator fee
-   */
-  function getTournamentCreatorFee(uint256 _gid, uint256 _tid)
-    external
-    view
-    onlyValidGID(_gid)
-    onlyValidTID(_gid, _tid)
-    returns (uint256)
-  {
-    return games[_gid].tournaments[_tid].creatorFee;
-  }
-
-  /**
-   * @notice Returns the applied game creator fee of the specific tournament
-   * @param _gid Game ID
-   * @param _tid Tournament ID
-   * @return (string) Game applied game creator fee of a tournament
-   */
-  function getAppliedGameCreatorFee(uint256 _gid, uint256 _tid)
-    external
-    view
-    onlyValidGID(_gid)
-    onlyValidTID(_gid, _tid)
-    returns (uint256)
-  {
-    return games[_gid].tournaments[_tid].appliedGameCreatorFee;
-  }
-
-  /**
-   * @notice Returns the deposit token amount of the specific tournament
-   * @param _gid Game ID
-   * @param _tid Tournament ID
-   * @param _tokenAddress token address
-   * @return (uint256) Tournament deposit token amount
-   */
-  function getDepositTokenAmount(
-    uint256 _gid,
-    uint256 _tid,
-    address _tokenAddress
-  ) external view onlyValidGID(_gid) onlyValidTID(_gid, _tid) returns (uint256) {
-    return games[_gid].tournaments[_tid].depositTokenAmount[_tokenAddress];
-  }
-
-  /**
-   * @notice Returns the tournament creator address of the specific tournament
-   * @param _gid Game ID
-   * @param _tid Tournament ID
-   * @return (address) Tournament creator address
-   */
-  function getTournamentCreator(uint256 _gid, uint256 _tid)
-    external
-    view
-    onlyValidGID(_gid)
-    onlyValidTID(_gid, _tid)
-    returns (address)
-  {
-    return games[_gid].tournaments[_tid].creatorAddress;
-  }
-
   /**
    * @notice Returns a boolean indicating if a specific game is deprecated
    * @param _gid Game ID
@@ -340,6 +259,85 @@ contract GameRegistry is OwnableUpgradeable {
    */
   function getTournamentCount(uint256 _gid) external view onlyValidGID(_gid) returns (uint256) {
     return games[_gid].tournamentsCount;
+  }
+
+  /**
+   * @notice Returns the tournament name of the specific tournament
+   * @param _gid Game ID
+   * @param _tid Tournament ID
+   * @return (string) Tournament name
+   */
+  function getTournamentName(uint256 _gid, uint256 _tid)
+    external
+    view
+    onlyValidGID(_gid)
+    onlyValidTID(_gid, _tid)
+    returns (string memory)
+  {
+    return games[_gid].tournaments[_tid].name;
+  }
+
+  /**
+   * @notice Returns the tournament creator fee of the specific tournament
+   * @param _gid Game ID
+   * @param _tid Tournament ID
+   * @return (uint256) Tournament creator fee
+   */
+  function getTournamentCreatorFee(uint256 _gid, uint256 _tid)
+    external
+    view
+    onlyValidGID(_gid)
+    onlyValidTID(_gid, _tid)
+    returns (uint256)
+  {
+    return games[_gid].tournaments[_tid].creatorFee;
+  }
+
+  /**
+   * @notice Returns the applied game creator fee of the specific tournament
+   * @param _gid Game ID
+   * @param _tid Tournament ID
+   * @return (string) Game applied game creator fee of a tournament
+   */
+  function getAppliedGameCreatorFee(uint256 _gid, uint256 _tid)
+    external
+    view
+    onlyValidGID(_gid)
+    onlyValidTID(_gid, _tid)
+    returns (uint256)
+  {
+    return games[_gid].tournaments[_tid].appliedGameCreatorFee;
+  }
+
+  /**
+   * @notice Returns the deposit token amount of the specific tournament
+   * @param _gid Game ID
+   * @param _tid Tournament ID
+   * @param _tokenAddress token address
+   * @return (uint256) Tournament deposit token amount
+   */
+  function getDepositTokenAmount(
+    uint256 _gid,
+    uint256 _tid,
+    address _tokenAddress
+  ) external view onlyValidGID(_gid) onlyValidTID(_gid, _tid) returns (uint256) {
+    return games[_gid].tournaments[_tid].depositTokenAmount[_tokenAddress];
+  }
+
+  /**
+   * @notice Returns the tournament creator address of the specific tournament
+   * @param _gid Game ID
+   * @param _tid Tournament ID
+   * @return (address) Tournament creator address
+   */
+  function getTournamentCreator(uint256 _gid, uint256 _tid)
+    external
+    view
+    onlyValidGID(_gid)
+    onlyValidTID(_gid, _tid)
+    returns (address)
+  {
+    return games[_gid].tournaments[_tid].creatorAddress;
   }
 
   /**
@@ -580,7 +578,7 @@ contract GameRegistry is OwnableUpgradeable {
         _updateDistributableTokenAddress(_gid, _nftAddressToAddPrizePool, true);
       }
 
-      Oparcade(addressRegistry.oparcade()).depositNFTPrize(
+      IOparcade(addressRegistry.oparcade()).depositNFTPrize(
         msg.sender,
         _gid,
         tid,

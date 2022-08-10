@@ -11,8 +11,8 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC1155/IERC1155Upgradeable.sol";
-import "./AddressRegistry.sol";
-import "./GameRegistry.sol";
+import "./interfaces/IAddressRegistry.sol";
+import "./interfaces/IGameRegistry.sol";
 
 /**
  * @title Oparcade
@@ -105,7 +105,7 @@ contract Oparcade is
   mapping(uint256 => mapping(uint256 => mapping(address => mapping(uint256 => TournamentNftPrize)))) tournamentNftPrizes;
 
   /// @dev AddressRegistry
-  AddressRegistry public addressRegistry;
+  IAddressRegistry public addressRegistry;
 
   modifier onlyMaintainer() {
     require(msg.sender == addressRegistry.maintainer(), "Only maintainer");
@@ -122,7 +122,7 @@ contract Oparcade is
     require(_addressRegistry != address(0), "Invalid AddressRegistry");
 
     // initialize AddressRegistery
-    addressRegistry = AddressRegistry(_addressRegistry);
+    addressRegistry = IAddressRegistry(_addressRegistry);
   }
 
   /**
@@ -138,7 +138,7 @@ contract Oparcade is
     address _token
   ) external whenNotPaused {
     // get token amount to deposit
-    uint256 depositTokenAmount = GameRegistry(addressRegistry.gameRegistry()).getDepositTokenAmount(_gid, _tid, _token);
+    uint256 depositTokenAmount = IGameRegistry(addressRegistry.gameRegistry()).depositTokenAmount(_gid, _tid, _token);
 
     // check if the token address is valid
     require(depositTokenAmount > 0, "Invalid deposit token");
@@ -171,7 +171,7 @@ contract Oparcade is
     require(_winners.length == _amounts.length, "Mismatched winners and amounts");
 
     // get gameRegistry
-    GameRegistry gameRegistry = GameRegistry(addressRegistry.gameRegistry());
+    IGameRegistry gameRegistry = IGameRegistry(addressRegistry.gameRegistry());
 
     // check if token is allowed to distribute
     require(gameRegistry.isDistributable(_gid, _token), "Disallowed distribution token");
@@ -205,7 +205,7 @@ contract Oparcade is
     uint256[] calldata _amounts
   ) internal {
     // get gameRegistry
-    GameRegistry gameRegistry = GameRegistry(addressRegistry.gameRegistry());
+    IGameRegistry gameRegistry = IGameRegistry(addressRegistry.gameRegistry());
 
     // transfer the winners their prizes
     uint256 totalPlatformFeeAmount;
@@ -228,7 +228,7 @@ contract Oparcade is
 
       {
         // calculate gameCreatorFee
-        uint256 gameCreatorFee = gameRegistry.getAppliedGameCreatorFee(_gid, _tid);
+        uint256 gameCreatorFee = gameRegistry.appliedGameCreatorFees(_gid, _tid);
         uint256 gameCreatorFeeAmount = (_amounts[i] * gameCreatorFee) / 100_0;
         totalGameCreatorFeeAmount += gameCreatorFeeAmount;
 
@@ -287,7 +287,7 @@ contract Oparcade is
   ) external whenNotPaused nonReentrant onlyMaintainer {
     // check if token is allowed to distribute
     require(
-      GameRegistry(addressRegistry.gameRegistry()).isDistributable(_gid, _nftAddress),
+      IGameRegistry(addressRegistry.gameRegistry()).distributable(_gid, _nftAddress),
       "Disallowed distribution token"
     );
 
@@ -365,7 +365,7 @@ contract Oparcade is
     require(_token != address(0), "Unexpected token address");
 
     // check if tokens are allowed to claim as a prize
-    require(GameRegistry(addressRegistry.gameRegistry()).isDistributable(_gid, _token), "Disallowed distribution token");
+    require(IGameRegistry(addressRegistry.gameRegistry()).distributable(_gid, _token), "Disallowed distribution token");
 
     // deposit prize tokens
     bool supportsERC721Interface;
@@ -434,7 +434,7 @@ contract Oparcade is
 
     // check if NFT is allowed to distribute
     require(
-      GameRegistry(addressRegistry.gameRegistry()).isDistributable(_gid, _nftAddress),
+      IGameRegistry(addressRegistry.gameRegistry()).distributable(_gid, _nftAddress),
       "Disallowed distribution token"
     );
 

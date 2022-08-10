@@ -1101,35 +1101,6 @@ describe("Oparcade", () => {
       await mockOPC.approve(oparcade.address, mockOPCDepositAmount);
       await oparcade.depositPrize(deployer.address, gid, tid, mockOPC.address, mockOPCDepositAmount);
     });
-
-    it("Should withdraw ERC20 tokens", async () => {
-      // check old balance
-      let oldMockUSDTBalance = await mockUSDT.balanceOf(alice.address);
-      let oldMockOPCBalance = await mockOPC.balanceOf(alice.address);
-
-      // withdraw ERC20 tokens
-      let tokens = [mockUSDT.address, mockOPC.address];
-      let amounts = [MockUSDTDepositAmount, mockOPCDepositAmount];
-      await oparcade.withdraw(tokens, amounts, alice.address);
-
-      // check new balance
-      expect(await mockUSDT.balanceOf(alice.address)).to.equal(oldMockUSDTBalance.add(MockUSDTDepositAmount));
-      expect(await mockOPC.balanceOf(alice.address)).to.equal(oldMockOPCBalance.add(mockOPCDepositAmount));
-    });
-
-    it("Should revert if params are invalid", async () => {
-      // withdraw ERC20 tokens
-      let tokens = [mockUSDT.address, mockOPC.address, mockOPC.address];
-      let amounts = [MockUSDTDepositAmount, mockOPCDepositAmount];
-      await expect(oparcade.withdraw(tokens, amounts, alice.address)).to.be.revertedWith("Mismatched withdrawal data");
-    });
-
-    it("Should revert if the balance is not enough to withdraw", async () => {
-      // withdraw ERC20 tokens
-      let tokens = [mockUSDT.address, mockOPC.address];
-      let amounts = [MockUSDTDepositAmount, mockOPCDepositAmount + 1];
-      await expect(oparcade.withdraw(tokens, amounts, alice.address)).to.be.reverted;
-    });
   });
 
   describe("pause/unpause", () => {

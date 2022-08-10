@@ -538,7 +538,7 @@ contract GameRegistry is OwnableUpgradeable {
     uint256 _nftTypeToAddPrizePool,
     uint256[] memory _tokenIdsToAddPrizePool,
     uint256[] memory _amountsToAddPrizePool
-  ) external returns (uint256 tid) {
+  ) external onlyActiveGame(_gid) returns (uint256 tid) {
     // pay the tournament creation fee
     IERC20Upgradeable(tournamentCreationFeeToken).safeTransferFrom(
       msg.sender,

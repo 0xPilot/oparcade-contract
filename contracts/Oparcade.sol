@@ -138,7 +138,11 @@ contract Oparcade is
     address _token
   ) external whenNotPaused {
     // get token amount to deposit
-    uint256 depositTokenAmount = IGameRegistry(addressRegistry.gameRegistry()).getDepositTokenAmount(_gid, _tid, _token);
+    uint256 depositTokenAmount = IGameRegistry(addressRegistry.gameRegistry()).getDepositTokenAmount(
+      _gid,
+      _tid,
+      _token
+    );
 
     // check if the token address is valid
     require(depositTokenAmount > 0, "Invalid deposit token");
@@ -365,7 +369,10 @@ contract Oparcade is
     require(_token != address(0), "Unexpected token address");
 
     // check if tokens are allowed to claim as a prize
-    require(IGameRegistry(addressRegistry.gameRegistry()).isDistributable(_gid, _token), "Disallowed distribution token");
+    require(
+      IGameRegistry(addressRegistry.gameRegistry()).isDistributable(_gid, _token),
+      "Disallowed distribution token"
+    );
 
     // deposit prize tokens
     bool supportsERC721Interface;

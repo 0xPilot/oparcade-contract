@@ -154,10 +154,10 @@ interface IGameRegistry {
    * @return (uint256) Tournament deposit token amount
    */
   function getDepositTokenAmount(
-      uint256 _gid, 
-      uint256 _tid, 
-      address _tokenAddress
-    ) external view returns (uint256);
+    uint256 _gid,
+    uint256 _tid,
+    address _tokenAddress
+  ) external view returns (uint256);
 
   /**
    * @notice Returns the tournament creator address of the specific tournament

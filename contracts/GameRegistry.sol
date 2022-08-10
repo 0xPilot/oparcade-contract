@@ -376,7 +376,7 @@ contract GameRegistry is OwnableUpgradeable {
    * @dev Game is not removed from the games array, just set it deprecated
    * @param _gid Game ID
    */
-  function removeGame(uint256 _gid) external onlyOwner onlyValidGID(_gid) {
+  function removeGame(uint256 _gid) external onlyOwner onlyActiveGame(_gid) {
     // remove game
     games[_gid].isDeprecated = true;
 
@@ -388,7 +388,7 @@ contract GameRegistry is OwnableUpgradeable {
    * @param _gid Game ID
    * @param _gameCreator Game creator address
    */
-  function updateGameCreator(uint256 _gid, address _gameCreator) external onlyValidGID(_gid) {
+  function updateGameCreator(uint256 _gid, address _gameCreator) external onlyActiveGame(_gid) {
     require(msg.sender == games[_gid].creatorAddress, "Only game creator");
     require(_gameCreator != address(0), "Zero game creator address");
 
@@ -406,7 +406,7 @@ contract GameRegistry is OwnableUpgradeable {
    * @param _gid Game ID
    * @param _baseGameCreatorFee Base game creator fee
    */
-  function updateBaseGameCreatorFee(uint256 _gid, uint256 _baseGameCreatorFee) external onlyOwner onlyValidGID(_gid) {
+  function updateBaseGameCreatorFee(uint256 _gid, uint256 _baseGameCreatorFee) external onlyOwner onlyActiveGame(_gid) {
     require(platformFee + _baseGameCreatorFee <= MAX_PERMILLAGE, "Exceeded game creator fee");
 
     emit BaseGameCreatorFeeUpdated(msg.sender, _gid, games[_gid].baseCreatorFee, _baseGameCreatorFee);
@@ -434,7 +434,7 @@ contract GameRegistry is OwnableUpgradeable {
     uint256 _tournamentCreatorFee,
     Token calldata _depositToken,
     address _distributionTokenAddress
-  ) external onlyOwner onlyValidGID(_gid) returns (uint256 tid) {
+  ) external onlyOwner onlyActiveGame(_gid) returns (uint256 tid) {
     games.push();
     games[0].distributable[address(0)] = true;
     // create the tournament
@@ -466,7 +466,7 @@ contract GameRegistry is OwnableUpgradeable {
     string calldata _tournamentName,
     uint256 _proposedGameCreatorFee,
     uint256 _tournamentCreatorFee
-  ) external onlyOwner onlyValidGID(_gid) returns (uint256 tid) {
+  ) external onlyOwner onlyActiveGame(_gid) returns (uint256 tid) {
     tid = _createTournament(_gid, _tournamentName, _proposedGameCreatorFee, _tournamentCreatorFee);
   }
 
@@ -540,7 +540,7 @@ contract GameRegistry is OwnableUpgradeable {
     uint256 _nftTypeToAddPrizePool,
     uint256[] memory _tokenIdsToAddPrizePool,
     uint256[] memory _amountsToAddPrizePool
-  ) external onlyValidGID(_gid) returns (uint256 tid) {
+  ) external returns (uint256 tid) {
     // pay the tournament creation fee
     IERC20Upgradeable(tournamentCreationFeeToken).safeTransferFrom(
       msg.sender,
@@ -606,7 +606,7 @@ contract GameRegistry is OwnableUpgradeable {
     uint256 _tid,
     address _token,
     uint256 _amount
-  ) external onlyOwner onlyValidGID(_gid) onlyValidTID(_gid, _tid) {
+  ) external onlyOwner onlyActiveGame(_gid) onlyValidTID(_gid, _tid) {
     _updateDepositTokenAmount(_gid, _tid, _token, _amount);
   }
 
@@ -665,7 +665,7 @@ contract GameRegistry is OwnableUpgradeable {
     uint256 _gid,
     address _token,
     bool _isDistributable
-  ) external onlyOwner onlyValidGID(_gid) {
+  ) external onlyOwner onlyActiveGame(_gid) {
     _updateDistributableTokenAddress(_gid, _token, _isDistributable);
   }
 

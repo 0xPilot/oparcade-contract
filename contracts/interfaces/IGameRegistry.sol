@@ -55,11 +55,6 @@ interface IGameRegistry {
   function tournamentCreationFeeAmount() external returns (uint256);
 
   /**
-   * @return (uint256) Max fee constant in permillage (percentage * 10)
-   */
-  function MAX_PERMILLAGE() external returns (uint256);
-
-  /**
    * @notice Returns a boolean indicating if a specific game is deprecated
    * @param _gid Game ID
    * @return (bool) Is deprecated

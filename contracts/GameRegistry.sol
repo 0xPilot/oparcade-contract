@@ -143,7 +143,7 @@ contract GameRegistry is OwnableUpgradeable {
   }
 
   modifier onlyNonZeroAddress(address _address) {
-    require(_address != address(0x0), "Undefined address given");
+    require(_address != address(0), "Undefined address given");
     _;
   }
 

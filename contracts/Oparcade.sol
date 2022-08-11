@@ -154,7 +154,6 @@ contract Oparcade is
 
     // transfer the payment
     IERC20Upgradeable(_token).safeTransferFrom(msg.sender, address(this), depositTokenAmount);
-    // totalUserDeposit[_gid][_tid][_token] += depositTokenAmount;
     tournamentTokens[_gid][_tid][_token].totalUserDeposit += depositTokenAmount;
 
     emit UserDeposited(msg.sender, _gid, _tid, _token, depositTokenAmount);

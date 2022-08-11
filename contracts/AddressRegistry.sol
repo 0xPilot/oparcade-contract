@@ -12,6 +12,7 @@ contract AddressRegistry is OwnableUpgradeable {
   event OparcadeUpdated(address indexed oldOparcade, address indexed newOparcade);
   event GameRegistryUpdated(address indexed oldGameRegistry, address indexed newGameRegistry);
   event MaintainerUpdated(address indexed oldMaintainer, address indexed newMaintainer);
+  event TimelockUpdated(address indexed oldTimelock, address indexed newTimelock);
 
   /// @dev Oparcade contract address, can be zero if not set
   address public oparcade;
@@ -21,6 +22,9 @@ contract AddressRegistry is OwnableUpgradeable {
 
   /// @dev Maintainer address, can be zero if not set
   address public maintainer;
+
+  /// @dev Timelock contract address, can be zero if not set
+  address public timelock;
 
   function initialize() public initializer {
     __Ownable_init();
@@ -63,5 +67,18 @@ contract AddressRegistry is OwnableUpgradeable {
     emit MaintainerUpdated(maintainer, _maintainer);
 
     maintainer = _maintainer;
+  }
+
+  /**
+   * @notice Update Timelock contract address
+   * @dev Only owner
+   * @param _timelock Maintainer address
+   */
+  function updateTimelock(address _timelock) external onlyOwner {
+    require(_timelock != address(0), "!Timelock");
+
+    emit TimelockUpdated(timelock, _timelock);
+
+    timelock = _timelock;
   }
 }

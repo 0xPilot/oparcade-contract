@@ -27,4 +27,11 @@ interface IAddressRegistry {
    * @return address Maintainer contract address
    */
   function maintainer() external view returns (address);
+
+  /**
+   * @notice Provide the timelock contract address
+   * @dev Can be zero in case of the timelock address is not registered
+   * @return address Timelock contract address
+   */
+  function timelock() external view returns (address);
 }

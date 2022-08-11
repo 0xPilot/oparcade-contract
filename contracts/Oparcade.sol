@@ -112,6 +112,11 @@ contract Oparcade is
     _;
   }
 
+  modifier onlyTimelock() {
+    require(msg.sender == addressRegistry.timelock(), "Only timelock");
+    _;
+  }
+
   function initialize(address _addressRegistry) public initializer {
     __Ownable_init();
     __ReentrancyGuard_init();
@@ -404,7 +409,7 @@ contract Oparcade is
     uint256 _tid,
     address _token,
     uint256 _amount
-  ) external onlyOwner {
+  ) external onlyTimelock {
     // check if the prize is sufficient to withdraw
     require(tournamentTokens[_gid][_tid][_token].totalPrizeDeposit >= _amount, "Insufficient prize");
 

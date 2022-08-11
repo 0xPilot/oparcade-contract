@@ -288,7 +288,7 @@ interface IGameRegistry {
     address _token,
     uint256 _amount
   ) external;
-  
+
   /**
    * @notice Update distributable token address
    * @dev Only owner
@@ -318,6 +318,6 @@ interface IGameRegistry {
    * @param _tournamentCreationFeeToken Fee token address
    * @param _tournamentCreationFeeAmount Fee token amount
    */
-  function updateTournamentCreationFee(address _tournamentCreationFeeToken, uint256 _tournamentCreationFeeAmount) external;
-
+  function updateTournamentCreationFee(address _tournamentCreationFeeToken, uint256 _tournamentCreationFeeAmount)
+    external;
 }

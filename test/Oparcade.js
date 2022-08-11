@@ -1,17 +1,8 @@
 const { expect } = require("chai");
 const { ethers, upgrades } = require("hardhat");
 
-const getSignature = async (signer, gid, winner, token, amount, nonce) => {
-  let message = ethers.utils.solidityKeccak256(
-    ["uint256", "address", "address", "uint256", "uint256"],
-    [gid, winner, token, amount, nonce],
-  );
-  let signature = await signer.signMessage(ethers.utils.arrayify(message));
-  return signature;
-};
-
 describe("Oparcade", () => {
-  let addressRegistry, gameRegistry, oparcade, mockUSDT, mockOPC;
+  let addressRegistry, gameRegistry, oparcade, timelock, mockUSDT, mockOPC;
 
   let game1 = "Game1",
     game2 = "Game2";
@@ -29,7 +20,7 @@ describe("Oparcade", () => {
   const ZERO_ADDRESS = ethers.constants.AddressZero;
 
   beforeEach(async () => {
-    [deployer, alice, bob, maintainer, feeRecipient] = await ethers.getSigners();
+    [deployer, alice, bob, maintainer, feeRecipient, timelock] = await ethers.getSigners();
 
     // deploy mock tokens
     const ERC20Mock = await ethers.getContractFactory("ERC20Mock");
@@ -646,6 +637,10 @@ describe("Oparcade", () => {
   });
 
   describe("withdrawPrize", () => {
+    beforeEach(async () => {
+      await addressRegistry.updateTimelock(timelock.address);
+    });
+
     it("Should withdraw the ERC20 token prize", async () => {
       // set gid and tid
       let gid = 0;
@@ -663,12 +658,36 @@ describe("Oparcade", () => {
       const beforeAliceMockUSDTAmount = await mockUSDT.balanceOf(alice.address);
 
       // withdraw the prize
-      await oparcade.withdrawPrize(alice.address, gid, tid, mockUSDT.address, MockUSDTDepositAmount * 1.5);
+      await oparcade
+        .connect(timelock)
+        .withdrawPrize(alice.address, gid, tid, mockUSDT.address, MockUSDTDepositAmount * 1.5);
 
       // check new balance
       expect(await mockUSDT.balanceOf(alice.address)).to.equal(
         beforeAliceMockUSDTAmount.add(MockUSDTDepositAmount * 1.5),
       );
+    });
+
+    it("Should revert if the caller is not a timelock contract...", async () => {
+      // set gid and tid
+      let gid = 0;
+      let tid = 0;
+
+      // deposit the prize
+      await mockUSDT.approve(oparcade.address, MockUSDTDepositAmount);
+      await oparcade.depositPrize(deployer.address, gid, tid, mockUSDT.address, MockUSDTDepositAmount);
+
+      // deposit the prize again
+      await mockUSDT.approve(oparcade.address, MockUSDTDepositAmount);
+      await oparcade.depositPrize(deployer.address, gid, tid, mockUSDT.address, MockUSDTDepositAmount);
+
+      // check old balance
+      const beforeAliceMockUSDTAmount = await mockUSDT.balanceOf(alice.address);
+
+      // withdraw the prize
+      await expect(
+        oparcade.withdrawPrize(alice.address, gid, tid, mockUSDT.address, MockUSDTDepositAmount * 1.5),
+      ).to.be.revertedWith("Only timelock");
     });
 
     it("Should revert if the prize token is not enough to withdraw...", async () => {
@@ -684,7 +703,9 @@ describe("Oparcade", () => {
 
       // withdraw the prize
       await expect(
-        oparcade.withdrawPrize(alice.address, gid, tid, mockUSDT.address, MockUSDTDepositAmount * 1.5),
+        oparcade
+          .connect(timelock)
+          .withdrawPrize(alice.address, gid, tid, mockUSDT.address, MockUSDTDepositAmount * 1.5),
       ).to.be.revertedWith("Insufficient prize");
     });
   });

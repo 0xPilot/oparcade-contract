@@ -433,8 +433,6 @@ contract GameRegistry is OwnableUpgradeable {
     Token calldata _depositToken,
     address _distributionTokenAddress
   ) external onlyOwner onlyActiveGame(_gid) returns (uint256 tid) {
-    games.push();
-    games[0].distributable[address(0)] = true;
     // create the tournament
     tid = _createTournament(_gid, _tournamentName, _proposedGameCreatorFee, _tournamentCreatorFee);
 

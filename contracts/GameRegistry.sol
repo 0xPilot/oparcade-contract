@@ -142,23 +142,19 @@ contract GameRegistry is OwnableUpgradeable {
     _;
   }
 
-  modifier onlyNonZeroAddress(address _address) {
-    require(_address != address(0), "Undefined address given");
-    _;
-  }
-
   function initialize(
     address _addressRegistry,
     address _feeRecipient,
     uint256 _platformFee,
     address _tournamentCreationFeeToken,
     uint256 _tournamentCreationFeeAmount
-  ) public initializer onlyNonZeroAddress(_addressRegistry) onlyNonZeroAddress(_tournamentCreationFeeToken) {
-    __Ownable_init();
-    MAX_PERMILLAGE = 1000;
-
+  ) public initializer {
+    require(_addressRegistry != address(0) && _tournamentCreationFeeToken != address(0), "Zero address given");
     require(_feeRecipient != address(0) || _platformFee == 0, "Fee recipient not set");
     require(_platformFee <= MAX_PERMILLAGE, "Platform fee exceeded");
+
+    __Ownable_init();
+    MAX_PERMILLAGE = 1000;
 
     // initialize AddressRegistery
     addressRegistry = IAddressRegistry(_addressRegistry);

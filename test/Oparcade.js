@@ -309,6 +309,52 @@ describe("Oparcade", () => {
           .distributePrize(gid, tid, [alice.address, bob.address], mockUSDT.address, mockUSDTDistributableAmount),
       ).to.be.revertedWith("Prize amount exceeded");
     });
+
+    it("Should revert if winner address is zero...", async () => {
+      // lock more tokens
+      await mockUSDT.transfer(oparcade.address, 10 * MockUSDTDepositAmount);
+
+      // set exceeded distributable amount
+      let gid = 0;
+      let tid = 0;
+
+      const totalMockUSDTDistributableAmount = 4 * MockUSDTDepositAmount;
+
+      const aliceMockUSDTAmount = totalMockUSDTDistributableAmount * 0.7;
+      const bobMockUSDTAmount = totalMockUSDTDistributableAmount * 0.3;
+
+      const mockUSDTDistributableAmount = [aliceMockUSDTAmount, bobMockUSDTAmount + 1];
+
+      // distribute tokens
+      await expect(
+        oparcade
+          .connect(maintainer)
+          .distributePrize(gid, tid, [alice.address, ZERO_ADDRESS], mockUSDT.address, mockUSDTDistributableAmount),
+      ).to.be.revertedWith("Winner address should be defined");
+    });
+
+    it("Should revert if prizei amount is zero...", async () => {
+      // lock more tokens
+      await mockUSDT.transfer(oparcade.address, 10 * MockUSDTDepositAmount);
+
+      // set exceeded distributable amount
+      let gid = 0;
+      let tid = 0;
+
+      const totalMockUSDTDistributableAmount = 4 * MockUSDTDepositAmount;
+
+      const aliceMockUSDTAmount = totalMockUSDTDistributableAmount * 0.7;
+      const bobMockUSDTAmount = totalMockUSDTDistributableAmount * 0.3;
+
+      const mockUSDTDistributableAmount = [aliceMockUSDTAmount, 0];
+
+      // distribute tokens
+      await expect(
+        oparcade
+          .connect(maintainer)
+          .distributePrize(gid, tid, [alice.address, bob.address], mockUSDT.address, mockUSDTDistributableAmount),
+      ).to.be.revertedWith("Winner amount should be greater than zero");
+    });
   });
 
   describe("distributeNFTPrize", () => {

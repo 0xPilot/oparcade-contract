@@ -222,6 +222,7 @@ contract Oparcade is
     for (uint256 i; i < _winners.length; i++) {
       require(_winners[i] != address(0), "Winner address should be defined");
       require(_amounts[i] != 0, "Winner amount should be greater than zero");
+
       // get userAmount
       uint256 userAmount = _amounts[i];
 
@@ -319,7 +320,10 @@ contract Oparcade is
 
         tournamentNftPrizes[_gid][_tid][_nftAddress][_tokenIds[i]].totalDistribution = 1;
         totalAmounts += _amounts[i];
-        try IERC721Upgradeable(_nftAddress).safeTransferFrom(address(this), _winners[i], _tokenIds[i]) {} catch {}
+        try IERC721Upgradeable(_nftAddress).safeTransferFrom(address(this), _winners[i], _tokenIds[i]) {} catch {
+          tournamentNftPrizes[_gid][_tid][_nftAddress][_tokenIds[i]].totalDistribution = 0;
+          totalAmounts -= _amounts[i];
+        }
       }
 
       // check if all amount value is 1
@@ -345,7 +349,9 @@ contract Oparcade is
             _amounts[i],
             bytes("")
           )
-        {} catch {}
+        {} catch {
+          tournamentNftPrizes[_gid][_tid][_nftAddress][_tokenIds[i]].totalDistribution -= _amounts[i];
+        }
       }
     }
 
@@ -390,6 +396,7 @@ contract Oparcade is
 
     IERC20Upgradeable(_token).safeTransferFrom(_depositor, address(this), _amount);
     tournamentTokens[_gid][_tid][_token].totalPrizeDeposit += _amount;
+    
     emit PrizeDeposited(msg.sender, _depositor, _gid, _tid, _token, _amount);
   }
 

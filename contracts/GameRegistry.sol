@@ -218,12 +218,7 @@ contract GameRegistry is OwnableUpgradeable {
    * @param (address[]) Deposit token list of the game
    */
   function getDepositTokenList(uint256 _gid) external view returns (address[] memory) {
-    uint256 tokensAmount = games[_gid].depositTokenList.length;
-    address[] memory depositTokenList = new address[](tokensAmount);
-    for (uint256 i = 0; i < tokensAmount; i++) {
-      depositTokenList[i] = games[_gid].depositTokenList[i];
-    }
-    return depositTokenList;
+    return games[_gid].depositTokenList;
   }
 
   /**
@@ -232,12 +227,7 @@ contract GameRegistry is OwnableUpgradeable {
    * @param (address[]) Distributable token list of the game
    */
   function getDistributableTokenList(uint256 _gid) external view returns (address[] memory) {
-    uint256 tokensAmount = games[_gid].distributableTokenList.length;
-    address[] memory distributableTokenList = new address[](tokensAmount);
-    for (uint256 i = 0; i < tokensAmount; i++) {
-      distributableTokenList[i] = games[_gid].distributableTokenList[i];
-    }
-    return distributableTokenList;
+    return games[_gid].distributableTokenList;
   }
 
   /**

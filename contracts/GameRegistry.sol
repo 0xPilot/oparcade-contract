@@ -125,7 +125,7 @@ contract GameRegistry is OwnableUpgradeable {
   uint256 public tournamentCreationFeeAmount;
 
   /// @dev Max fee constant in permillage (percentage * 10)
-  uint256 MAX_PERMILLAGE;
+  uint256 constant MAX_PERMILLAGE = 100_0;
 
   modifier onlyValidGID(uint256 _gid) {
     require(_gid < games.length, "Invalid game index");
@@ -149,12 +149,12 @@ contract GameRegistry is OwnableUpgradeable {
     address _tournamentCreationFeeToken,
     uint256 _tournamentCreationFeeAmount
   ) public initializer {
-    require(_addressRegistry != address(0) && _tournamentCreationFeeToken != address(0), "Zero address given");
+    __Ownable_init();
+
+    require(_addressRegistry != address(0), "Zero address registry");
+    require(_tournamentCreationFeeToken != address(0), "Zero tournament fee token");
     require(_feeRecipient != address(0) || _platformFee == 0, "Fee recipient not set");
     require(_platformFee <= MAX_PERMILLAGE, "Platform fee exceeded");
-
-    __Ownable_init();
-    MAX_PERMILLAGE = 1000;
 
     // initialize AddressRegistery
     addressRegistry = IAddressRegistry(_addressRegistry);

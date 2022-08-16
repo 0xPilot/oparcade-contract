@@ -53,6 +53,7 @@ contract GameRegistry is OwnableUpgradeable {
     address indexed by,
     uint256 indexed gid,
     uint256 indexed tid,
+    string tournamentName,
     address token,
     uint256 oldAmount,
     uint256 newAmount
@@ -610,6 +611,7 @@ contract GameRegistry is OwnableUpgradeable {
       msg.sender,
       _gid,
       _tid,
+      games[_gid].tournaments[_tid].name,
       _token,
       games[_gid].tournaments[_tid].depositTokenAmount[_token],
       _amount

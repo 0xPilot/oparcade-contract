@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity 0.8.11;
 
 /**
  * @title GameRegistry Contract Interface
@@ -7,68 +7,155 @@ pragma solidity ^0.8.0;
  * @author David Lee
  */
 interface IGameRegistry {
-  /**
-   * @notice Returns the game creator address of the game
-   * @param _gid Game ID created
-   * @return (address) Game creator address of the game
-   */
-  function gameCreators(uint256 _gid) external view returns (address);
+  struct Token {
+    address tokenAddress;
+    uint256 tokenAmount;
+  }
+
+  struct Tournament {
+    string name;
+    address creatorAddress;
+    uint256 creatorFee;
+    uint256 appliedGameCreatorFee;
+    /// @dev Token address -> amount
+    mapping(address => uint256) depositTokenAmount;
+  }
+
+  struct Game {
+    string name;
+    address creatorAddress;
+    uint256 baseCreatorFee;
+    bool isDeprecated;
+    address[] distributableTokenList; // return all array
+    address[] depositTokenList;
+    mapping(uint256 => Tournament) tournaments;
+    uint256 tournamentsCount;
+    /// @dev Token address -> Bool
+    mapping(address => bool) distributable;
+  }
 
   /**
-   * @notice Returns the game creator fee applied
-   * @dev Either base game creator fee set by the owner or one proposed by the tournament creator is applied
-   * @dev The game creator fee applied can't be less than the base one
+   * @return (address) Platform fee recipient
+   */
+  function feeRecipient() external returns (address);
+
+  /**
+   * @return (uint256) Platform fee
+   */
+  function platformFee() external returns (uint256);
+
+  /**
+   * @return (address) Tournament creation fee token address
+   */
+  function tournamentCreationFeeToken() external returns (address);
+
+  /**
+   * @return (uint256) Tournament creation fee token amount
+   */
+  function tournamentCreationFeeAmount() external returns (uint256);
+
+  /**
+   * @notice Returns a boolean indicating if a specific game is deprecated
    * @param _gid Game ID
-   * @param _tid Tournanemnt ID
-   * @return (uint256) Game creator fee applied to the tournament
+   * @return (bool) Is deprecated
    */
-  function appliedGameCreatorFees(uint256 _gid, uint256 _tid) external view returns (uint256);
+  function isGameDeprecated(uint256 _gid) external view returns (bool);
 
   /**
-   * @notice Returns the tournament creator fee percentage of the specific game/tournament
-   * @dev Max value is 1000 (100%)
+   * @notice Returns the game name
    * @param _gid Game ID
-   * @param _tid Tournament ID
-   * @return (uint256) Tournament creator fee percentage
+   * @return (string) Game name
    */
-  function tournamentCreatorFees(uint256 _gid, uint256 _tid) external view returns (uint256);
+  function getGameName(uint256 _gid) external view returns (string memory);
 
   /**
-   * @notice Returns the deposit amount of the token given
+   * @notice Returns the game creator address
    * @param _gid Game ID
-   * @param _tid Tournament ID
-   * @param _token Token address
-   * @return (uint256) Deposit amount
+   * @return (string) Game creator address
    */
-  function depositTokenAmount(
-    uint256 _gid,
-    uint256 _tid,
-    address _token
-  ) external view returns (uint256);
+  function getGameCreatorAddress(uint256 _gid) external view returns (address);
 
   /**
-   * @notice Returns the claimability of the token given
+   * @notice Returns the game creator fee
    * @param _gid Game ID
-   * @param _token Token address
-   * @return (bool) true: distributable, false: not distributable
+   * @return (uint256) Game creator fee
    */
-  function distributable(uint256 _gid, address _token) external view returns (bool);
+  function getGameBaseCreatorFee(uint256 _gid) external view returns (uint256);
 
   /**
-   * @notice Returns whether the game is deprecated or not
+   * @notice Returns true if the token of a specific game is distributable, false otherwise
    * @param _gid Game ID
-   * @return (bool) true: deprecated, false: not deprecated
+   * @param _tokenAddress token address
+   * @return (uint256) Is token distributable
    */
-  function isDeprecatedGame(uint256 _gid) external view returns (bool);
+  function isDistributable(uint256 _gid, address _tokenAddress) external view returns (bool);
 
   /**
-   * @notice Returns the number of games added in games array
-   * @return (uint256) Game count
+   * @notice Returns the deposit token list of the game
+   * @param _gid Game ID
+   * @param (address[]) Deposit token list of the game
+   */
+  function getDepositTokenList(uint256 _gid) external view returns (address[] memory);
+
+  /**
+   * @notice Returns the distributable token list of the game
+   * @param _gid Game ID
+   * @param (address[]) Distributable token list of the game
+   */
+  function getDistributableTokenList(uint256 _gid) external view returns (address[] memory);
+
+  /**
+   * @notice Returns the number of games created
+   * @return (uint256) Amount of games created
    */
   function gameCount() external view returns (uint256);
 
   /**
-   * @notice Returns the tournament creator addresses of the specific game
+   * @notice Returns the number of the tournaments of the specific game
+   * @param _gid Game ID
+   * @return (uint256) Number of the tournament
+   */
+  function getTournamentCount(uint256 _gid) external view returns (uint256);
+
+  /**
+   * @notice Returns the tournament name of the specific tournament
+   * @param _gid Game ID
+   * @param _tid Tournament ID
+   * @return (string) Tournament name
+   */
+  function getTournamentName(uint256 _gid, uint256 _tid) external view returns (string memory);
+
+  /**
+   * @notice Returns the tournament creator fee of the specific tournament
+   * @param _gid Game ID
+   * @param _tid Tournament ID
+   * @return (uint256) Tournament creator fee
+   */
+  function getTournamentCreatorFee(uint256 _gid, uint256 _tid) external view returns (uint256);
+
+  /**
+   * @notice Returns the applied game creator fee of the specific tournament
+   * @param _gid Game ID
+   * @param _tid Tournament ID
+   * @return (string) Game applied game creator fee of a tournament
+   */
+  function getAppliedGameCreatorFee(uint256 _gid, uint256 _tid) external view returns (uint256);
+
+  /**
+   * @notice Returns the deposit token amount of the specific tournament
+   * @param _gid Game ID
+   * @param _tid Tournament ID
+   * @param _tokenAddress token address
+   * @return (uint256) Tournament deposit token amount
+   */
+  function getDepositTokenAmount(
+    uint256 _gid,
+    uint256 _tid,
+    address _tokenAddress
+  ) external view returns (uint256);
+
+  /**
+   * @notice Returns the tournament creator address of the specific tournament
    * @param _gid Game ID
    * @param _tid Tournament ID
    * @return (address) Tournament creator address
@@ -76,15 +163,161 @@ interface IGameRegistry {
   function getTournamentCreator(uint256 _gid, uint256 _tid) external view returns (address);
 
   /**
-   * @notice Returns the Oparcade platform fee
-   * @dev Max value is 1000 (100%)
-   * @return (uint256) Oparcade platform fee
+   * @notice Add the new game
+   * @dev Base game creator fee is the minimum fee vaule that the game creator should be rewarded from the tournamnet of the game
+   * @dev When creating the tournament of the game, the game creator fee can be proposed by the tournament creator
+   * @dev but the proposed value can't be less than the base one
+   * @dev If the proposed game creator fee is 0, the base game creator fee will be applied
+   * @param _gameName Game name to add
+   * @param _gameCreator Game creator address
+   * @param _baseGameCreatorFee Base game creator fee
    */
-  function platformFee() external view returns (uint256);
+  function addGame(
+    string calldata _gameName,
+    address _gameCreator,
+    uint256 _baseGameCreatorFee
+  ) external returns (uint256);
 
   /**
-   * @notice Returns the fee recipient address
-   * @return (address) Fee recipient address
+   * @notice Remove the exising game
+   * @dev Game is not removed from the games array, just set it deprecated
+   * @param _gid Game ID
    */
-  function feeRecipient() external view returns (address);
+  function removeGame(uint256 _gid) external;
+
+  /**
+   * @notice Update the game creator
+   * @param _gid Game ID
+   * @param _gameCreator Game creator address
+   */
+  function updateGameCreator(uint256 _gid, address _gameCreator) external;
+
+  /**
+   * @notice Update the base game creator fee
+   * @dev Tournament creator fee is the royality that will be transferred to the tournament creator address
+   * @dev Tournament creator can propose the game creator fee when creating the tournament
+   * @dev but it can't be less than the base game creator fee
+   * @param _gid Game ID
+   * @param _baseGameCreatorFee Base game creator fee
+   */
+  function updateBaseGameCreatorFee(uint256 _gid, uint256 _baseGameCreatorFee) external;
+
+  /**
+   * @notice Create the tournament and set tokens
+   * @dev Only owner
+   * @dev If the proposed game creaetor fee is 0, the base game creator fee is applied
+   * @dev The prize pool for the tournament that the owner created is initialized on Oparcade contract
+   * @param _gid Game ID
+   * @param _proposedGameCreatorFee Proposed game creator fee
+   * @param _tournamentCreatorFee Tournament creator fee
+   * @param _depositToken Token to allow/disallow the deposit
+   * @param _distributionTokenAddress Distribution token address to be set to active
+   * @return tid Tournament ID created
+   */
+  function createTournamentByDAOWithTokens(
+    uint256 _gid,
+    string memory _tournamentName,
+    uint256 _proposedGameCreatorFee,
+    uint256 _tournamentCreatorFee,
+    Token calldata _depositToken,
+    address _distributionTokenAddress
+  ) external returns (uint256);
+
+  /**
+   * @notice Create the tournament
+   * @dev Only owner
+   * @dev If the proposed game creaetor fee is 0, the base game creator fee is applied
+   * @dev The prize pool for the tournament that the owner created is initialized on Oparcade contract
+   * @param _gid Game ID
+   * @param _proposedGameCreatorFee Proposed game creator fee
+   * @param _tournamentCreatorFee Tournament creator fee
+   * @return tid Tournament ID created
+   */
+  function createTournamentByDAO(
+    uint256 _gid,
+    string calldata _tournamentName,
+    uint256 _proposedGameCreatorFee,
+    uint256 _tournamentCreatorFee
+  ) external returns (uint256);
+
+  /**
+   * @notice Create the tournament
+   * @dev Anyone can create the tournament and initialize the prize pool with tokens and NFTs
+   * @dev Tournament creator should set all params necessary for the tournament in 1 tx and
+   * @dev the params set is immutable. It will be prevent the fraud tournament is created
+   * @dev Tournament creator should pay fees to create the tournament
+   * @dev and the fee token address and fee token amount are set by the owner
+   * @dev If the proposed game creaetor fee is 0, the base game creator fee is applied
+   * @dev NFT type to initialize the prize pool should be either 721 or 1155
+   * @param _gid Game ID
+   * @param _proposedGameCreatorFee Proposed game creator fee
+   * @param _tournamentCreatorFee Tournament creator fee
+   * @param _depositToken Deposit token (address and amount) for playing the tournament
+   * @param _tokenToAddPrizePool Token (address and amount) to initialize the prize pool
+   * @param _nftAddressToAddPrizePool NFT address to initialize the prize pool
+   * @param _nftTypeToAddPrizePool NFT type to initialize the prize pool
+   * @param _tokenIdsToAddPrizePool NFT token Id list to initialize the prize pool
+   * @param _amountsToAddPrizePool NFT token amount list to initialize the prize pool
+   * @return tid Tournament ID created
+   */
+  function createTournamentByUser(
+    uint256 _gid,
+    string calldata _tournamentName,
+    uint256 _proposedGameCreatorFee,
+    uint256 _tournamentCreatorFee,
+    Token calldata _depositToken,
+    Token calldata _tokenToAddPrizePool,
+    address _nftAddressToAddPrizePool,
+    uint256 _nftTypeToAddPrizePool,
+    uint256[] memory _tokenIdsToAddPrizePool,
+    uint256[] memory _amountsToAddPrizePool
+  ) external returns (uint256 tid);
+
+  /**
+   * @notice Update deposit token amount
+   * @dev Only owner
+   * @dev Only tokens with an amount greater than zero is valid for the deposit
+   * @param _gid Game ID
+   * @param _tid Tournament ID
+   * @param _token Token address to allow/disallow the deposit
+   * @param _amount Token amount
+   */
+  function updateDepositTokenAmount(
+    uint256 _gid,
+    uint256 _tid,
+    address _token,
+    uint256 _amount
+  ) external;
+
+  /**
+   * @notice Update distributable token address
+   * @dev Only owner
+   * @param _gid Game ID
+   * @param _token Token address to allow/disallow the deposit
+   * @param _isDistributable true: distributable false: not distributable
+   */
+  function updateDistributableTokenAddress(
+    uint256 _gid,
+    address _token,
+    bool _isDistributable
+  ) external;
+
+  /**
+   * @notice Update the platform fee
+   * @dev Only owner
+   * @dev Allow zero recipient address only of fee is also zero
+   * @param _feeRecipient Platform fee recipient address
+   * @param _platformFee platform fee
+   */
+  function updatePlatformFee(address _feeRecipient, uint256 _platformFee) external;
+
+  /**
+   * @notice Update the tournament creation fee
+   * @dev Only owner
+   * @dev Tournament creator should pay this fee when creating the tournament
+   * @param _tournamentCreationFeeToken Fee token address
+   * @param _tournamentCreationFeeAmount Fee token amount
+   */
+  function updateTournamentCreationFee(address _tournamentCreationFeeToken, uint256 _tournamentCreationFeeAmount)
+    external;
 }

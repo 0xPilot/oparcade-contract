@@ -1,17 +1,8 @@
 const { expect } = require("chai");
 const { ethers, upgrades } = require("hardhat");
 
-const getSignature = async (signer, gid, winner, token, amount, nonce) => {
-  let message = ethers.utils.solidityKeccak256(
-    ["uint256", "address", "address", "uint256", "uint256"],
-    [gid, winner, token, amount, nonce],
-  );
-  let signature = await signer.signMessage(ethers.utils.arrayify(message));
-  return signature;
-};
-
 describe("Oparcade", () => {
-  let addressRegistry, gameRegistry, oparcade, mockUSDT, mockOPC;
+  let addressRegistry, gameRegistry, oparcade, timelock, mockUSDT, mockOPC;
 
   let game1 = "Game1",
     game2 = "Game2";
@@ -29,7 +20,7 @@ describe("Oparcade", () => {
   const ZERO_ADDRESS = ethers.constants.AddressZero;
 
   beforeEach(async () => {
-    [deployer, alice, bob, maintainer, feeRecipient] = await ethers.getSigners();
+    [deployer, alice, bob, maintainer, feeRecipient, timelock] = await ethers.getSigners();
 
     // deploy mock tokens
     const ERC20Mock = await ethers.getContractFactory("ERC20Mock");
@@ -317,6 +308,52 @@ describe("Oparcade", () => {
           .connect(maintainer)
           .distributePrize(gid, tid, [alice.address, bob.address], mockUSDT.address, mockUSDTDistributableAmount),
       ).to.be.revertedWith("Prize amount exceeded");
+    });
+
+    it("Should revert if winner address is zero...", async () => {
+      // lock more tokens
+      await mockUSDT.transfer(oparcade.address, 10 * MockUSDTDepositAmount);
+
+      // set exceeded distributable amount
+      let gid = 0;
+      let tid = 0;
+
+      const totalMockUSDTDistributableAmount = 4 * MockUSDTDepositAmount;
+
+      const aliceMockUSDTAmount = totalMockUSDTDistributableAmount * 0.7;
+      const bobMockUSDTAmount = totalMockUSDTDistributableAmount * 0.3;
+
+      const mockUSDTDistributableAmount = [aliceMockUSDTAmount, bobMockUSDTAmount + 1];
+
+      // distribute tokens
+      await expect(
+        oparcade
+          .connect(maintainer)
+          .distributePrize(gid, tid, [alice.address, ZERO_ADDRESS], mockUSDT.address, mockUSDTDistributableAmount),
+      ).to.be.revertedWith("Winner address should be defined");
+    });
+
+    it("Should revert if prizei amount is zero...", async () => {
+      // lock more tokens
+      await mockUSDT.transfer(oparcade.address, 10 * MockUSDTDepositAmount);
+
+      // set exceeded distributable amount
+      let gid = 0;
+      let tid = 0;
+
+      const totalMockUSDTDistributableAmount = 4 * MockUSDTDepositAmount;
+
+      const aliceMockUSDTAmount = totalMockUSDTDistributableAmount * 0.7;
+      const bobMockUSDTAmount = totalMockUSDTDistributableAmount * 0.3;
+
+      const mockUSDTDistributableAmount = [aliceMockUSDTAmount, 0];
+
+      // distribute tokens
+      await expect(
+        oparcade
+          .connect(maintainer)
+          .distributePrize(gid, tid, [alice.address, bob.address], mockUSDT.address, mockUSDTDistributableAmount),
+      ).to.be.revertedWith("Winner amount should be greater than zero");
     });
   });
 
@@ -646,6 +683,10 @@ describe("Oparcade", () => {
   });
 
   describe("withdrawPrize", () => {
+    beforeEach(async () => {
+      await addressRegistry.updateTimelock(timelock.address);
+    });
+
     it("Should withdraw the ERC20 token prize", async () => {
       // set gid and tid
       let gid = 0;
@@ -663,12 +704,36 @@ describe("Oparcade", () => {
       const beforeAliceMockUSDTAmount = await mockUSDT.balanceOf(alice.address);
 
       // withdraw the prize
-      await oparcade.withdrawPrize(alice.address, gid, tid, mockUSDT.address, MockUSDTDepositAmount * 1.5);
+      await oparcade
+        .connect(timelock)
+        .withdrawPrize(alice.address, gid, tid, mockUSDT.address, MockUSDTDepositAmount * 1.5);
 
       // check new balance
       expect(await mockUSDT.balanceOf(alice.address)).to.equal(
         beforeAliceMockUSDTAmount.add(MockUSDTDepositAmount * 1.5),
       );
+    });
+
+    it("Should revert if the caller is not a timelock contract...", async () => {
+      // set gid and tid
+      let gid = 0;
+      let tid = 0;
+
+      // deposit the prize
+      await mockUSDT.approve(oparcade.address, MockUSDTDepositAmount);
+      await oparcade.depositPrize(deployer.address, gid, tid, mockUSDT.address, MockUSDTDepositAmount);
+
+      // deposit the prize again
+      await mockUSDT.approve(oparcade.address, MockUSDTDepositAmount);
+      await oparcade.depositPrize(deployer.address, gid, tid, mockUSDT.address, MockUSDTDepositAmount);
+
+      // check old balance
+      const beforeAliceMockUSDTAmount = await mockUSDT.balanceOf(alice.address);
+
+      // withdraw the prize
+      await expect(
+        oparcade.withdrawPrize(alice.address, gid, tid, mockUSDT.address, MockUSDTDepositAmount * 1.5),
+      ).to.be.revertedWith("Only timelock");
     });
 
     it("Should revert if the prize token is not enough to withdraw...", async () => {
@@ -684,7 +749,9 @@ describe("Oparcade", () => {
 
       // withdraw the prize
       await expect(
-        oparcade.withdrawPrize(alice.address, gid, tid, mockUSDT.address, MockUSDTDepositAmount * 1.5),
+        oparcade
+          .connect(timelock)
+          .withdrawPrize(alice.address, gid, tid, mockUSDT.address, MockUSDTDepositAmount * 1.5),
       ).to.be.revertedWith("Insufficient prize");
     });
   });
@@ -1100,35 +1167,6 @@ describe("Oparcade", () => {
 
       await mockOPC.approve(oparcade.address, mockOPCDepositAmount);
       await oparcade.depositPrize(deployer.address, gid, tid, mockOPC.address, mockOPCDepositAmount);
-    });
-
-    it("Should withdraw ERC20 tokens", async () => {
-      // check old balance
-      let oldMockUSDTBalance = await mockUSDT.balanceOf(alice.address);
-      let oldMockOPCBalance = await mockOPC.balanceOf(alice.address);
-
-      // withdraw ERC20 tokens
-      let tokens = [mockUSDT.address, mockOPC.address];
-      let amounts = [MockUSDTDepositAmount, mockOPCDepositAmount];
-      await oparcade.withdraw(tokens, amounts, alice.address);
-
-      // check new balance
-      expect(await mockUSDT.balanceOf(alice.address)).to.equal(oldMockUSDTBalance.add(MockUSDTDepositAmount));
-      expect(await mockOPC.balanceOf(alice.address)).to.equal(oldMockOPCBalance.add(mockOPCDepositAmount));
-    });
-
-    it("Should revert if params are invalid", async () => {
-      // withdraw ERC20 tokens
-      let tokens = [mockUSDT.address, mockOPC.address, mockOPC.address];
-      let amounts = [MockUSDTDepositAmount, mockOPCDepositAmount];
-      await expect(oparcade.withdraw(tokens, amounts, alice.address)).to.be.revertedWith("Mismatched withdrawal data");
-    });
-
-    it("Should revert if the balance is not enough to withdraw", async () => {
-      // withdraw ERC20 tokens
-      let tokens = [mockUSDT.address, mockOPC.address];
-      let amounts = [MockUSDTDepositAmount, mockOPCDepositAmount + 1];
-      await expect(oparcade.withdraw(tokens, amounts, alice.address)).to.be.reverted;
     });
   });
 

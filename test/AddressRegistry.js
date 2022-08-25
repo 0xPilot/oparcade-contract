@@ -5,7 +5,7 @@ describe("AddressRegistry", () => {
   let addressRegistry;
 
   before(async () => {
-    [deployer, oparcade, gameRegistry, maintainer] = await ethers.getSigners();
+    [deployer, oparcade, gameRegistry, maintainer, timelock] = await ethers.getSigners();
 
     // Initialize AddressRegistry contract
     const AddressRegistry = await ethers.getContractFactory("AddressRegistry");
@@ -37,5 +37,14 @@ describe("AddressRegistry", () => {
 
   it("Should revert if new Maintainer address is address (0)...", async () => {
     await expect(addressRegistry.updateMaintainer(ethers.constants.AddressZero)).to.be.revertedWith("!Maintainer");
+  });
+
+  it("Should be able to update Timelock...", async () => {
+    await addressRegistry.updateTimelock(timelock.address);
+    expect(await addressRegistry.timelock()).to.equal(timelock.address);
+  });
+
+  it("Should revert if new Timelock address is address (0)...", async () => {
+    await expect(addressRegistry.updateTimelock(ethers.constants.AddressZero)).to.be.revertedWith("!Timelock");
   });
 });

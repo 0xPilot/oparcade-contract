@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity 0.8.11;
 
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
@@ -9,9 +9,10 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
  * @author David Lee
  */
 contract AddressRegistry is OwnableUpgradeable {
-  event OrarcadeUpdated(address indexed by, address indexed oldOparcade, address indexed newOparcade);
-  event GameRegistryUpdated(address indexed by, address indexed oldGameRegistry, address indexed newGameRegistry);
-  event MaintainerUpdated(address indexed by, address indexed oldMaintainer, address indexed newMaintainer);
+  event OparcadeUpdated(address indexed oldOparcade, address indexed newOparcade);
+  event GameRegistryUpdated(address indexed oldGameRegistry, address indexed newGameRegistry);
+  event MaintainerUpdated(address indexed oldMaintainer, address indexed newMaintainer);
+  event TimelockUpdated(address indexed oldTimelock, address indexed newTimelock);
 
   /// @dev Oparcade contract address, can be zero if not set
   address public oparcade;
@@ -21,6 +22,9 @@ contract AddressRegistry is OwnableUpgradeable {
 
   /// @dev Maintainer address, can be zero if not set
   address public maintainer;
+
+  /// @dev Timelock contract address, can be zero if not set
+  address public timelock;
 
   function initialize() public initializer {
     __Ownable_init();
@@ -34,7 +38,7 @@ contract AddressRegistry is OwnableUpgradeable {
   function updateOparcade(address _oparcade) external onlyOwner {
     require(_oparcade != address(0), "!Oparcade");
 
-    emit OrarcadeUpdated(msg.sender, oparcade, _oparcade);
+    emit OparcadeUpdated(oparcade, _oparcade);
 
     oparcade = _oparcade;
   }
@@ -47,7 +51,7 @@ contract AddressRegistry is OwnableUpgradeable {
   function updateGameRegistry(address _gameRegistry) external onlyOwner {
     require(_gameRegistry != address(0), "!GameRegistry");
 
-    emit GameRegistryUpdated(msg.sender, gameRegistry, _gameRegistry);
+    emit GameRegistryUpdated(gameRegistry, _gameRegistry);
 
     gameRegistry = _gameRegistry;
   }
@@ -60,8 +64,21 @@ contract AddressRegistry is OwnableUpgradeable {
   function updateMaintainer(address _maintainer) external onlyOwner {
     require(_maintainer != address(0), "!Maintainer");
 
-    emit MaintainerUpdated(msg.sender, maintainer, _maintainer);
+    emit MaintainerUpdated(maintainer, _maintainer);
 
     maintainer = _maintainer;
+  }
+
+  /**
+   * @notice Update Timelock contract address
+   * @dev Only owner
+   * @param _timelock Maintainer address
+   */
+  function updateTimelock(address _timelock) external onlyOwner {
+    require(_timelock != address(0), "!Timelock");
+
+    emit TimelockUpdated(timelock, _timelock);
+
+    timelock = _timelock;
   }
 }

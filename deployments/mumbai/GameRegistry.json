@@ -1,5 +1,5 @@
 {
-  "address": "0x9da2663A194A10A07ea5a204FE1fBE7C19E72769",
+  "address": "0xB3B7B5813c960Bd14b4CE7D4D2963cDc1295FE20",
   "abi": [
     {
       "anonymous": false,
@@ -175,6 +175,12 @@
           "internalType": "uint256",
           "name": "tid",
           "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "tournamentName",
+          "type": "string"
         },
         {
           "indexed": false,
@@ -419,6 +425,12 @@
         },
         {
           "indexed": false,
+          "internalType": "string",
+          "name": "tournamentName",
+          "type": "string"
+        },
+        {
+          "indexed": false,
           "internalType": "uint256",
           "name": "appliedGameCreatorFee",
           "type": "uint256"
@@ -516,51 +528,13 @@
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "",
+          "name": "_gid",
           "type": "uint256"
         },
         {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "name": "appliedGameCreatorFees",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "name": "baseGameCreatorFees",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "_gid",
-          "type": "uint256"
+          "internalType": "string",
+          "name": "_tournamentName",
+          "type": "string"
         },
         {
           "internalType": "uint256",
@@ -592,6 +566,11 @@
           "type": "uint256"
         },
         {
+          "internalType": "string",
+          "name": "_tournamentName",
+          "type": "string"
+        },
+        {
           "internalType": "uint256",
           "name": "_proposedGameCreatorFee",
           "type": "uint256"
@@ -602,24 +581,94 @@
           "type": "uint256"
         },
         {
-          "internalType": "address",
-          "name": "_depositTokenAddress",
-          "type": "address"
+          "components": [
+            {
+              "internalType": "address",
+              "name": "tokenAddress",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "tokenAmount",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct GameRegistry.Token",
+          "name": "_depositToken",
+          "type": "tuple"
         },
         {
+          "internalType": "address",
+          "name": "_distributionTokenAddress",
+          "type": "address"
+        }
+      ],
+      "name": "createTournamentByDAOWithTokens",
+      "outputs": [
+        {
           "internalType": "uint256",
-          "name": "_depositTokenAmount",
+          "name": "tid",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_gid",
           "type": "uint256"
         },
         {
-          "internalType": "address",
+          "internalType": "string",
+          "name": "_tournamentName",
+          "type": "string"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_proposedGameCreatorFee",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_tournamentCreatorFee",
+          "type": "uint256"
+        },
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "tokenAddress",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "tokenAmount",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct GameRegistry.Token",
+          "name": "_depositToken",
+          "type": "tuple"
+        },
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "tokenAddress",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "tokenAmount",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct GameRegistry.Token",
           "name": "_tokenToAddPrizePool",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_amountToAddPrizePool",
-          "type": "uint256"
+          "type": "tuple"
         },
         {
           "internalType": "address",
@@ -651,107 +700,6 @@
         }
       ],
       "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        },
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "name": "depositTokenAmount",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "name": "depositTokenList",
-      "outputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        },
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "name": "distributable",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "name": "distributableTokenList",
-      "outputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "view",
       "type": "function"
     },
     {
@@ -788,12 +736,32 @@
           "type": "uint256"
         }
       ],
-      "name": "gameCreators",
+      "name": "games",
       "outputs": [
         {
+          "internalType": "string",
+          "name": "name",
+          "type": "string"
+        },
+        {
           "internalType": "address",
-          "name": "",
+          "name": "creatorAddress",
           "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "baseCreatorFee",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bool",
+          "name": "isDeprecated",
+          "type": "bool"
+        },
+        {
+          "internalType": "uint256",
+          "name": "tournamentsCount",
+          "type": "uint256"
         }
       ],
       "stateMutability": "view",
@@ -803,16 +771,50 @@
       "inputs": [
         {
           "internalType": "uint256",
+          "name": "_gid",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_tid",
+          "type": "uint256"
+        }
+      ],
+      "name": "getAppliedGameCreatorFee",
+      "outputs": [
+        {
+          "internalType": "uint256",
           "name": "",
           "type": "uint256"
         }
       ],
-      "name": "games",
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_gid",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_tid",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "_tokenAddress",
+          "type": "address"
+        }
+      ],
+      "name": "getDepositTokenAmount",
       "outputs": [
         {
-          "internalType": "string",
+          "internalType": "uint256",
           "name": "",
-          "type": "string"
+          "type": "uint256"
         }
       ],
       "stateMutability": "view",
@@ -864,6 +866,63 @@
           "type": "uint256"
         }
       ],
+      "name": "getGameBaseCreatorFee",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_gid",
+          "type": "uint256"
+        }
+      ],
+      "name": "getGameCreatorAddress",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_gid",
+          "type": "uint256"
+        }
+      ],
+      "name": "getGameName",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_gid",
+          "type": "uint256"
+        }
+      ],
       "name": "getTournamentCount",
       "outputs": [
         {
@@ -894,6 +953,54 @@
           "internalType": "address",
           "name": "",
           "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_gid",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_tid",
+          "type": "uint256"
+        }
+      ],
+      "name": "getTournamentCreatorFee",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_gid",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_tid",
+          "type": "uint256"
+        }
+      ],
+      "name": "getTournamentName",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
         }
       ],
       "stateMutability": "view",
@@ -936,11 +1043,35 @@
       "inputs": [
         {
           "internalType": "uint256",
+          "name": "_gid",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "_tokenAddress",
+          "type": "address"
+        }
+      ],
+      "name": "isDistributable",
+      "outputs": [
+        {
+          "internalType": "bool",
           "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_gid",
           "type": "uint256"
         }
       ],
-      "name": "isDeprecatedGame",
+      "name": "isGameDeprecated",
       "outputs": [
         {
           "internalType": "bool",
@@ -1013,54 +1144,6 @@
     {
       "inputs": [],
       "name": "tournamentCreationFeeToken",
-      "outputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "name": "tournamentCreatorFees",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "name": "tournamentCreators",
       "outputs": [
         {
           "internalType": "address",
@@ -1229,81 +1312,81 @@
       "type": "constructor"
     }
   ],
-  "transactionHash": "0x367846609db2f18004681304a6a1ab37f502d817eb54c7210ae97a29a78dba97",
+  "transactionHash": "0xdbfc9586b82bb0c557981e81cdf80c9106265a3099f45d6df69e9f03d9414262",
   "receipt": {
     "to": null,
-    "from": "0x4039027048c08DCEdE2d912012308CE4F0F2bC68",
-    "contractAddress": "0x9da2663A194A10A07ea5a204FE1fBE7C19E72769",
-    "transactionIndex": 4,
-    "gasUsed": "882521",
-    "logsBloom": "0x00000000000000000000000000000000400000000000000008800000000000040000000000000000000000000000000000008000000000000000000000000000000000000000000000004000000002800001000000000000000100000000084000000000020000000000000000000800080000800000000080000000000000400000000001000000000000000000004000000000000080000000000000800000200000000000000000000000000000000000000000000000000040000000004000000060000000000001000000000000000000000400000000100040000020000000000000000000000000000000000000000000000000000000000000100000",
-    "blockHash": "0xde35161efe6f5d5bb8f52a7c5f376df5f0c90a188790fff50bfe0099d509955f",
-    "transactionHash": "0x367846609db2f18004681304a6a1ab37f502d817eb54c7210ae97a29a78dba97",
+    "from": "0xaD733B7055eCAebFb3B38626f0148c5d12158F03",
+    "contractAddress": "0xB3B7B5813c960Bd14b4CE7D4D2963cDc1295FE20",
+    "transactionIndex": 7,
+    "gasUsed": "882015",
+    "logsBloom": "0x00000000800000000000000080000000400000000100000000800000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000002800001000200000000000100000000004000000000020000000000800000000800000000800000000080000000000000400000000000080000000000000000000000000000000080000000000000800000200000000000000000000000000000000000000000000000000000000000004000000020000000000001000000000000000000000400000000100040000020000000002000000000000000000000000001000000000020000000000000100000",
+    "blockHash": "0x0f05cab2f94a8442a29718f853f2cdd771fae056d72ce5e46d0f73313ebf43a9",
+    "transactionHash": "0xdbfc9586b82bb0c557981e81cdf80c9106265a3099f45d6df69e9f03d9414262",
     "logs": [
       {
-        "transactionIndex": 4,
-        "blockNumber": 27033885,
-        "transactionHash": "0x367846609db2f18004681304a6a1ab37f502d817eb54c7210ae97a29a78dba97",
-        "address": "0x9da2663A194A10A07ea5a204FE1fBE7C19E72769",
+        "transactionIndex": 7,
+        "blockNumber": 27764157,
+        "transactionHash": "0xdbfc9586b82bb0c557981e81cdf80c9106265a3099f45d6df69e9f03d9414262",
+        "address": "0xB3B7B5813c960Bd14b4CE7D4D2963cDc1295FE20",
         "topics": [
           "0xbc7cd75a20ee27fd9adebab32041f755214dbc6bffa90cc0225b39da2e5c2d3b",
-          "0x000000000000000000000000f3c399b7aa6aa321bf14b72728941f70c540eb67"
+          "0x000000000000000000000000444dcf1091235b4bba1119ac19ef5fb57a9473b8"
         ],
         "data": "0x",
-        "logIndex": 6,
-        "blockHash": "0xde35161efe6f5d5bb8f52a7c5f376df5f0c90a188790fff50bfe0099d509955f"
+        "logIndex": 26,
+        "blockHash": "0x0f05cab2f94a8442a29718f853f2cdd771fae056d72ce5e46d0f73313ebf43a9"
       },
       {
-        "transactionIndex": 4,
-        "blockNumber": 27033885,
-        "transactionHash": "0x367846609db2f18004681304a6a1ab37f502d817eb54c7210ae97a29a78dba97",
-        "address": "0x9da2663A194A10A07ea5a204FE1fBE7C19E72769",
+        "transactionIndex": 7,
+        "blockNumber": 27764157,
+        "transactionHash": "0xdbfc9586b82bb0c557981e81cdf80c9106265a3099f45d6df69e9f03d9414262",
+        "address": "0xB3B7B5813c960Bd14b4CE7D4D2963cDc1295FE20",
         "topics": [
           "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0",
           "0x0000000000000000000000000000000000000000000000000000000000000000",
-          "0x0000000000000000000000004039027048c08dcede2d912012308ce4f0f2bc68"
+          "0x000000000000000000000000ad733b7055ecaebfb3b38626f0148c5d12158f03"
         ],
         "data": "0x",
-        "logIndex": 7,
-        "blockHash": "0xde35161efe6f5d5bb8f52a7c5f376df5f0c90a188790fff50bfe0099d509955f"
+        "logIndex": 27,
+        "blockHash": "0x0f05cab2f94a8442a29718f853f2cdd771fae056d72ce5e46d0f73313ebf43a9"
       },
       {
-        "transactionIndex": 4,
-        "blockNumber": 27033885,
-        "transactionHash": "0x367846609db2f18004681304a6a1ab37f502d817eb54c7210ae97a29a78dba97",
-        "address": "0x9da2663A194A10A07ea5a204FE1fBE7C19E72769",
+        "transactionIndex": 7,
+        "blockNumber": 27764157,
+        "transactionHash": "0xdbfc9586b82bb0c557981e81cdf80c9106265a3099f45d6df69e9f03d9414262",
+        "address": "0xB3B7B5813c960Bd14b4CE7D4D2963cDc1295FE20",
         "topics": [
           "0x7e644d79422f17c01e4894b5f4f588d331ebfa28653d42ae832dc59e38c9798f"
         ],
-        "data": "0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e22cd7657002a1e62416abde3e15fd3c6a8c697d",
-        "logIndex": 8,
-        "blockHash": "0xde35161efe6f5d5bb8f52a7c5f376df5f0c90a188790fff50bfe0099d509955f"
+        "data": "0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f27343fe437ecc3fee00dcc3a4adb803a0a13ba6",
+        "logIndex": 28,
+        "blockHash": "0x0f05cab2f94a8442a29718f853f2cdd771fae056d72ce5e46d0f73313ebf43a9"
       },
       {
-        "transactionIndex": 4,
-        "blockNumber": 27033885,
-        "transactionHash": "0x367846609db2f18004681304a6a1ab37f502d817eb54c7210ae97a29a78dba97",
+        "transactionIndex": 7,
+        "blockNumber": 27764157,
+        "transactionHash": "0xdbfc9586b82bb0c557981e81cdf80c9106265a3099f45d6df69e9f03d9414262",
         "address": "0x0000000000000000000000000000000000001010",
         "topics": [
           "0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63",
           "0x0000000000000000000000000000000000000000000000000000000000001010",
-          "0x0000000000000000000000004039027048c08dcede2d912012308ce4f0f2bc68",
+          "0x000000000000000000000000ad733b7055ecaebfb3b38626f0148c5d12158f03",
           "0x000000000000000000000000be188d6641e8b680743a4815dfa0f6208038960f"
         ],
-        "data": "0x000000000000000000000000000000000000000000000000007d69ed4c1acc910000000000000000000000000000000000000000000000004041379d25f84000000000000000000000000000000000000000000000001d2e6044cc2b73ced1460000000000000000000000000000000000000000000000003fc3cdafd9dd736f000000000000000000000000000000000000000000001d2e60c23618bfe99dd7",
-        "logIndex": 9,
-        "blockHash": "0xde35161efe6f5d5bb8f52a7c5f376df5f0c90a188790fff50bfe0099d509955f"
+        "data": "0x000000000000000000000000000000000000000000000000007d5784ce0ac5080000000000000000000000000000000000000000000000001c1558496f88d00000000000000000000000000000000000000000000000246d6148ebc025201c2c0000000000000000000000000000000000000000000000001b9800c4a17e0af800000000000000000000000000000000000000000000246d61c64344f32ae134",
+        "logIndex": 29,
+        "blockHash": "0x0f05cab2f94a8442a29718f853f2cdd771fae056d72ce5e46d0f73313ebf43a9"
       }
     ],
-    "blockNumber": 27033885,
-    "cumulativeGasUsed": "1539907",
+    "blockNumber": 27764157,
+    "cumulativeGasUsed": "2402022",
     "status": 1,
     "byzantium": true
   },
   "args": [
-    "0xF3c399b7Aa6Aa321BF14B72728941f70c540eb67",
-    "0xe22CD7657002a1E62416aBde3E15Fd3c6A8C697d",
-    "0xf7c00e630000000000000000000000006a2c49c99f2a7bc5f2b2cecc2208667cd541bd100000000000000000000000008f96bfc80bc3b7d881767253edb7a76429b7ec6b0000000000000000000000000000000000000000000000000000000000000014000000000000000000000000b730097f0aeee1174fd64645b52807888c0d96a00000000000000000000000000000000000000000000000000000000000989680"
+    "0x444DcF1091235b4BbA1119ac19eF5fB57a9473B8",
+    "0xF27343fE437ecc3FEE00dcc3A4aDb803A0A13ba6",
+    "0xf7c00e630000000000000000000000002924ffd348d60171cccc62e2fd8649468756e16b000000000000000000000000a87c041c9b9860e94f293e8acc05b191d3830a6a0000000000000000000000000000000000000000000000000000000000000001000000000000000000000000a87c041c9b9860e94f293e8acc05b191d3830a6a000000000000000000000000000000000000000000000000000000000000000a"
   ],
   "numDeployments": 1,
   "solcInputHash": "0e89febeebc7444140de8e67c9067d2c",
@@ -1313,14 +1396,14 @@
   "execute": {
     "methodName": "initialize",
     "args": [
-      "0x6A2C49C99F2A7Bc5f2B2CECc2208667Cd541bD10",
-      "0x8f96BFc80BC3B7D881767253EDb7A76429B7EC6B",
-      "20",
-      "0xb730097f0AeEE1174Fd64645b52807888c0D96A0",
-      "10000000"
+      "0x2924fFD348d60171CCCC62e2fd8649468756E16B",
+      "0xa87C041C9B9860e94F293E8acc05b191d3830A6a",
+      "1",
+      "0xa87C041C9B9860e94F293E8acc05b191d3830A6a",
+      "10"
     ]
   },
-  "implementation": "0xF3c399b7Aa6Aa321BF14B72728941f70c540eb67",
+  "implementation": "0x444DcF1091235b4BbA1119ac19eF5fB57a9473B8",
   "devdoc": {
     "details": "This contract implements a proxy that is upgradeable by an admin. To avoid https://medium.com/nomic-labs-blog/malicious-backdoors-in-ethereum-proxies-62629adf3357[proxy selector clashing], which can potentially be used in an attack, this contract uses the https://blog.openzeppelin.com/the-transparent-proxy-pattern/[transparent proxy pattern]. This pattern implies two things that go hand in hand: 1. If any account other than the admin calls the proxy, the call will be forwarded to the implementation, even if that call matches one of the admin functions exposed by the proxy itself. 2. If the admin calls the proxy, it can access the admin functions, but its calls will never be forwarded to the implementation. If the admin tries to call a function on the implementation it will fail with an error that says \"admin cannot fallback to proxy target\". These properties mean that the admin account can only be used for admin actions like upgrading the proxy or changing the admin, so it's best if it's a dedicated account that is not used for anything else. This will avoid headaches due to sudden errors when trying to call a function from the proxy implementation. Our recommendation is for the dedicated account to be an instance of the {ProxyAdmin} contract. If set up this way, you should think of the `ProxyAdmin` instance as the real administrative interface of your proxy.",
     "kind": "dev",
